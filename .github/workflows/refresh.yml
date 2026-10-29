@@ -1,0 +1,79 @@
+name: Refresh and publish
+
+on:
+  schedule:
+    - cron: "20 1,7,13,19 * * *"   # every 6 hours (03:20, 09:20, 15:20, 21:20 Israel winter time)
+    - cron: "50 */3 * * 0,1"       # game days: every 3 hours on Sunday and Monday
+  workflow_dispatch: {}            # "Run workflow" button for a refresh right now
+  push:
+    branches: [main]
+    paths: ["site/**"]             # a design change pushed by hand goes live too
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    if: github.event_name != 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Download stats, schedule, rankings, league and values
+        run: python scripts/fetch.py data work
+
+      - name: Update the page
+        run: |
+          python -I scripts/refresh.py site/index.html work work/out.html
+          if [ -s work/unmatched.txt ]; then
+            python scripts/fetch.py names work
+            python -I scripts/refresh.py site/index.html work work/out.html
+          fi
+
+      - name: Check the new page
+        run: |
+          python scripts/check.py work/out.html work/app.js
+          node --check work/app.js
+
+      - name: Save the new page
+        run: |
+          cp work/out.html site/index.html
+          git config user.name "fair-catch-bot"
+          git config user.email "fair-catch-bot@users.noreply.github.com"
+          git add site/index.html
+          if git diff --cached --quiet; then echo "nothing changed"; exit 0; fi
+          git commit -m "Data refresh $(TZ=Asia/Jerusalem date '+%Y-%m-%d %H:%M')"
+          git push
+
+  publish:
+    needs: refresh
+    if: always() && (needs.refresh.result == 'success' || needs.refresh.result == 'skipped')
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deploy
+        uses: actions/deploy-pages@v4
