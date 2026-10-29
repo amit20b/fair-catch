@@ -367,11 +367,27 @@ if rosters is not None:
 elif not os.path.exists(rp) and not os.path.exists(os.path.join(wd, "rosters.txt")):
     report.append("sleeper: skipped (no rosters.txt or rosters.json)")
 
+# ---------- Sleeper id -> player name, for leagues the viewers connect themselves (read in the browser) ----------
+sids = {}
+try:
+    known2 = {norm(p["n"]): p["n"] for p in data["players"]}
+    if os.path.exists(os.path.join(wd, "ids.csv")):
+        for r in csv.DictReader(open(os.path.join(wd, "ids.csv"), encoding="utf-8")):
+            sid = r.get("sleeper_id")
+            if sid and sid != "NA" and norm(r["name"]) in known2: sids[sid] = known2[norm(r["name"])]
+    for sid, nm in rw_sleeper.items():
+        k = norm(LALIAS.get(norm(nm), nm)); sids.setdefault(sid, known2.get(k, nm))
+    for l in leagues:
+        for sid, nm in (l.get("idmap") or {}).items(): sids.setdefault(sid, known2.get(norm(nm), nm))
+except Exception as e:
+    report.append("sleeper ids: skipped (%s)" % e)
+if sids: report.append("sleeper ids for connected leagues: %d" % len(sids))
 npth = os.path.join(wd, "notes.txt")
 if os.path.exists(npth): report.append("notes from the run: " + " / ".join(x.strip() for x in open(npth, encoding="utf-8").read().splitlines() if x.strip())[:600])
 files = sorted(f for f in os.listdir(wd))
 report.append("files in work folder: %s" % files)
 stats["log"] = report                     # what this refresh did, readable later from the page data
 out = put(put(put(html, "statsdata", stats), "leaguedata", leagues), "data", data)
+if sids and 'id="sleeperids"' in out: out = put(out, "sleeperids", sids)
 open(out_p, "w", encoding="utf-8").write(out)
 print("\n".join(report))
