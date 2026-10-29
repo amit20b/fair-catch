@@ -52,13 +52,20 @@ jobs:
 
       - name: Save the new page
         run: |
-          cp work/out.html site/index.html
           git config user.name "fair-catch-bot"
           git config user.email "fair-catch-bot@users.noreply.github.com"
-          git add site/index.html
-          if git diff --cached --quiet; then echo "nothing changed"; exit 0; fi
-          git commit -m "Data refresh $(TZ=Asia/Jerusalem date '+%Y-%m-%d %H:%M')"
-          git push
+          for try in 1 2 3; do
+            cp work/out.html site/index.html
+            git add site/index.html
+            if git diff --cached --quiet; then echo "nothing changed"; exit 0; fi
+            git commit -m "Data refresh $(TZ=Asia/Jerusalem date '+%Y-%m-%d %H:%M')"
+            if git push; then exit 0; fi
+            # someone else (a Yahoo, offer or expert update) saved the page first: redo the update on top of theirs
+            git fetch origin main && git reset --hard origin/main
+            python -I scripts/refresh.py site/index.html work work/out.html
+            python scripts/check.py work/out.html work/app.js && node --check work/app.js
+          done
+          exit 1
 
   publish:
     needs: refresh
