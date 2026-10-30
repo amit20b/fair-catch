@@ -66,6 +66,31 @@ html:root:root{
   --turf-a:#1E5A35; --turf-b:#1A5230; --ez:#2F5FB3; --accent-dk:#8FBF1F; --opp:#5B6B8A; --opp-dk:#3F4C6A; --opp-helm:#7B87A6;
   color-scheme:dark}
 body{font-synthesis-weight:none}
+.pro-btn{border:1.5px solid var(--accent);background:transparent;color:var(--accent);font:800 12px/1 var(--f);letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:9px 14px;cursor:pointer;min-height:36px;align-self:flex-end}
+.pro-btn.on{background:var(--accent);color:var(--on-accent)}
+#proSlot{display:flex;justify-content:flex-end;margin-bottom:4px}#proSlot:empty{display:none}
+.pro-lock{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border:2px solid var(--accent);border-radius:16px;padding:14px;background:var(--bg);margin-top:10px}
+.pro-lock .pl-ic{color:var(--accent);flex:none}.pro-lock>div{flex:1 1 180px;display:flex;flex-direction:column}
+.pro-lock b{font-family:var(--f-display);font-size:22px;letter-spacing:.02em;line-height:1.05}.pro-lock span{color:var(--muted);font-size:13px}
+.pro-lock .btn{min-height:42px}.pro-lock.in{padding:10px 12px;margin:6px 0}.pro-lock.in b{font-size:18px}
+.pro-sheet{display:block;overflow-y:auto;padding:16px 18px calc(24px + env(safe-area-inset-bottom,0px));top:auto;max-height:92vh}
+.pro-sheet .grab{width:40px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 10px}
+.ps-h{display:flex;justify-content:space-between;align-items:center}.ps-badge{background:var(--accent);color:var(--on-accent);font:800 12px/1 var(--f);letter-spacing:.08em;padding:6px 10px;border-radius:999px}
+.ps-t{font-family:var(--f-display);font-weight:400;font-size:52px;line-height:.9;margin:12px 0 10px}.ps-t span{color:var(--accent)}
+.ps-f{list-style:none;margin:0 0 14px;padding:0;display:flex;flex-direction:column;gap:8px;font-size:14.5px}
+.ps-f i{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:rgba(61,220,151,.15);color:var(--win);font-style:normal;font-size:12px;font-weight:800;margin-right:10px}
+.ps-plans{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.ps-plan{display:block;text-decoration:none;color:inherit;border:2px solid var(--line);background:var(--card-2);border-radius:14px;padding:12px;position:relative}
+.ps-plan.best{border-color:var(--accent)}.ps-plan b{display:block;font-family:var(--f-display);font-weight:400;font-size:32px;line-height:1}.ps-plan small{color:var(--muted)}
+.ps-plan em{position:absolute;top:10px;right:10px;font-style:normal;font-size:10.5px;font-weight:800;color:var(--on-accent);background:var(--win);padding:2px 6px;border-radius:4px}
+.pro-sheet .fine{color:var(--dim);font-size:12px;margin:6px 0 10px}
+.ps-key{display:flex;gap:8px;flex-wrap:wrap}.ps-key input{flex:1 1 200px;min-width:0;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card-2);color:inherit;font:inherit}
+.pro-td{position:fixed;inset:0;display:grid;place-items:center;pointer-events:none;z-index:80}
+.pro-td span{font-family:var(--f-display);font-size:clamp(56px,15vw,120px);color:var(--accent);animation:prop .5s cubic-bezier(.3,1.6,.5,1) both, prof .5s 2s forwards}
+@keyframes prop{from{opacity:0;transform:scale(.6)}}@keyframes prof{to{opacity:0}}
+.pro-conf{position:fixed;top:-20px;width:8px;height:14px;border-radius:2px;z-index:79;pointer-events:none;animation:pfall linear forwards}
+@keyframes pfall{to{transform:translate(var(--dx),110vh) rotate(720deg)}}
+@media (prefers-reduced-motion:reduce){.pro-conf{display:none}}
 /* ===== iPhone fit: notch/home-bar space, no zoom on inputs, thumb-sized taps ===== */
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body{-webkit-tap-highlight-color:transparent;overscroll-behavior-y:none;padding-top:env(safe-area-inset-top,0px)}
@@ -673,6 +698,7 @@ button.pp{border:0;background:none;padding:0;margin:0;font:inherit;color:inherit
       <p>Fantasy football trade calculator · dynasty &amp; redraft</p>
     </div>
     <div class="fresh">
+      <span id="proSlot"></span>
       <span>Expert values <b id="dExp"></b> · Trade market <b id="dMkt"></b> · Stats <b id="dSt"></b></span>
       <span id="poolInfo"></span>
     </div>
@@ -1030,7 +1056,7 @@ function renderCols(r,g){
     ${adj>0?`<div class="bonus">${bonusTxt(star,pad)}</div>`:''}</div>`;
   const bal=T.A.length&&T.B.length&&r.pct>.05?(r.diff<0?'A':'B'):null;
   document.getElementById('cols').innerHTML=col('B','theirs','They receive',r.B,r.adjB,r.starB,r.padB)+col('A','mine','I receive',r.A,r.adjA,r.starA,r.padA)+
-    (bal?`<button class="balbar" type="button" data-open="${bal}">✦ Balance this trade: ${bal==='A'?'see what to ask them to add':'see what you could add'}</button>`:'');
+    (bal?`<button class="balbar" type="button" ${isPro()?`data-open="${bal}"`:'data-pro="1"'}>✦ Balance this trade: ${bal==='A'?'see what to ask them to add':'see what you could add'}</button>`:'');
 }
 
 /* ---------- results: explain, balance, roster impact, similar ---------- */
@@ -1217,7 +1243,7 @@ function renderPickList(){
   }else{
     const used=new Set([...T.A,...T.B]), allowed=sidePool(pickSide);
     const bal=balance(evaluate(T.A,T.B));
-    if(bal&&bal.short===pickSide&&bal.list.length&&!term) html+=`<li class="sec bal">✦ Balance: add one to even the trade</li>`+bal.list.map(x=>pickRow(x,'bal')).join('');
+    if(bal&&bal.short===pickSide&&bal.list.length&&!term) html+=isPro()?`<li class="sec bal">✦ Balance: add one to even the trade</li>`+bal.list.map(x=>pickRow(x,'bal')).join(''):`<li class="sec bal"><button type="button" class="linkbtn" data-pro="1">✦ Balance: see who evens this trade · Pro</button></li>`;
     const items=POOL.filter(x=>!used.has(x.a.id)&&(!allowed||allowed.has(x.a.id))&&match(x)).slice(0,allowed?40:60);
     const label=allowed?(pickSide==='A'?(partnerTeam()?`${esc(theirName())} roster`:'Players on other teams in your league'):'Your roster'):'All players';
     html+=`<li class="sec">${label}</li>`+items.map(x=>pickRow(x)).join('');
@@ -1230,6 +1256,7 @@ function renderPickList(){
 /* ---------- settings ---------- */
 const HINTS={dynasty:'Long-term value: age, talent and picks.',contender:'Weights points this season. Picks lose value.',rebuild:'Rewards youth and picks, discounts older players.',redraft:'This season only. Picks removed. K and DST included.'};
 function renderSettings(){
+  {const ps=document.getElementById('proSlot');if(ps)ps.innerHTML=proBadge();}
   document.querySelectorAll('.seg').forEach(seg=>{const k=seg.dataset.key;seg.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===String(S[k]))));});
   document.getElementById('modeHint').textContent=HINTS[S.mode];
   const ml={dynasty:'Dynasty',contender:'Dynasty · Contend',rebuild:'Dynasty · Rebuild',redraft:'Redraft'}[S.mode];
@@ -1489,7 +1516,7 @@ function shopBox(){
     ${picked?`<div class="sh-chips" id="shPicked" role="group" aria-label="Players you want">${picked}</div>`:''}
     <select id="shTeam" class="sh-sel" aria-label="Team">${others.map(t=>`<option value="${t.rid}"${t.rid===SH_TEAM?' selected':''}>${esc(t.name)}</option>`).join('')}</select>
     <div class="sh-chips" id="shWant" role="group" aria-label="Their players">${tIds.map(id=>wChip(id)).join('')}</div>
-    <div class="sh-act"><span class="muted">${n?`${SH_SEL.size} to give · ${SH_WANT.size} wanted`:'Nobody picked yet'}</span>${n?'<button type="button" class="linkbtn" data-shclear="1">Clear</button>':''}<button type="button" class="btn primary" data-shgo="1" ${n?'':'disabled'}>Find a trade</button></div>
+    <div class="sh-act"><span class="muted">${n?`${SH_SEL.size} to give · ${SH_WANT.size} wanted`:'Nobody picked yet'}${isPro()?'':` · ${freeUse('finder').left} free searches left today`}</span>${n?'<button type="button" class="linkbtn" data-shclear="1">Clear</button>':''}<button type="button" class="btn primary" data-shgo="1" ${n?'':'disabled'}>Find a trade</button></div>
     <div id="shOut"></div></div>`;
 }
 function renderShop(){
@@ -1588,7 +1615,7 @@ function renderLeague(){
   const start=me.prof.startIds, bench=me.ids.filter(id=>!start.includes(id));
   const sortIds=a=>a.slice().sort((x,y)=>val(byId[y])-val(byId[x]));
   const ideasF=L.ideas.filter(it=>(IDEA_TEAM==='ANY'||String(it.team.rid)===IDEA_TEAM)&&(IDEA_POS==='ANY'||mainGet(it).p===IDEA_POS));
-  LIDEAS=ideasF.slice(0,IDEA_LIMIT);
+  LIDEAS=ideasF.slice(0,isPro()?IDEA_LIMIT:2);
   if(IDEA_POS!=='ANY') LIDEAS.forEach(it=>{const m=mainGet(it);it.get.sort((a,b)=>(b===m.id)-(a===m.id));});
   const others=L.teams.filter(t=>!t.me&&L.ideas.some(it=>it.team===t));
   const ideaCard=(it,i)=>{const lbl=it.r.pct<=.05?['even','Fair on value']:it.r.diff>0?['win','Slightly in your favor']:['lose','Slightly in their favor'];
@@ -1626,7 +1653,7 @@ function renderLeague(){
       <select id="ideaTeam"><option value="ANY">Trade with: any team</option>${others.map(t=>`<option value="${t.rid}" ${String(t.rid)===IDEA_TEAM?'selected':''}>${esc(t.name)} (${L.ideas.filter(it=>it.team===t).length})</option>`).join('')}</select>
     </div>
     ${LIDEAS.length?`<ul class="ideas">${LIDEAS.map(ideaCard).join('')}</ul>`:`<p class="muted" style="margin:0">${L.ideas.length?'No ideas match these filters. Try another position or team.':'No clear win-win trades right now. Your lineup is already well balanced.'}</p>`}
-    ${ideasF.length>IDEA_LIMIT?`<div style="text-align:center;margin-top:10px"><button class="btn" type="button" data-imore="1">Show more ideas (${ideasF.length-IDEA_LIMIT} more)</button></div>`:(LIDEAS.length&&ideasF.length>6?'<p class="note">That\'s every idea that passes the fairness checks.</p>':'')}
+    ${!isPro()&&ideasF.length>2?proLock(`${ideasF.length-2} more trade ideas`,'Pro shows every win-win trade in your league.'):ideasF.length>IDEA_LIMIT?`<div style="text-align:center;margin-top:10px"><button class="btn" type="button" data-imore="1">Show more ideas (${ideasF.length-IDEA_LIMIT} more)</button></div>`:(LIDEAS.length&&ideasF.length>6?'<p class="note">That\'s every idea that passes the fairness checks.</p>':'')}
   </div>
 `,
     roster:()=>`  ${movesBox()}
@@ -1892,6 +1919,7 @@ function ssRow(slot,id,P){
     <div class="ss-n"><b>${r.status==='bye'||r.status==='out'?'0.0':f1(r.pts)}</b>${r.status==='ok'&&!r.rough?`<small>${Math.round(r.fl)}–${Math.round(r.cl)}</small>`:''}</div></li>`;
 }
 function renderStartSit(el){
+  if(!isPro()){el.innerHTML=`<div class="box">${proLock('Start / sit is Pro','Your best lineup every week, with the close calls explained.')}</div>`;return;}
   if(!SCHED){el.innerHTML='<div class="box"><p class="muted" style="margin:0">This week\'s schedule is not loaded yet. It arrives with the next automatic refresh.</p></div>';return;}
   const R=startSit(), W=SCHED.week, me=myTeam();
   const lbl=s=>s==='DST'?'D/ST':s==='SF'?'SFLX':s;
@@ -2077,6 +2105,7 @@ function ourSellItems(items){
   return out;
 }
 function renderMarket(el){
+  if(!isPro()){el.innerHTML=`<div class="box">${proLock('Buy low, sell high is Pro','What the experts say this week, matched to your roster.')}</div>`;return;}
   if(!MARKET){el.innerHTML='<div class="box"><p class="muted" style="margin:0">Expert buy/sell calls are not loaded yet.</p></div>';return;}
   const items0=mktItems(), items=[...items0,...ourSellItems(items0)], own=x=>mktOwner(x.a.id).k;
   // you can't buy your own players, and you can only sell your own: buy lists skip your team, sell lists show only your team
@@ -2274,9 +2303,9 @@ function offerCard(x,i){
   return `<li class="idea offer"><div class="idea-h"><span>from <b>${esc(x.from)}</b></span><span class="tag ${x.k||'even'}">${esc(x.status)}</span></div>
     <div class="off-v ${x.verdict.k}">${esc(x.verdict.t)}</div>
     <div class="idea-b"><div><span class="lbl give">You give</span>${x.give.map(a=>nameChip(a.id)).join('')}${x.picksGive.map(p=>`<span class="lp"><b>${esc(p)}</b></span>`).join('')}</div><div><span class="lbl get">You get</span>${x.get.map(a=>nameChip(a.id)).join('')}${x.picksGet.map(p=>`<span class="lp"><b>${esc(p)}</b></span>`).join('')}</div></div>
-    <details class="off-d"><summary>Lineup impact and what to ask for</summary>
+    ${isPro()?`<details class="off-d"><summary>Lineup impact and what to ask for</summary>
     <p class="off-l">${esc(x.line)}${x.fit?` · Your lineup ${sg(x.fit.my)} · Theirs ${sg(x.fit.th)}`:''}</p>
-    ${tips.length?`<ul class="off-t">${tips.map(t=>`<li>${t}</li>`).join('')}</ul>`:''}</details>
+    ${tips.length?`<ul class="off-t">${tips.map(t=>`<li>${t}</li>`).join('')}</ul>`:''}</details>`:proLock('See the full breakdown','Lineup impact and exactly what to ask for.',1)}
     <div class="idea-f"><span class="muted">${x.created?esc(x.created):''}</span><button class="btn" type="button" data-offer="${i}">Open in Trade builder</button></div></li>`;
 }
 function offersBox(){
@@ -2741,6 +2770,10 @@ document.addEventListener('click',e=>{
   const mt=t.closest('[data-mtab]'); if(mt){setMain(mt.dataset.mtab);return;}
   const ip=t.closest('[data-ipos]'); if(ip){IDEA_POS=ip.dataset.ipos;IDEA_LIMIT=4;renderLeague();return;}
   const im=t.closest('[data-imore]'); if(im){IDEA_LIMIT+=6;renderLeague();return;}
+  if(t.closest('[data-proclose]')){closePro();return;}
+  if(t.closest('[data-proact]')){proActivate((document.getElementById('proKey')||{}).value);return;}
+  if(t.closest('[data-proremove]')){proRemove();return;}
+  if(t.closest('[data-pro]')){openPro();return;}
   if(t.closest('[data-lgadd]')){CN.open=true;LSUB='overview';if(mtab!=='league')setMain('league');else renderLeague();setTimeout(()=>{const i=document.getElementById('cnUser');if(i&&!i.value)i.focus();},50);return;}
   if(t.closest('[data-cnclose]')){CN.open=false;renderLeague();return;}
   if(t.closest('[data-cnfind]')){cnFind();return;}
@@ -2751,11 +2784,11 @@ document.addEventListener('click',e=>{
   const ss=t.closest('[data-shsel]'); if(ss){const id=+ss.dataset.shsel;SH_SEL.has(id)?SH_SEL.delete(id):SH_SEL.add(id);SH_RUN=false;SH_LIMIT=4;const b=document.getElementById('shopBox');if(b){b.outerHTML=shopBox();}return;}
   const sw=t.closest('[data-shwant]'); if(sw){const id=+sw.dataset.shwant;SH_WANT.has(id)?SH_WANT.delete(id):SH_WANT.add(id);SH_RUN=false;SH_LIMIT=4;const b=document.getElementById('shopBox');if(b){b.outerHTML=shopBox();}return;}
   if(t.closest('[data-shclear]')){SH_SEL.clear();SH_WANT.clear();SH_RUN=false;const b=document.getElementById('shopBox');if(b)b.outerHTML=shopBox();return;}
-  if(t.closest('[data-shgo]')){SH_RUN=true;SH_LIMIT=4;renderShop();return;}
+  if(t.closest('[data-shgo]')){if(!isPro()){const f=freeUse('finder');if(!f.left){SH_RUN=false;const o=document.getElementById('shOut');if(o)o.innerHTML=proLock("You've used today's 3 free searches",'Pro finds unlimited fair trades with every team, all season.');return;}f.take();}SH_RUN=true;SH_LIMIT=4;renderShop();return;}
   if(t.closest('[data-shmore]')){SH_LIMIT+=4;renderShop();return;}
   const sl=t.closest('[data-shload]'); if(sl){const it=SH_SHOWN[+sl.dataset.shload];if(it) loadTrade(it);return;}
   const fl=t.closest('[data-ftload]'); if(fl){const it=FT_SHOWN[+fl.dataset.ftload];if(it) loadTrade(it);return;}
-  const fp=t.closest('[data-ftpick]'); if(fp){FT_ID=+fp.dataset.ftpick;FT_LIMIT=4;const s=document.getElementById('ftSearch');if(s){s.value=byId[FT_ID].n;s.blur();}renderFinder();return;}
+  const fp=t.closest('[data-ftpick]'); if(fp){if(!isPro()){const f=freeUse('finder');if(!f.left){const o=document.getElementById('ftOut');if(o)o.innerHTML=proLock("You've used today's 3 free searches",'Pro finds unlimited fair trades with every team, all season.');return;}f.take();}FT_ID=+fp.dataset.ftpick;FT_LIMIT=4;const s=document.getElementById('ftSearch');if(s){s.value=byId[FT_ID].n;s.blur();}renderFinder();return;}
   const fc=t.closest('[data-ftclear]'); if(fc){FT_ID=null;FT_Q='';const s=document.getElementById('ftSearch');if(s){s.value='';s.focus();}renderFinder();return;}
   const fm=t.closest('[data-ftmore]'); if(fm){FT_LIMIT+=4;renderFinder();return;}
   const ls=t.closest('[data-lsub]'); if(ls){setLeagueSub(ls.dataset.lsub);return;}
@@ -2769,7 +2802,7 @@ document.addEventListener('click',e=>{
   if(ac&&ac.dataset.act==='roster'){openPicker('R');return;}
 });
 document.addEventListener('change',e=>{if(e.target.matches&&e.target.matches('[data-cndemo]')){setDemo(e.target.checked);return;}if(e.target.id==='shTeam'){SH_TEAM=+e.target.value;const b=document.getElementById('shopBox');if(b)b.outerHTML=shopBox();return;}if(e.target.id==='ideaTeam'){IDEA_TEAM=e.target.value;IDEA_LIMIT=4;renderLeague();}if(e.target.id==='partnerSel'){const v=e.target.value;PARTNER=v?+v:null;if(PARTNER!=null){const ok=sidePool('A');T.A=T.A.filter(id=>ok.has(id));}render();toast(PARTNER!=null?'Trading with '+theirName():'No team picked');}});
-document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target&&e.target.id==='cnUser'){e.preventDefault();cnFind();}});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target&&e.target.id==='cnUser'){e.preventDefault();cnFind();}if(e.key==='Enter'&&e.target&&e.target.id==='proKey'){e.preventDefault();proActivate(e.target.value);}if(e.key==='Escape')closePro();});
 document.addEventListener('input',e=>{if(e.target.id==='cnUser')CN.q=e.target.value;if(e.target.id==='pickSearch') renderPickList();if(e.target.id==='ftSearch'){FT_Q=e.target.value;FT_ID=null;renderFinder();}if(e.target.id==='hSearch') renderHelperList();if(e.target.id==='chartSearch'){chartLimit=120;renderChart();}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&PP!=null){closePlayer();return;}if(e.key==='Escape'&&!document.getElementById('hsheet').hidden){closeHelper();return;}if(e.key==='Escape'&&pickSide) closePicker();});
 document.getElementById('psClose').onclick=closePlayer;document.getElementById('helpFab').onclick=()=>openHelper('home');document.getElementById('hClose').onclick=closeHelper;document.getElementById('hscrim').onclick=closeHelper;document.getElementById('pscrim').onclick=closePlayer;
@@ -2786,7 +2819,7 @@ document.getElementById('copy').onclick=()=>{
 const d=s=>new Date(s+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
 document.getElementById('dExp').textContent=d(DATA.expertsScraped);
 document.getElementById('dMkt').textContent=d(DATA.updated);
-document.getElementById('shotBtn').onclick=openShot;
+document.getElementById('shotBtn').onclick=()=>isPro()?openShot():openPro();
 document.getElementById('oClose').onclick=closeShot;
 document.getElementById('oscrim').onclick=closeShot;
 document.getElementById('oFile').addEventListener('change',e=>{const f=e.target.files&&e.target.files[0];e.target.value='';if(f)ocrRun(f);});
@@ -2812,6 +2845,82 @@ osh.addEventListener('drop',e=>{e.preventDefault();osh.classList.remove('drag');
 document.addEventListener('paste',e=>{const f=[...(e.clipboardData&&e.clipboardData.files||[])].find(f=>/^image\//.test(f.type));if(!f)return;e.preventDefault();if(osh.hidden)openShot();ocrRun(f);});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!osh.hidden)closeShot();});
 document.getElementById('dSt').textContent=STATS&&STATS.week?'Week '+STATS.week:'—';
+/* ---------- Fair Catch Pro: Lemon Squeezy license keys, checked from the browser ----------
+   PROCFG is filled in once the Lemon Squeezy store exists. While it is empty, nothing is locked. */
+const PROCFG={store:0,products:[],monthly:'',season:'',priceM:'$4.99',priceS:'$24.99',owner:[]};
+const PRO_ON=!!(PROCFG.store&&(PROCFG.monthly||PROCFG.season));
+let PRO=(()=>{try{return JSON.parse(localStorage.getItem('faircatch-pro')||'null');}catch(e){return null;}})();
+const savePro=()=>{try{PRO?localStorage.setItem('faircatch-pro',JSON.stringify(PRO)):localStorage.removeItem('faircatch-pro');}catch(e){}};
+const isPro=()=>!PRO_ON||!!(PRO&&PRO.ok&&Date.now()-(PRO.checked||0)<21*864e5);
+const FREE={finder:3};
+function freeUse(kind){
+  const d=new Date().toISOString().slice(0,10);let u={};try{u=JSON.parse(localStorage.getItem('faircatch-free')||'{}');}catch(e){}
+  if(u.d!==d)u={d};const lim=FREE[kind]||0,left=Math.max(0,lim-(u[kind]||0));
+  return {left,lim,take(){u[kind]=(u[kind]||0)+1;try{localStorage.setItem('faircatch-free',JSON.stringify(u));}catch(e){}}};
+}
+async function lsPost(path,params){
+  const r=await fetch('https://api.lemonsqueezy.com/v1/licenses/'+path,{method:'POST',headers:{Accept:'application/json','Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams(params)});
+  return r.json();
+}
+const ourKey=m=>m&&(!PROCFG.store||+m.store_id===+PROCFG.store)&&(!PROCFG.products.length||PROCFG.products.includes(+m.product_id));
+const PS={busy:false,err:'',msg:''};
+async function proActivate(key){
+  key=String(key||'').trim(); if(!key) return;
+  PS.busy=true;PS.err='';renderProSheet();
+  try{
+    const j=await lsPost('activate',{license_key:key,instance_name:'Fair Catch · '+(/iPhone|iPad/.test(navigator.userAgent)?'iPhone':/Android/.test(navigator.userAgent)?'Android':'computer')});
+    if(!j||!j.activated) throw new Error((j&&j.error)||'That key did not work.');
+    if(!ourKey(j.meta)) throw new Error('That key is for a different product.');
+    PRO={key,inst:j.instance&&j.instance.id,ok:true,checked:Date.now(),email:j.meta&&j.meta.customer_email,status:j.license_key&&j.license_key.status,exp:j.license_key&&j.license_key.expires_at};
+    savePro();PS.busy=false;PS.msg='';closePro();celebratePro();fullRender();
+  }catch(e){PS.busy=false;PS.err=/Failed to fetch|NetworkError|Load failed/.test(String(e&&e.message))?'Could not reach the license server. Check your connection and try again.':(e&&e.message)||String(e);renderProSheet();}
+}
+async function proValidate(){
+  if(!PRO_ON||!PRO||!PRO.key) return;
+  try{const j=await lsPost('validate',PRO.inst?{license_key:PRO.key,instance_id:PRO.inst}:{license_key:PRO.key});
+    const was=isPro(); PRO.ok=!!(j&&j.valid&&ourKey(j.meta)); PRO.status=j&&j.license_key&&j.license_key.status; PRO.exp=j&&j.license_key&&j.license_key.expires_at; PRO.checked=Date.now(); savePro();
+    if(was!==isPro()) fullRender();
+  }catch(e){} // offline: keep the last good check for up to 3 weeks
+}
+async function proRemove(){
+  if(PRO&&PRO.key&&PRO.inst){try{await lsPost('deactivate',{license_key:PRO.key,instance_id:PRO.inst});}catch(e){}}
+  PRO=null;savePro();renderProSheet();fullRender();
+}
+const LOCK_SVG='<svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="3" fill="currentColor"/><path d="M8 10V7a4 4 0 1 1 8 0v3" stroke="currentColor" stroke-width="2.4"/><circle cx="12" cy="15.5" r="1.8" fill="var(--bg)"/></svg>';
+function proLock(title,text,inline){
+  return `<div class="pro-lock${inline?' in':''}"><span class="pl-ic">${LOCK_SVG}</span><div><b>${esc(title)}</b><span>${esc(text)}</span></div><button type="button" class="btn primary" data-pro="1">Unlock with Pro</button></div>`;
+}
+function proBadge(){ return PRO_ON?`<button type="button" class="pro-btn${isPro()?' on':''}" data-pro="1">${isPro()?'PRO ✓':'Go Pro'}</button>`:''; }
+function proSheetHtml(){
+  const P=isPro()&&PRO;
+  const feat=['2K-style trade finder, unlimited','Every trade idea in your league','Balance: what to ask for to make it fair','Lineup impact on every offer','Trade from a screenshot','Weekly start/sit and expert buy-low, sell-high','Unlimited connected leagues'];
+  return `<div class="grab"></div>
+   <div class="ps-h"><span class="ps-badge">PRO</span><button type="button" class="close" data-proclose="1" aria-label="Close">✕</button></div>
+   ${P?`<h2 class="ps-t">You're <span>Pro</span>.</h2><p class="muted">Thanks for supporting Fair Catch. ${P.email?'Licensed to '+esc(P.email)+'. ':''}${P.exp?'Renews or ends '+esc(String(P.exp).slice(0,10))+'.':''}</p>
+       <ul class="ps-f">${feat.map(f=>`<li><i>✓</i>${esc(f)}</li>`).join('')}</ul>
+       <button type="button" class="btn" data-proremove="1">Remove Pro from this device</button>`
+    :`<h2 class="ps-t">Win every <span>trade.</span></h2>
+       <ul class="ps-f">${feat.map(f=>`<li><i>✓</i>${esc(f)}</li>`).join('')}</ul>
+       <div class="ps-plans">${PROCFG.season?`<a class="ps-plan best" href="${esc(PROCFG.season)}" target="_blank" rel="noopener"><em>BEST</em><b>${esc(PROCFG.priceS)}</b><small>whole season</small></a>`:''}${PROCFG.monthly?`<a class="ps-plan" href="${esc(PROCFG.monthly)}" target="_blank" rel="noopener"><b>${esc(PROCFG.priceM)}</b><small>per month</small></a>`:''}</div>
+       <p class="fine">Secure checkout by Lemon Squeezy. Your license key arrives by email: paste it below.</p>
+       <div class="ps-key"><label class="sr" for="proKey">License key</label><input id="proKey" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Paste your license key"><button type="button" class="btn primary" data-proact="1" ${PS.busy?'disabled':''}>${PS.busy?'Checking…':'Activate'}</button></div>
+       ${PS.err?`<p class="o-err" style="margin:8px 0 0">${esc(PS.err)}</p>`:''}`}`;
+}
+function renderProSheet(){const s=document.getElementById('prosheet');if(s&&!s.hidden)s.innerHTML=proSheetHtml();}
+function openPro(){
+  if(!PRO_ON) return;
+  let s=document.getElementById('prosheet');
+  if(!s){document.body.insertAdjacentHTML('beforeend','<div class="scrim" id="proscrim" data-proclose="1" hidden></div><div class="sheet pro-sheet" id="prosheet" role="dialog" aria-label="Fair Catch Pro" hidden></div>');s=document.getElementById('prosheet');}
+  PS.err='';s.innerHTML=proSheetHtml();s.hidden=false;document.getElementById('proscrim').hidden=false;
+}
+function closePro(){const s=document.getElementById('prosheet');if(s){s.hidden=true;document.getElementById('proscrim').hidden=true;}}
+function celebratePro(){
+  const w=document.createElement('div');w.className='pro-td';w.innerHTML='<span>You\'re Pro!</span>';document.body.appendChild(w);
+  const cols=['#C6FF3D','#3DDC97','#5AA8FF','#EEF2FF','#FFC24B'];
+  for(let i=0;i<60;i++){const c=document.createElement('i');c.className='pro-conf';c.style.left=Math.random()*100+'vw';c.style.background=cols[i%cols.length];c.style.setProperty('--dx',(Math.random()*160-80)+'px');c.style.animationDuration=(1.4+Math.random()*1.4)+'s';c.style.animationDelay=(Math.random()*.4)+'s';document.body.appendChild(c);setTimeout(()=>c.remove(),3600);}
+  setTimeout(()=>w.remove(),2600);
+}
+
 /* ---------- connect your own league (Sleeper: username only, read-only public API) ---------- */
 const SLP='https://api.sleeper.app/v1';
 const SIDS=(()=>{try{return JSON.parse(document.getElementById('sleeperids').textContent)||{};}catch(e){return {};}})();
@@ -2886,6 +2995,7 @@ async function cnFind(){
   CN.busy=false;renderLeague();
 }
 async function cnAdd(lid){
+  if(!isPro()&&CONN.length>=1&&!CONN.some(c=>c.id===lid)){openPro();return;}
   CN.adding=lid;CN.err='';renderLeague();
   try{
     const l=await sleeperLeague(lid,CN.user.id);
@@ -2928,6 +3038,7 @@ function connectBox(){
 
 fullRender();
 refreshConnected();
+proValidate();
 (async()=>{
   try{
     const c=window.claude; if(!c||typeof c.use!=='function') return;
