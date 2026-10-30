@@ -3224,7 +3224,7 @@ function setDemo(on){
   if(!LEAGUES.includes(LEAGUE)) useLeague(LEAGUES[0]); else renderLeague();
 }
 async function cnFind(){
-  const q=(document.getElementById('cnUser')||{}).value||CN.q; CN.q=q.trim(); if(!CN.q) return;
+  const q=(document.getElementById('cnUser')||{}).value||CN.q; CN.q=q.trim().replace(/^@+/,'').trim(); if(!CN.q) return;
   try{localStorage.setItem('faircatch-slpuser',CN.q);}catch(e){}
   CN.busy=true;CN.err='';CN.leagues=null;renderLeague();
   try{
@@ -3235,7 +3235,7 @@ async function cnFind(){
     const ls=(await sj(`/user/${u.user_id}/leagues/nfl/${season}`))||[];
     CN.user={id:u.user_id,name:u.display_name||CN.q};CN.leagues=ls.map(l=>({id:String(l.league_id),name:l.name,teams:l.total_rosters,season:l.season,status:l.status}));
     if(!ls.length) CN.err=`${CN.user.name} has no Sleeper leagues for the ${season} season.`;
-  }catch(e){CN.err=(e&&e.message)||String(e);}
+  }catch(e){const m=(e&&e.message)||String(e);CN.err=/Load failed|Failed to fetch|NetworkError|network/i.test(m)?'Could not reach Sleeper. Check your connection and try again.':m;}
   CN.busy=false;renderLeague();
 }
 async function cnAdd(lid){
