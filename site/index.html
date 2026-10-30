@@ -3223,6 +3223,7 @@ function setDemo(on){
   BUILTIN.forEach(b=>{const i=LEAGUES.indexOf(b);if(on&&i<0)LEAGUES.push(b);if(!on&&i>=0&&CONN.length)LEAGUES.splice(i,1);});
   if(!LEAGUES.includes(LEAGUE)) useLeague(LEAGUES[0]); else renderLeague();
 }
+const FC_SITE=/github\.io$|^localhost$|^127\./.test(location.hostname)||location.protocol==='file:';
 async function cnFind(){
   const q=(document.getElementById('cnUser')||{}).value||CN.q; CN.q=q.trim().replace(/^@+/,'').trim(); if(!CN.q) return;
   try{localStorage.setItem('faircatch-slpuser',CN.q);}catch(e){}
@@ -3235,7 +3236,7 @@ async function cnFind(){
     const ls=(await sj(`/user/${u.user_id}/leagues/nfl/${season}`))||[];
     CN.user={id:u.user_id,name:u.display_name||CN.q};CN.leagues=ls.map(l=>({id:String(l.league_id),name:l.name,teams:l.total_rosters,season:l.season,status:l.status}));
     if(!ls.length) CN.err=`${CN.user.name} has no Sleeper leagues for the ${season} season.`;
-  }catch(e){const m=(e&&e.message)||String(e);CN.err=/Load failed|Failed to fetch|NetworkError|network/i.test(m)?'Could not reach Sleeper. Check your connection and try again.':m;}
+  }catch(e){const m=(e&&e.message)||String(e);CN.err=/Load failed|Failed to fetch|NetworkError|network/i.test(m)?(FC_SITE?'Could not reach Sleeper. Check your connection and try again.':'OFFSITE'):m;}
   CN.busy=false;renderLeague();
 }
 async function cnAdd(lid){
@@ -3273,7 +3274,7 @@ function connectBox(){
   return `<div class="box cn"><h3>Connect your league</h3>
     <p class="muted" style="margin:0 0 10px">Type your <b>Sleeper username</b>. We read your leagues and rosters straight from Sleeper: no password, read-only, saved only on this device. Yahoo is coming next.</p>
     <div class="cn-row"><label class="sr" for="cnUser">Sleeper username</label><input id="cnUser" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="Sleeper username" value="${esc(CN.q)}"><button type="button" class="btn primary" data-cnfind="1" ${CN.busy?'disabled':''}>${CN.busy?'Looking…':'Find my leagues'}</button></div>
-    ${CN.err?`<p class="o-err" style="margin:10px 0 0">${esc(CN.err)}</p>`:''}
+    ${CN.err==='OFFSITE'?`<p class="o-err" style="margin:10px 0 0">This preview can't reach Sleeper. Connecting a league works on the Fair Catch website.</p><a class="btn primary" style="margin-top:10px;display:inline-flex" href="https://amit20b.github.io/fair-catch/" target="_blank" rel="noopener">Open Fair Catch</a>`:CN.err?`<p class="o-err" style="margin:10px 0 0">${esc(CN.err)}</p>`:''}
     ${found?`<div class="sh-lbl">Your leagues${CN.user?` <small>(${esc(CN.user.name)})</small>`:''}</div><ul class="cn-list">${found}</ul>`:''}
     ${conn?`<div class="sh-lbl">Connected on this device</div><ul class="cn-list">${conn}</ul>`:''}
     ${CONN.length&&BUILTIN.length?`<label class="cn-demo"><input type="checkbox" data-cndemo="1" ${SHOWDEMO?'checked':''}> Also show the demo leagues</label>`:''}
