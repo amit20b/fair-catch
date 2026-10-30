@@ -108,6 +108,21 @@ body{font-synthesis-weight:none}
 body:has(#prosheet:not([hidden])) .fab{display:none}
 .ps-have .ps-key{margin-top:4px}.ps-msg{color:var(--muted);font-size:13px;margin:8px 0 0}
 .ps-key{display:flex;gap:8px;flex-wrap:wrap}.ps-key input{flex:1 1 200px;min-width:0;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card-2);color:inherit;font:inherit}
+.fgx{position:fixed;inset:0;z-index:90;background:#070B1A;display:flex;justify-content:center;animation:fgxIn .25s ease-out}
+.fgx.out{opacity:0;transition:opacity .3s}
+@keyframes fgxIn{from{opacity:0}}
+.fgx-st{position:relative;height:100%;width:min(100%,calc(100dvh*.62));overflow:hidden;background:#070B1A}
+.fgx-sc{position:absolute;inset:0;width:100%;height:100%;display:block}
+.fgx-good{position:absolute;left:0;right:0;top:calc(56px + env(safe-area-inset-top,0px));text-align:center;font-family:var(--f-display);font-weight:400;font-size:clamp(46px,14vw,64px);letter-spacing:.06em;color:#fff;opacity:0;transform:scale(.6);transition:opacity .25s,transform .35s cubic-bezier(.3,1.6,.5,1);pointer-events:none}
+.fgx-good.on{opacity:1;transform:none}.fgx-good.off{opacity:0;transition:opacity .4s}
+.fgx-end{position:absolute;left:0;right:0;bottom:0;padding:90px 22px calc(26px + env(safe-area-inset-bottom,0px));background:linear-gradient(rgba(7,11,26,0),rgba(7,11,26,.92) 45%,#070B1A);display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;opacity:0;transform:translateY(14px);transition:opacity .5s,transform .5s cubic-bezier(.2,.9,.3,1);pointer-events:none}
+.fgx-end.on{opacity:1;transform:none;pointer-events:auto}
+.fgx-end b{font-family:var(--f-display);font-weight:400;font-size:clamp(56px,17vw,76px);line-height:.9;letter-spacing:.02em;color:#EEF2FF}
+.fgx-end small{color:#8E9AC4;font-size:14.5px;max-width:30ch}
+.fgx-go{margin-top:14px;width:100%;max-width:420px;min-height:54px;border:0;border-radius:14px;background:var(--accent);color:var(--on-accent);font:800 17px var(--f);cursor:pointer}
+.fgx-go:active{transform:scale(.985)}
+.fgx-conf{position:absolute;top:-14px;width:7px;height:12px;border-radius:2px;animation:fgxFall linear forwards;pointer-events:none}
+@keyframes fgxFall{to{transform:translate(var(--dx),110dvh) rotate(var(--r))}}
 .pro-td{position:fixed;inset:0;display:grid;place-items:center;pointer-events:none;z-index:80}
 .pro-td span{font-family:var(--f-display);font-size:clamp(56px,15vw,120px);color:var(--accent);animation:prop .5s cubic-bezier(.3,1.6,.5,1) both, prof .5s 2s forwards}
 @keyframes prop{from{opacity:0;transform:scale(.6)}}@keyframes prof{to{opacity:0}}
@@ -2971,12 +2986,171 @@ function openPro(){
     if(pct>=99){ clearInterval(iv); fpFinish('proopen','Ready',()=>{ if(run===PS.open&&!s.hidden) s.innerHTML=proSheetHtml(); }); } },110);
 }
 function closePro(){PS.open=(PS.open||0)+1;const s=document.getElementById('prosheet');if(s){s.hidden=true;document.getElementById('proscrim').hidden=true;}}
-function celebratePro(){
-  const w=document.createElement('div');w.className='pro-td';w.innerHTML='<span>You\'re Pro!</span>';document.body.appendChild(w);
-  const cols=['#C6FF3D','#3DDC97','#5AA8FF','#EEF2FF','#FFC24B'];
-  for(let i=0;i<60;i++){const c=document.createElement('i');c.className='pro-conf';c.style.left=Math.random()*100+'vw';c.style.background=cols[i%cols.length];c.style.setProperty('--dx',(Math.random()*160-80)+'px');c.style.animationDuration=(1.4+Math.random()*1.4)+'s';c.style.animationDelay=(Math.random()*.4)+'s';document.body.appendChild(c);setTimeout(()=>c.remove(),3600);}
-  setTimeout(()=>w.remove(),2600);
+/* ---------- Pro unlocked: field goal from the camera behind the net ---------- */
+const FGX=(()=>{
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
+const HOME={j:'#22356F',h:'#22356F',s:'#C6FF3D',n:'#FFFFFF',p:'#E6EAF4',k:'#22356F'};
+const AWAY={j:'#8C2433',h:'#E9ECF5',s:'#8C2433',n:'#FFFFFF',p:'#E6EAF4',k:'#8C2433'};
+
+/* crowd painted once into an image (thousands of heads would be too many SVG nodes) */
+function crowd(w,h,rows){
+  const c=document.createElement('canvas');c.width=w*2;c.height=h*2;const x=c.getContext('2d');x.scale(2,2);
+  const cols=['#2B3768','#3A4679','#55618F','#8E9AC4','#C9CEDF','#6B2E3B','#22356F','#1E2A55','#E6EAF4','#9AA3C4'];
+  for(let r=0;r<rows;r++){const y=(r+.5)*h/rows, s=1.2+1.4*r/rows;
+    for(let i=-2;i<w;i+=s*1.55+rnd(0,.8)){x.fillStyle=cols[Math.random()*cols.length|0];x.globalAlpha=rnd(.55,.95);x.fillRect(i,y-s/2+rnd(-.4,.4),s,s*1.1);}}
+  return c.toDataURL();
 }
+/* a player seen from behind. unit: feet at (0,0), about 100 tall. */
+function backPlayer(t,num,cls){
+  return `<g class="${cls||''}">
+    <g class="legs"><polyline class="lt" fill="none" stroke="${t.p}" stroke-width="11" stroke-linecap="round" points="-7,-48 -8,-25"/>
+      <polyline class="ls" fill="none" stroke="${t.k}" stroke-width="8" stroke-linecap="round" points="-8,-25 -8,-5"/><ellipse class="lc" cx="-8" cy="-2" rx="5.5" ry="3" fill="#111"/>
+      <polyline class="rt" fill="none" stroke="${t.p}" stroke-width="11" stroke-linecap="round" points="7,-48 8,-25"/>
+      <polyline class="rs" fill="none" stroke="${t.k}" stroke-width="8" stroke-linecap="round" points="8,-25 8,-5"/><ellipse class="rc" cx="8" cy="-2" rx="5.5" ry="3" fill="#111"/></g>
+    <path d="M-15 -55 h30 l1 12 h-32z" fill="${t.p}"/>
+    <polyline class="la" fill="none" stroke="${t.j}" stroke-width="9" stroke-linecap="round" points="-20,-82 -25,-66 -24,-52"/>
+    <polyline class="ra" fill="none" stroke="${t.j}" stroke-width="9" stroke-linecap="round" points="20,-82 25,-66 24,-52"/>
+    <path d="M-24 -84 Q-25 -70 -16 -54 L16 -54 Q25 -70 24 -84 Q0 -92 -24 -84Z" fill="${t.j}"/>
+    <rect x="-16" y="-57" width="32" height="3" fill="rgba(0,0,0,.35)"/>
+    <text x="0" y="-62" text-anchor="middle" font-family="Archivo Black,Arial Black,sans-serif" font-size="19" fill="${t.n}">${num}</text>
+    <rect x="-4" y="-91" width="8" height="6" fill="#6B4A36"/>
+    <ellipse cx="0" cy="-99" rx="11" ry="12" fill="${t.h}"/><rect x="-2" y="-111" width="4" height="22" fill="${t.s}"/></g>`;
+}
+function lineman(t,num){ // crouched, from behind. unit height ~55
+  return `<g><path d="M-14 -16 l-6 16 h7 l4 -12z M14 -16 l6 16 h-7 l-4 -12z" fill="${t.p}"/><ellipse cx="-17" cy="-1" rx="5" ry="2.4" fill="#111"/><ellipse cx="17" cy="-1" rx="5" ry="2.4" fill="#111"/>
+    <path d="M-17 -26 h34 l-2 12 h-30z" fill="${t.p}"/>
+    <path d="M-23 -48 Q-25 -36 -17 -25 L17 -25 Q25 -36 23 -48 Q0 -55 -23 -48Z" fill="${t.j}"/>
+    <text x="0" y="-31" text-anchor="middle" font-family="Archivo Black,Arial Black,sans-serif" font-size="13" fill="${t.n}">${num}</text>
+    <ellipse cx="0" cy="-52" rx="9" ry="9" fill="${t.h}"/><rect x="-1.6" y="-61" width="3.2" height="15" fill="${t.s}"/></g>`;
+}
+function rusher(t){ // only shoulders, helmet and arms show over the line
+  return `<g><path d="M-20 -40 Q0 -48 20 -40 L18 -20 H-18Z" fill="${t.j}"/><ellipse cx="0" cy="-46" rx="9" ry="9" fill="${t.h}"/><rect x="-1.6" y="-55" width="3.2" height="15" fill="${t.s}"/>
+    <path d="M7 -47.5h4.5" stroke="#bbb" stroke-width="1.4"/>
+    <polyline class="aL" fill="none" stroke="${t.j}" stroke-width="7" stroke-linecap="round" points="-17,-40 -24,-28"/><polyline class="aR" fill="none" stroke="${t.j}" stroke-width="7" stroke-linecap="round" points="17,-40 24,-28"/>
+    <circle class="gL" r="4" cx="-24" cy="-28" fill="#EDEFF6"/><circle class="gR" r="4" cx="24" cy="-28" fill="#EDEFF6"/></g>`;
+}
+function ref(){ // official seen from behind or front; arms animate
+  return `<g><path d="M-4 -40 h3 v38 h-3z M1 -40 h3 v38 h-3z" fill="#151515"/>
+    <path d="M-8 -66 h16 l1 27 h-18z" fill="#F4F4F4"/><path d="M-5 -66v27M0 -66v27M5 -66v27" stroke="#111" stroke-width="2.2"/>
+    <polyline class="aL" fill="none" stroke="#F4F4F4" stroke-width="4.5" stroke-linecap="round" points="-8,-63 -10,-50 -10,-40"/><polyline class="aR" fill="none" stroke="#F4F4F4" stroke-width="4.5" stroke-linecap="round" points="8,-63 10,-50 10,-40"/>
+    <circle cx="0" cy="-72" r="6" fill="#8A5A40"/><path d="M-6.5 -74 a6.5 6.5 0 0 1 13 0z" fill="#fff"/></g>`;
+}
+function holder(t){
+  return `<g><path d="M8 -2 l18 0 l-2 -18 l-14 -8z" fill="${t.p}"/><ellipse cx="25" cy="-1" rx="7" ry="3" fill="#111"/>
+    <path d="M-8 -30 l-4 28 h9 l5 -26z" fill="${t.p}"/><path d="M-12 -3h9" stroke="${t.k}" stroke-width="5"/>
+    <path d="M-18 -66 Q-22 -50 -12 -30 L18 -28 Q24 -48 16 -66 Q0 -73 -18 -66Z" fill="${t.j}"/>
+    <text x="1" y="-41" text-anchor="middle" font-family="Archivo Black,Arial Black,sans-serif" font-size="16" fill="${t.n}">12</text>
+    <polyline class="arm" fill="none" stroke="${t.j}" stroke-width="8" stroke-linecap="round" points="-15,-62 -28,-40 -38,-23"/><circle class="hand" cx="-38" cy="-23" r="4" fill="#EDEFF6"/>
+    <ellipse cx="0" cy="-80" rx="10" ry="11" fill="${t.h}"/><rect x="-1.8" y="-91" width="3.6" height="20" fill="${t.s}"/></g>`;
+}
+const BALL=`<g class="ball"><ellipse class="bo" rx="6" ry="10" fill="#7E4220"/><ellipse class="bh" rx="4" ry="7" fill="#9A5530" opacity=".55"/>
+  <g class="lace"><path class="l1" d="M0 -4V4" stroke="#FBF6EE" stroke-width="1.4" stroke-linecap="round"/><path class="l2" d="M-1.6 -2H1.6M-1.6 0H1.6M-1.6 2H1.6" stroke="#FBF6EE" stroke-width="1" stroke-linecap="round"/></g>
+  <path class="s1" d="M-5 -6.5h10M-5 6.5h10" stroke="#FBF6EE" stroke-width="1.2" stroke-linecap="round" opacity=".9"/></g>`;
+function setBall(b,x,y,rx,ry,laceOn,tilt){
+  b.setAttribute('transform',`translate(${x.toFixed(2)} ${y.toFixed(2)}) rotate(${tilt.toFixed(1)})`);
+  const o=b.querySelector('.bo'),h=b.querySelector('.bh');o.setAttribute('rx',rx.toFixed(2));o.setAttribute('ry',ry.toFixed(2));
+  h.setAttribute('rx',(rx*.6).toFixed(2));h.setAttribute('ry',(ry*.7).toFixed(2));h.setAttribute('cx',(-rx*.25).toFixed(2));h.setAttribute('cy',(-ry*.25).toFixed(2));
+  const k=Math.max(rx,ry)/10; const l=b.querySelector('.lace');l.setAttribute('transform',`scale(${(rx/6).toFixed(3)} ${(ry/10).toFixed(3)})`);l.style.opacity=laceOn;
+  const s=b.querySelector('.s1');s.setAttribute('transform',`scale(${(rx/6).toFixed(3)} ${(ry/10).toFixed(3)})`);s.style.opacity=ry>rx*1.25?.85:0;
+}
+const pts=(el,a)=>el.setAttribute('points',a.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' '));
+function confetti(el,n=80){
+  const cols=['#C6FF3D','#3DDC97','#EEF2FF','#F2C94C','#5AA8FF'];
+  for(let i=0;i<n;i++){const c=document.createElement('i');c.className='fgx-conf';c.style.left=Math.random()*100+'%';c.style.background=cols[i%cols.length];
+    c.style.setProperty('--dx',rnd(-60,60)+'px');c.style.setProperty('--r',rnd(-500,500)+'deg');
+    c.style.animationDuration=rnd(1.7,3.4)+'s';c.style.animationDelay=rnd(0,.35)+'s';el.appendChild(c);setTimeout(()=>c.remove(),4200);}
+}
+
+/* ---------- camera behind the net, looking back at the kicker ---------- */
+function postCam(el){
+  // camera fixed high on the net support behind the posts, looking back up the field at the kicker
+  const F=600,HC=4.4,HY=200;
+  const X=(xw,z)=>150+F*xw/z, Y=(hw,z)=>HY+F*(HC-hw)/z;
+  let field=`<rect x="-300" y="${Y(0,26).toFixed(2)}" width="900" height="400" fill="#163F2A"/>`;
+  for(let z=36;z<80;z+=5)field+=`<rect x="-300" y="${Y(0,z+5).toFixed(2)}" width="900" height="${(Y(0,z)-Y(0,z+5)).toFixed(2)}" fill="${(z/5)%2?'#1E5A35':'#1A5130'}"/>`;
+  field+=`<rect x="-300" y="${Y(0,36).toFixed(2)}" width="900" height="${(Y(0,26)-Y(0,36)).toFixed(2)}" fill="#174A2E"/>`;
+  let lines='';[26,36,41,46,51,56,61,66,71,76].forEach(z=>{const w=Math.max(.5,F*.11/z);lines+=`<rect x="-300" y="${(Y(0,z)-w/2).toFixed(2)}" width="900" height="${w.toFixed(2)}" fill="rgba(255,255,255,${z<=36?.9:.7})"/>`;});
+  for(let z=37;z<80;z++){if((z-36)%5===0)continue;const y=Y(0,z),w=Math.max(.4,F*.1/z);[-3.08,3.08].forEach(s=>{const x=X(s,z),hw=F*.33/z;lines+=`<rect x="${(x-hw).toFixed(2)}" y="${(y-w/2).toFixed(2)}" width="${(2*hw).toFixed(2)}" height="${w.toFixed(2)}" fill="rgba(255,255,255,.6)"/>`;});}
+  const gz=26, gy=Y(0,gz), cb=Y(3.33,gz), top=Y(10.5,gz), pl=X(-3.08,gz), pr=X(3.08,gz);
+  const LOS=64;
+  const defense=[-3,-2,-1,0,1,2,3].map(xw=>{const z=LOS-1,s=F*1.25/z/55*1.3;return `<g class="ru" data-x="${X(xw+.4,z).toFixed(1)}" data-y="${Y(0,z).toFixed(1)}" data-s="${s.toFixed(3)}" transform="translate(${X(xw+.4,z).toFixed(1)} ${Y(0,z).toFixed(1)}) scale(${s.toFixed(3)})">${rusher(AWAY)}</g>`;}).join('');
+  const offense=[-3,-2,-1,0,1,2,3].map(xw=>{const z=LOS+.6,s=F*1.25/z/55*1.3;return `<g transform="translate(${X(xw,z).toFixed(1)} ${Y(0,z).toFixed(1)}) scale(${s.toFixed(3)})">${lineman(HOME,'')}</g>`;}).join('');
+  const hz=71, kz=73.5, ks=F*2/kz/100*1.3;
+  const refs=[-3.8,3.8].map(xw=>{const z=27,s=F*2/z/72;return `<g class="rf" transform="translate(${X(xw,z).toFixed(1)} ${Y(0,z).toFixed(1)}) scale(${s.toFixed(3)})">${ref()}</g>`;}).join('');
+  let net='';for(let x=-20;x<=320;x+=12)net+=`<path d="M${x} -70V540"/>`;for(let y=-70;y<=540;y+=12)net+=`<path d="M-20 ${y}H320"/>`;
+  el.innerHTML=`<svg class="fgx-sc" viewBox="0 -85 300 560" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="fgxsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#03050F"/><stop offset="1" stop-color="#0E1636"/></linearGradient></defs><g class="cam">
+    <rect x="-200" y="-300" width="700" height="600" fill="url(#fgxsky)"/>
+    ${[22,278].map(x=>`<path d="M${x} 60V150" stroke="#2A3360" stroke-width="2"/><rect x="${x-17}" y="30" width="34" height="18" rx="2" fill="#1A2247"/>${[0,1,2,3,4,5].map(i=>[0,1].map(j=>`<rect x="${x-15+i*5.4}" y="${32.5+j*7.5}" width="4" height="5.5" rx="1" fill="#F6F7FF"/>`).join('')).join('')}<path d="M${x-12} 48L${x} 60L${x+12} 48" fill="none" stroke="#2A3360" stroke-width="1.5"/>`).join('')}
+    <image href="${crowd(520,48,15)}" x="-110" y="112" width="520" height="48" preserveAspectRatio="none"/>
+    <rect x="-110" y="160" width="520" height="4" fill="#1C2550"/><text x="150" y="163.2" text-anchor="middle" font-family="DM Sans,Arial" font-weight="800" font-size="3.4" letter-spacing="1.5" fill="#C6FF3D">FAIR CATCH · FAIR CATCH · FAIR CATCH · FAIR CATCH · FAIR CATCH · FAIR CATCH · FAIR CATCH · FAIR CATCH</text>
+    <image href="${crowd(520,Math.round(Y(0,82)-164),10)}" x="-110" y="164" width="520" height="${(Y(0,82)-164+1).toFixed(1)}" preserveAspectRatio="none"/>
+    <g class="fl"></g>
+    ${field}${lines}
+    <g class="kk" transform="translate(${X(-.9,kz).toFixed(1)} ${Y(0,kz).toFixed(1)}) scale(${ks.toFixed(3)})">${backPlayer(HOME,3,'kick')}</g>
+    <g transform="translate(${X(.5,hz).toFixed(1)} ${Y(0,hz).toFixed(1)}) scale(${(F*1.15/hz/80*1.3).toFixed(3)})"><g transform="scale(-1 1)">${holder(HOME)}</g></g>
+    ${offense}${defense}
+    <ellipse class="shd" rx="5" ry="1.4" fill="rgba(0,0,0,.35)"/>
+    <g class="ballwrap">${BALL}</g>
+    <rect x="${(150-5).toFixed(1)}" y="${(gy-16).toFixed(1)}" width="10" height="16" rx="2" fill="#22356F"/>
+    <path d="M150 ${gy.toFixed(1)}V${cb.toFixed(1)}M${pl.toFixed(1)} ${cb.toFixed(1)}H${pr.toFixed(1)}M${pl.toFixed(1)} ${cb.toFixed(1)}V${top.toFixed(1)}M${pr.toFixed(1)} ${cb.toFixed(1)}V${top.toFixed(1)}" stroke="#F2C94C" stroke-width="5" stroke-linecap="round" fill="none"/>
+    <path d="M${(pl+1.6).toFixed(1)} ${cb.toFixed(1)}V${top.toFixed(1)}M${(pr+1.6).toFixed(1)} ${cb.toFixed(1)}V${top.toFixed(1)}M151.6 ${gy.toFixed(1)}V${cb.toFixed(1)}" stroke="rgba(0,0,0,.2)" stroke-width="1.6" fill="none"/>
+    <path class="rib rl" d="M${pl.toFixed(1)} ${top.toFixed(1)}l12 3l-12 3z" fill="#FF6A2B"/><path class="rib rr" d="M${pr.toFixed(1)} ${top.toFixed(1)}l12 3l-12 3z" fill="#FF6A2B"/>
+    ${refs}
+    <g class="fwrap"></g>
+  </g><g class="net" stroke="rgba(235,240,255,.08)" stroke-width=".9">${net}</g></svg>
+  <div class="fgx-good">IT'S GOOD!</div>
+  <div class="fgx-end"><b>You're Pro</b><small>Every feature is unlocked. Thanks for supporting Fair Catch.</small><button type="button" class="fgx-go" data-fgxclose="1">Let's go</button></div>`;
+  const q=s=>el.querySelector(s), cam=q('.cam'), ball=q('.ball'), bw=q('.ballwrap'), fw=q('.fwrap'), shd=q('.shd'), rf=[...el.querySelectorAll('.rf')], ru=[...el.querySelectorAll('.ru')], net$=q('.net'), fl=q('.fl'), kk=q('.kk');
+  const KT=.6, FT=1.75; let good=false, conf=false;
+  const Z0=hz, Z1=3.5, zAt=u=>Z0-(Z0-Z1)*(1-Math.pow(1-u,1.15)), hAt=z=>{const v=(Z0-z)/80;return .17+4*8*v*(1-v);};
+  return function(t){
+    const ap=clamp(t/KT), st=Math.sin(ap*Math.PI*3);
+    const R=t<KT?[[7,-48],[8,-25-3*st],[8,-5-4*st]]:[[7,-48],[10,-58],[12,-100+60*clamp((t-KT-.3)/.5)]];
+    const L=[[-7,-48],[-8,-25+3*st*(t<KT)],[-8,-5+4*st*(t<KT)]];
+    const leg=(a,c)=>{pts(kk.querySelector('.'+c+'t'),[a[0],a[1]]);pts(kk.querySelector('.'+c+'s'),[a[1],a[2]]);const e=kk.querySelector('.'+c+'c');e.setAttribute('cx',a[2][0]);e.setAttribute('cy',a[2][1]+3);};
+    leg(L,'l');leg(R,'r');
+    ru.forEach((g,i)=>{const j=clamp((t-KT+.25-i*.03)/.55), up=Math.sin(Math.PI*j), x=+g.dataset.x, y=+g.dataset.y, s=+g.dataset.s;
+      g.setAttribute('transform',`translate(${x} ${(y-up*6).toFixed(1)}) scale(${s})`);const a=Math.min(1,up*2);
+      pts(g.querySelector('.aL'),[[-17,-40],[-24+6*a,-28-36*a]]);pts(g.querySelector('.aR'),[[17,-40],[24-6*a,-28-36*a]]);
+      ['L','R'].forEach((s2,k)=>{const c=g.querySelector('.g'+s2);c.setAttribute('cx',(k?1:-1)*(24-6*a));c.setAttribute('cy',-28-36*a);});});
+    let z,hw,inNet=false,tum=0;
+    if(t<KT){z=Z0;hw=.17;}else{const u=clamp((t-KT)/FT);z=zAt(u);hw=hAt(z);tum=(t-KT)*2*Math.PI*3.2;if(u>=1)inNet=true;}
+    const xw=.3*Math.sin(Math.PI*clamp((Z0-z)/60))*(z/Z0);
+    const rS=F*.093/z, rL=F*.153/z, c=Math.abs(Math.cos(tum));
+    const bx=X(xw,z), by=Y(hw,z);
+    setBall(ball,bx,by,rS,rS+(rL-rS)*c,Math.sin(tum)>0?1:0,10*Math.sin(tum*.5));
+    if(z<gz&&bw.parentNode!==fw) fw.appendChild(bw);
+    shd.setAttribute('cx',bx.toFixed(1));shd.setAttribute('cy',Y(0,Math.max(z,26.5)).toFixed(1));shd.setAttribute('rx',(F*.2/z).toFixed(2));shd.setAttribute('ry',(F*.05/z).toFixed(2));shd.style.opacity=t>KT&&z>27?(.35*(1-clamp(hw/9))).toFixed(2):0;
+    if(!good&&z<=gz){good=true;q('.fgx-good').classList.add('on');}
+    const g=good?clamp((t-KT-FT*.75)/.35):0;
+    rf.forEach(r=>{const a=ease(g);pts(r.querySelector('.aL'),[[-8,-63],[-10+2*a,-50-24*a],[-10+4*a,-40-46*a]]);pts(r.querySelector('.aR'),[[8,-63],[10-2*a,-50-24*a],[10-4*a,-40-46*a]]);});
+    // the ball hits the net in front of the lens: the net bulges and the picture shakes
+    if(inNet){const d=clamp((t-KT-FT)/.6);const s=1+Math.sin(d*Math.PI)*.08*(1-d);net$.setAttribute('transform',`translate(${(bx*(1-s)).toFixed(1)} ${(by*(1-s)).toFixed(1)}) scale(${s.toFixed(3)})`);
+      cam.setAttribute('transform',`translate(${(Math.sin(d*40)*(1-d)*2.5).toFixed(2)} ${(Math.cos(d*35)*(1-d)*2).toFixed(2)})`);}
+    const w=Math.sin(t*9)*2.4;['.rl','.rr'].forEach(s=>{const r=q(s),p=r.getAttribute('d').match(/M([\d.]+) ([\d.]+)/);r.setAttribute('d',`M${p[1]} ${p[2]}l12 ${(3+w).toFixed(2)}l-12 3z`);});
+    if(good&&Math.random()<.5){let s='';for(let i=0;i<4;i++)s+=`<circle cx="${rnd(-80,380).toFixed(0)}" cy="${rnd(112,200).toFixed(0)}" r="${rnd(.6,1.2).toFixed(1)}" fill="#fff"/>`;fl.innerHTML=s;} else if(Math.random()<.5) fl.innerHTML='';
+    if(good&&!conf&&t>KT+FT+.1){conf=true;confetti(el);}
+    if(t>KT+FT+1.0){q('.fgx-good').classList.add('off');q('.fgx-end').classList.add('on');}
+    return t<KT+FT+4.5;
+  };
+}
+
+  let run=0;
+  function play(){
+    closeFgx(true);
+    document.body.insertAdjacentHTML('beforeend','<div class="fgx" id="fgx" role="dialog" aria-label="You are Pro"><div class="fgx-st"></div></div>');
+    const st=document.querySelector('#fgx .fgx-st'), id=++run, upd=postCam(st);
+    const reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let t0=null; const f=now=>{ if(id!==run||!st.isConnected) return; if(t0==null)t0=now; const t=reduce?9:(now-t0)/1000; if(upd(t)) requestAnimationFrame(f); };
+    requestAnimationFrame(f);
+  }
+  function closeFgx(now){ const o=document.getElementById('fgx'); if(!o) return; run++; if(now){o.remove();return;} o.classList.add('out'); setTimeout(()=>o.remove(),300); }
+  document.addEventListener('click',e=>{ if(e.target.closest('[data-fgxclose]')) closeFgx(); });
+  return {play,close:closeFgx};
+})();
+function celebratePro(){ FGX.play(); }
 
 /* ---------- connect your own league (Sleeper: username only, read-only public API) ---------- */
 const SLP='https://api.sleeper.app/v1';
