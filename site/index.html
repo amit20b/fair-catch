@@ -1,3 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#070B1A">
+<meta name="color-scheme" content="dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Fair Catch">
+<meta name="format-detection" content="telephone=no">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
 <title>Fair Catch Trade Calculator</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -51,6 +66,25 @@ html:root:root{
   --turf-a:#1E5A35; --turf-b:#1A5230; --ez:#2F5FB3; --accent-dk:#8FBF1F; --opp:#5B6B8A; --opp-dk:#3F4C6A; --opp-helm:#7B87A6;
   color-scheme:dark}
 body{font-synthesis-weight:none}
+/* ===== iPhone fit: notch/home-bar space, no zoom on inputs, thumb-sized taps ===== */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{-webkit-tap-highlight-color:transparent;overscroll-behavior-y:none;padding-top:env(safe-area-inset-top,0px)}
+input,select,textarea{font-size:16px!important}
+.chip{min-height:36px;padding:6px 12px}
+.swap{width:44px;height:40px}
+.addbtns button{min-height:34px;padding:6px 10px}
+.sh-chip{min-height:38px}
+.posf button,.mk-cat,.lg-switch button{min-height:40px}
+.maintabs button,.tabs button{min-height:44px}
+.fab{bottom:calc(14px + env(safe-area-inset-bottom,0px))}
+@media (max-width:430px){
+  .box{padding:12px;border-radius:14px}
+  .wrap{gap:12px}
+  .lg-switch{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
+  .idea-f .btn{width:100%;min-height:42px}
+  .maintabs{gap:0}.maintabs button{flex:1 1 0;padding:10px 2px 9px;font-size:16px;text-align:center}
+  .sh-act .btn{min-height:42px}
+}
 .lg-switch .lg-add{border-style:dashed;color:var(--accent)}.lg-switch .lg-add[aria-pressed="true"]{border-style:solid;border-color:var(--accent);background:var(--accent-soft)}
 .cn-row{display:flex;gap:8px;flex-wrap:wrap}.cn-row input{flex:1 1 200px;min-width:0;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card-2);color:inherit;font:inherit;font-size:16px}
 .cn-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
