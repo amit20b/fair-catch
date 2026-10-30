@@ -2,8 +2,8 @@ name: Refresh and publish
 
 on:
   schedule:
-    - cron: "20 1,7,13,19 * * *"   # every 6 hours (03:20, 09:20, 15:20, 21:20 Israel winter time)
-    - cron: "50 */3 * * 0,1"       # game days: every 3 hours on Sunday and Monday
+    - cron: "17 * * * *"           # every hour
+    - cron: "47 * * * 0,1"         # game days (Sunday, Monday): also at :47, so every 30 minutes
   workflow_dispatch: {}            # "Run workflow" button for a refresh right now
   push:
     branches: [main]
