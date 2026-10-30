@@ -84,7 +84,11 @@ body{font-synthesis-weight:none}
 .pro-lock .pl-ic{color:var(--accent);flex:none}.pro-lock>div{flex:1 1 180px;display:flex;flex-direction:column}
 .pro-lock b{font-family:var(--f-display);font-size:22px;letter-spacing:.02em;line-height:1.05}.pro-lock span{color:var(--muted);font-size:13px}
 .pro-lock .btn{min-height:42px}.pro-lock.in{padding:10px 12px;margin:6px 0}.pro-lock.in b{font-size:18px}
-.pro-sheet{display:block;overflow-y:auto;padding:16px 18px calc(24px + env(safe-area-inset-bottom,0px))}
+.sheet.pro-sheet{display:block;overflow-y:auto;padding:0 18px calc(24px + env(safe-area-inset-bottom,0px))}
+@media (max-width:699px){.sheet.pro-sheet{top:0;border-radius:0;border-top:0}}
+.ps-h{position:sticky;top:0;z-index:3;background:var(--card);margin:0 -18px;padding:calc(8px + env(safe-area-inset-top,0px)) 10px 8px 18px;display:flex;justify-content:space-between;align-items:center}
+.ps-x{width:44px;height:44px;border:0;background:transparent;color:var(--ink);border-radius:50%;display:grid;place-items:center;cursor:pointer;flex:none}
+.ps-x:active{background:var(--card-2)}
 .pro-sheet .grab{width:40px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 10px}
 .ps-h{display:flex;justify-content:space-between;align-items:center}.ps-badge{background:var(--accent);color:var(--on-accent);font:800 12px/1 var(--f);letter-spacing:.08em;padding:6px 10px;border-radius:999px}
 .ps-t{font-family:var(--f-display);font-weight:400;font-size:52px;line-height:.9;margin:12px 0 10px}
@@ -2948,17 +2952,17 @@ function proCheckout(e){
   const a=e.target.closest('.ps-cta'), url=a&&a.getAttribute('href'), s=document.getElementById('prosheet');
   if(!s||PS.going) return; PS.going=true;
   const pl=proPlans(), plan=pl.find(p=>p.id===PS.plan)||pl[0];
-  s.innerHTML=`<div class="grab"></div><div class="ps-go"><span class="ps-badge">PRO</span>${fcLoader('Taking you to secure checkout',(plan?plan.name+' · '+plan.price:''),0,'pay')}<p class="ps-go-n">${PS_ICON.lock}Secure checkout by Lemon Squeezy. You come back here after you pay.</p></div>`;
+  s.innerHTML=`${PS_HEAD}<div class="ps-go">${fcLoader('Taking you to secure checkout',(plan?plan.name+' · '+plan.price:''),0,'pay')}<p class="ps-go-n">${PS_ICON.lock}Secure checkout by Lemon Squeezy. You come back here after you pay.</p></div>`;
   let pct=0; const iv=setInterval(()=>{ pct=Math.min(99,pct+6+Math.random()*7); const c=FPC.pay; c&&c.set({pct});
     if(pct>=99){ clearInterval(iv); fpFinish('pay','Checkout is ready',()=>{ PS.going=false;
       if(PROCFG.demo){ PRO={key:'DEMO',ok:true,checked:Date.now(),email:'demo'};savePro();closePro();celebratePro();fullRender(); }
       else location.href=url; }); } },120);
 }
+const PS_HEAD=`<div class="ps-h"><span class="ps-badge">PRO</span><button type="button" class="ps-x" data-proclose="1" aria-label="Close"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button></div>`;
 function proSheetHtml(){
   const P=isPro()&&PRO;
   const feat=['2K-style trade finder, unlimited','Every trade idea in your league','Balance: what to ask for to make it fair','Lineup impact on every offer','Trade from a screenshot','Weekly start/sit and expert buy-low, sell-high','Unlimited connected leagues'];
-  return `<div class="grab"></div>
-   <div class="ps-h"><span class="ps-badge">PRO</span><button type="button" class="close" data-proclose="1" aria-label="Close">✕</button></div>
+  return `${PS_HEAD}
    ${P?`<h2 class="ps-t">You're Pro.</h2><p class="muted">Thanks for supporting Fair Catch. ${P.email?'Licensed to '+esc(P.email)+'. ':''}${P.exp?'Renews or ends '+esc(String(P.exp).slice(0,10))+'.':''}</p>
        <ul class="ps-f">${feat.map(f=>`<li><i>✓</i>${esc(f)}</li>`).join('')}</ul>
        <button type="button" class="btn" data-proremove="1">Remove Pro from this device</button>`
@@ -2980,7 +2984,7 @@ function openPro(){
   PS.err='';PS.msg='';PS.going=false;s.hidden=false;document.getElementById('proscrim').hidden=false;
   if(isPro()){ s.innerHTML=proSheetHtml(); return; }
   const run=PS.open=(PS.open||0)+1;
-  s.innerHTML=`<div class="grab"></div><div class="ps-go"><span class="ps-badge">PRO</span>${fcLoader('Opening Fair Catch Pro','Unlimited trades, Balance, start/sit and more',0,'proopen')}</div>`;
+  s.innerHTML=`${PS_HEAD}<div class="ps-go">${fcLoader('Opening Fair Catch Pro','Unlimited trades, Balance, start/sit and more',0,'proopen')}</div>`;
   let pct=0; const iv=setInterval(()=>{ if(run!==PS.open||s.hidden){clearInterval(iv);return;}
     pct=Math.min(99,pct+9+Math.random()*8); const c=FPC.proopen; c&&c.set({pct});
     if(pct>=99){ clearInterval(iv); fpFinish('proopen','Ready',()=>{ if(run===PS.open&&!s.hidden) s.innerHTML=proSheetHtml(); }); } },110);
