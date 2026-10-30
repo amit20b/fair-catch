@@ -68,7 +68,7 @@ html:root:root{
 body{font-synthesis-weight:none}
 .pro-btn{border:1.5px solid var(--accent);background:transparent;color:var(--accent);font:800 12px/1 var(--f);letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:9px 14px;cursor:pointer;min-height:36px;align-self:flex-end}
 .pro-btn.on{background:var(--accent);color:var(--on-accent)}
-#proSlot{display:block;align-self:stretch;margin:12px 0 10px}#proSlot:empty{display:none}#proSlot:has(.pro-btn){display:flex;justify-content:flex-end;margin:0 0 4px}
+#proSlot{display:block;align-self:stretch;margin:12px 0 10px}#proSlot:empty{display:none}#proSlot:has(.pro-btn){display:flex;justify-content:flex-start;margin:0 0 4px}
 .pro-cta{display:flex;align-items:center;gap:12px;width:100%;text-align:left;font:inherit;color:var(--ink);cursor:pointer;border:1.5px solid rgba(198,255,61,.45);border-radius:18px;padding:12px;position:relative;overflow:hidden;background:repeating-linear-gradient(90deg,transparent 0 38px,rgba(255,255,255,.035) 38px 39px),linear-gradient(135deg,#18234A 0%,#0F1630 58%,#12291F 100%);transition:transform .12s,border-color .15s}
 .pro-cta:hover{border-color:var(--accent)}.pro-cta:active{transform:scale(.985)}
 .pro-cta .pc-ic{flex:none;width:46px;height:46px;border-radius:13px;background:rgba(198,255,61,.12);border:1px solid rgba(198,255,61,.35);color:var(--accent);display:grid;place-items:center}
@@ -107,7 +107,7 @@ body{font-synthesis-weight:none}
 .ps-cta{display:flex;justify-content:space-between;align-items:center;gap:10px;text-decoration:none;background:var(--accent);color:var(--on-accent);font-weight:800;font-size:17px;border-radius:14px;padding:0 18px;min-height:58px;transition:transform .1s}
 .ps-cta:active{transform:scale(.985)}.ps-cta .pc-r{display:inline-flex;align-items:center;gap:8px;font-family:var(--f-display);font-weight:400;font-size:26px}
 .ps-trust{display:flex;flex-direction:column;gap:7px;margin:12px 0 14px;color:var(--muted);font-size:12.5px}.ps-trust span{display:flex;align-items:center;gap:8px}.ps-trust svg{flex:none;color:var(--win)}
-.ps-go{min-height:min(70vh,560px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center}.ps-go .fp{width:min(340px,100%)}.ps-go .fc-load b{font-size:17px}.ps-go-n{display:flex;align-items:center;gap:8px;text-align:left;color:var(--muted);font-size:12.5px;margin:0;max-width:34ch}.ps-go-n svg{flex:none;color:var(--win)}
+.ps-go{min-height:min(70vh,560px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center}.ps-go .fpm,.ps-go .fc-load{width:100%}.ps-go .fp{width:min(340px,100%)}.ps-go .fc-load b{font-size:17px}.ps-go-n{display:flex;align-items:center;gap:8px;text-align:left;color:var(--muted);font-size:12.5px;margin:0;max-width:34ch}.ps-go-n svg{flex:none;color:var(--win)}
 .ps-have{border-top:1px solid var(--line);padding-top:8px}.ps-have summary{cursor:pointer;font-weight:600;font-size:14px;list-style:none;min-height:44px;display:flex;align-items:center;justify-content:space-between}.ps-have summary::-webkit-details-marker{display:none}.ps-have summary::after{content:'+';font-size:22px;color:var(--muted)}.ps-have summary::after{transition:transform .15s}.ps-have[open] summary::after{transform:rotate(45deg)}
 body:has(#prosheet:not([hidden])) .fab{display:none}
 .ps-have .ps-key{margin-top:4px}.ps-msg{color:var(--muted);font-size:13px;margin:8px 0 0}
@@ -3107,7 +3107,7 @@ function postCam(el){
   <div class="fgx-good">IT'S GOOD!</div>
   <div class="fgx-end"><b>You're Pro</b><small>Every feature is unlocked. Thanks for supporting Fair Catch.</small><button type="button" class="fgx-go" data-fgxclose="1">Let's go</button></div>`;
   const q=s=>el.querySelector(s), cam=q('.cam'), ball=q('.ball'), bw=q('.ballwrap'), fw=q('.fwrap'), shd=q('.shd'), rf=[...el.querySelectorAll('.rf')], ru=[...el.querySelectorAll('.ru')], net$=q('.net'), fl=q('.fl'), kk=q('.kk');
-  const KT=.6, FT=1.75; let good=false, conf=false;
+  const KT=.6, FT=1.75; let good=false, conf=false; const HIT={};
   const Z0=hz, Z1=3.5, zAt=u=>Z0-(Z0-Z1)*(1-Math.pow(1-u,1.15)), hAt=z=>{const v=(Z0-z)/80;return .17+4*8*v*(1-v);};
   return function(t){
     const ap=clamp(t/KT), st=Math.sin(ap*Math.PI*3);
@@ -3120,7 +3120,13 @@ function postCam(el){
       pts(g.querySelector('.aL'),[[-17,-40],[-24+6*a,-28-36*a]]);pts(g.querySelector('.aR'),[[17,-40],[24-6*a,-28-36*a]]);
       ['L','R'].forEach((s2,k)=>{const c=g.querySelector('.g'+s2);c.setAttribute('cx',(k?1:-1)*(24-6*a));c.setAttribute('cy',-28-36*a);});});
     let z,hw,inNet=false,tum=0;
-    if(t<KT){z=Z0;hw=.17;}else{const u=clamp((t-KT)/FT);z=zAt(u);hw=hAt(z);tum=(t-KT)*2*Math.PI*3.2;if(u>=1)inNet=true;}
+    let d=0;
+    if(t<KT){z=Z0;hw=.17;}else{const u=clamp((t-KT)/FT);z=zAt(u);hw=hAt(z);tum=Math.min(t-KT,FT)*2*Math.PI*3.2;
+      if(u>=1){ inNet=true; d=t-KT-FT;
+        tum+=2*Math.PI*3.2*(1-Math.exp(-d*5))/5;                       // the spin dies out in the net
+        const push=d<.2?1-Math.pow(1-d/.2,3):1, back=ease(clamp((d-.2)/.4));
+        z=Z1*(1-.18*push+.3*back);                                     // sinks into the mesh, then the net pushes it back
+        const fall=Math.max(0,d-.42); hw=hAt(Z1)-5.4*fall*fall; } }   // and it drops out of the net
     const xw=.3*Math.sin(Math.PI*clamp((Z0-z)/60))*(z/Z0);
     const rS=F*.093/z, rL=F*.153/z, c=Math.abs(Math.cos(tum));
     const bx=X(xw,z), by=Y(hw,z);
@@ -3131,8 +3137,11 @@ function postCam(el){
     const g=good?clamp((t-KT-FT*.75)/.35):0;
     rf.forEach(r=>{const a=ease(g);pts(r.querySelector('.aL'),[[-8,-63],[-10+2*a,-50-24*a],[-10+4*a,-40-46*a]]);pts(r.querySelector('.aR'),[[8,-63],[10-2*a,-50-24*a],[10-4*a,-40-46*a]]);});
     // the ball hits the net in front of the lens: the net bulges and the picture shakes
-    if(inNet){const d=clamp((t-KT-FT)/.6);const s=1+Math.sin(d*Math.PI)*.08*(1-d);net$.setAttribute('transform',`translate(${(bx*(1-s)).toFixed(1)} ${(by*(1-s)).toFixed(1)}) scale(${s.toFixed(3)})`);
-      cam.setAttribute('transform',`translate(${(Math.sin(d*40)*(1-d)*2.5).toFixed(2)} ${(Math.cos(d*35)*(1-d)*2).toFixed(2)})`);}
+    if(inNet){ if(!HIT.p) HIT.p=[bx,by];
+      const bul=d<.2?1-Math.pow(1-d/.2,3):Math.max(0,1-ease(clamp((d-.2)/.55)))-.12*Math.sin(clamp((d-.2)/.55)*Math.PI);
+      const s=1+.1*bul, [hx,hy]=HIT.p;
+      net$.setAttribute('transform',`translate(${(hx*(1-s)).toFixed(1)} ${(hy*(1-s)).toFixed(1)}) scale(${s.toFixed(4)})`);
+      cam.setAttribute('transform',`translate(0 ${(2.2*Math.sin(clamp(d/.28)*Math.PI)).toFixed(2)})`); }
     const w=Math.sin(t*9)*2.4;['.rl','.rr'].forEach(s=>{const r=q(s),p=r.getAttribute('d').match(/M([\d.]+) ([\d.]+)/);r.setAttribute('d',`M${p[1]} ${p[2]}l12 ${(3+w).toFixed(2)}l-12 3z`);});
     if(good&&Math.random()<.5){let s='';for(let i=0;i<4;i++)s+=`<circle cx="${rnd(-80,380).toFixed(0)}" cy="${rnd(112,200).toFixed(0)}" r="${rnd(.6,1.2).toFixed(1)}" fill="#fff"/>`;fl.innerHTML=s;} else if(Math.random()<.5) fl.innerHTML='';
     if(good&&!conf&&t>KT+FT+.1){conf=true;confetti(el);}
