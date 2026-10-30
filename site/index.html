@@ -103,6 +103,7 @@ body{font-synthesis-weight:none}
 .ps-cta{display:flex;justify-content:space-between;align-items:center;gap:10px;text-decoration:none;background:var(--accent);color:var(--on-accent);font-weight:800;font-size:17px;border-radius:14px;padding:0 18px;min-height:58px;transition:transform .1s}
 .ps-cta:active{transform:scale(.985)}.ps-cta .pc-r{display:inline-flex;align-items:center;gap:8px;font-family:var(--f-display);font-weight:400;font-size:26px}
 .ps-trust{display:flex;flex-direction:column;gap:7px;margin:12px 0 14px;color:var(--muted);font-size:12.5px}.ps-trust span{display:flex;align-items:center;gap:8px}.ps-trust svg{flex:none;color:var(--win)}
+.ps-go{min-height:min(70vh,560px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center}.ps-go .fp{width:min(340px,100%)}.ps-go .fc-load b{font-size:17px}.ps-go-n{display:flex;align-items:center;gap:8px;text-align:left;color:var(--muted);font-size:12.5px;margin:0;max-width:34ch}.ps-go-n svg{flex:none;color:var(--win)}
 .ps-have{border-top:1px solid var(--line);padding-top:8px}.ps-have summary{cursor:pointer;font-weight:600;font-size:14px;list-style:none;min-height:44px;display:flex;align-items:center;justify-content:space-between}.ps-have summary::-webkit-details-marker{display:none}.ps-have summary::after{content:'+';font-size:22px;color:var(--muted)}.ps-have summary::after{transition:transform .15s}.ps-have[open] summary::after{transform:rotate(45deg)}
 body:has(#prosheet:not([hidden])) .fab{display:none}
 .ps-have .ps-key{margin-top:4px}.ps-msg{color:var(--muted);font-size:13px;margin:8px 0 0}
@@ -2928,10 +2929,15 @@ function proPick(id){
   const a=document.querySelector('#prosheet .ps-cta'); if(a){a.href=p.url;const r=a.querySelector('.pc-num');if(r)r.textContent=p.price;}
 }
 function proCheckout(e){
-  if(!PROCFG.demo) return;
-  e.preventDefault(); PS.msg='Demo: checkout is not connected yet. Type DEMO in the key field below.';
-  const d=document.querySelector('#prosheet .ps-have'); if(d) d.open=true;
-  const m=document.getElementById('psMsg'); if(m) m.textContent=PS.msg;
+  e.preventDefault();
+  const a=e.target.closest('.ps-cta'), url=a&&a.getAttribute('href'), s=document.getElementById('prosheet');
+  if(!s||PS.going) return; PS.going=true;
+  const pl=proPlans(), plan=pl.find(p=>p.id===PS.plan)||pl[0];
+  s.innerHTML=`<div class="grab"></div><div class="ps-go"><span class="ps-badge">PRO</span>${fcLoader('Taking you to secure checkout',(plan?plan.name+' · '+plan.price:''),0,'pay')}<p class="ps-go-n">${PS_ICON.lock}Secure checkout by Lemon Squeezy. You come back here after you pay.</p></div>`;
+  let pct=0; const iv=setInterval(()=>{ pct=Math.min(99,pct+6+Math.random()*7); const c=FPC.pay; c&&c.set({pct});
+    if(pct>=99){ clearInterval(iv); fpFinish('pay','Checkout is ready',()=>{ PS.going=false;
+      if(PROCFG.demo){ PRO={key:'DEMO',ok:true,checked:Date.now(),email:'demo'};savePro();closePro();celebratePro();fullRender(); }
+      else location.href=url; }); } },120);
 }
 function proSheetHtml(){
   const P=isPro()&&PRO;
@@ -2956,9 +2962,15 @@ function openPro(){
   if(!PRO_ON) return;
   let s=document.getElementById('prosheet');
   if(!s){document.body.insertAdjacentHTML('beforeend','<div class="scrim" id="proscrim" data-proclose="1" hidden></div><div class="sheet pro-sheet" id="prosheet" role="dialog" aria-label="Fair Catch Pro" hidden></div>');s=document.getElementById('prosheet');}
-  PS.err='';PS.msg='';s.innerHTML=proSheetHtml();s.hidden=false;document.getElementById('proscrim').hidden=false;
+  PS.err='';PS.msg='';PS.going=false;s.hidden=false;document.getElementById('proscrim').hidden=false;
+  if(isPro()){ s.innerHTML=proSheetHtml(); return; }
+  const run=PS.open=(PS.open||0)+1;
+  s.innerHTML=`<div class="grab"></div><div class="ps-go"><span class="ps-badge">PRO</span>${fcLoader('Opening Fair Catch Pro','Unlimited trades, Balance, start/sit and more',0,'proopen')}</div>`;
+  let pct=0; const iv=setInterval(()=>{ if(run!==PS.open||s.hidden){clearInterval(iv);return;}
+    pct=Math.min(99,pct+9+Math.random()*8); const c=FPC.proopen; c&&c.set({pct});
+    if(pct>=99){ clearInterval(iv); fpFinish('proopen','Ready',()=>{ if(run===PS.open&&!s.hidden) s.innerHTML=proSheetHtml(); }); } },110);
 }
-function closePro(){const s=document.getElementById('prosheet');if(s){s.hidden=true;document.getElementById('proscrim').hidden=true;}}
+function closePro(){PS.open=(PS.open||0)+1;const s=document.getElementById('prosheet');if(s){s.hidden=true;document.getElementById('proscrim').hidden=true;}}
 function celebratePro(){
   const w=document.createElement('div');w.className='pro-td';w.innerHTML='<span>You\'re Pro!</span>';document.body.appendChild(w);
   const cols=['#C6FF3D','#3DDC97','#5AA8FF','#EEF2FF','#FFC24B'];
