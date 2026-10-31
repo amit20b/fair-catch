@@ -157,6 +157,7 @@ input,select,textarea{font-size:16px!important}
 .cn-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
 .cn-l{display:flex;flex-direction:row-reverse;align-items:center;justify-content:space-between;gap:10px;padding:9px 10px;border:1px solid var(--line);border-radius:12px;background:var(--card-2)}
 .cn-l span{display:flex;flex-direction:column;min-width:0;align-items:flex-end;text-align:right}.cn-l small{color:var(--muted);font-size:12px}
+.cn-y{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}.cn-y .cn-row a.btn{text-decoration:none;display:inline-flex;align-items:center}
 .cn-demo{display:flex;gap:8px;align-items:center;margin-top:12px;font-size:13.5px;color:var(--muted)}
 .cn-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border-color:var(--accent-line)}
 .off-d{margin:2px 0 6px}.off-d summary{cursor:pointer;font-size:13px;font-weight:700;color:var(--bal);padding:4px 0}
@@ -1639,7 +1640,7 @@ function movesBox(){
 }
 function renderLeague(){
   const el=document.getElementById('lgBody'), top=document.getElementById('lgTop');
-  const sw0=LEAGUE?`<div class="lg-switch" role="group" aria-label="Choose league">${LEAGUES.map((l,i)=>`<button type="button" data-lg="${i}" aria-pressed="${l===LEAGUE&&!CN.open}"><small>${esc(l.platform||'')}${l.live?'':CONN.length?' · demo':''}</small>${esc(l.name)}</button>`).join('')}<button type="button" class="lg-add" data-lgadd="1" aria-pressed="${CN.open}"><small>Sleeper</small>+ Add your league</button></div>`:'';
+  const sw0=LEAGUE?`<div class="lg-switch" role="group" aria-label="Choose league">${LEAGUES.map((l,i)=>`<button type="button" data-lg="${i}" aria-pressed="${l===LEAGUE&&!CN.open}"><small>${esc(l.platform||'')}${l.live?'':CONN.length?' · demo':''}</small>${esc(l.name)}</button>`).join('')}<button type="button" class="lg-add" data-lgadd="1" aria-pressed="${CN.open}"><small>Sleeper · Yahoo</small>+ Add your league</button></div>`:'';
   top.innerHTML=LEAGUE?sw0+`<nav class="tabs lg-sub" role="tablist"><button role="tab" type="button" data-lsub="overview" aria-selected="${LSUB==='overview'}">Overview</button><button role="tab" type="button" data-lsub="trades" aria-selected="${LSUB==='trades'}">Find trades</button><button role="tab" type="button" data-lsub="builder" aria-selected="${LSUB==='builder'}">Trade builder</button><button role="tab" type="button" data-lsub="roster" aria-selected="${LSUB==='roster'}">Roster</button><button role="tab" type="button" data-lsub="startsit" aria-selected="${LSUB==='startsit'}">Start/Sit</button><button role="tab" type="button" data-lsub="market" aria-selected="${LSUB==='market'}">Buy/Sell</button></nav>`+(LSUB==='builder'?`<div class="partner-row"><label for="partnerSel">Trading with</label><select id="partnerSel"><option value="">Choose a team…</option>${LEAGUE.teams.filter(x=>x.rid!==LEAGUE.me).map(x=>`<option value="${x.rid}" ${x.rid===PARTNER?'selected':''}>${esc(x.name)}${x.rec?` (${esc(x.rec)})`:''}</option>`).join('')}</select></div><p class="muted" style="margin:0">Pick a team, or just add a player you want and we find his team. You can only add players from your roster and theirs.</p>`:''):'';
   if(CN.open||!LEAGUE){el.innerHTML=connectBox();return;}
   if(LEAGUE&&LSUB==='builder') return;
@@ -2822,6 +2823,9 @@ document.addEventListener('click',e=>{
   if(t.closest('[data-cnclose]')){CN.open=false;renderLeague();return;}
   if(t.closest('[data-cnfind]')){cnFind();return;}
   const cna=t.closest('[data-cnadd]'); if(cna){cnAdd(cna.dataset.cnadd);return;}
+  const ya=t.closest('[data-yadd]'); if(ya){yAdd(ya.dataset.yadd);return;}
+  if(t.closest('[data-yfind]')){yFind();return;}
+  if(t.closest('[data-yout]')){YT.set(null);CN.yleagues=null;CN.yerr='';renderLeague();return;}
   const cnr=t.closest('[data-cnrm]'); if(cnr){cnRemove(cnr.dataset.cnrm);return;}
   const lgb=t.closest('[data-lg]'); if(lgb){if(CN.open){CN.open=false;if(LEAGUES[+lgb.dataset.lg]===LEAGUE){renderLeague();return;}}const l=LEAGUES[+lgb.dataset.lg];if(l&&l!==LEAGUE){LEAGUE=l;try{localStorage.setItem('faircatch-league',String(l.id))}catch(e){}S={...LEAGUE.s};const me=LEAGUE.teams.find(x=>x.rid===LEAGUE.me);ROSTER=me?idsOf(me.p):[];if(inLeagueCtx()){T={A:[],B:[],example:false};}TL={A:[],B:[],example:false};SIM=null;LCACHE=null;IDEA_POS='ANY';IDEA_TEAM='ANY';IDEA_LIMIT=4;PARTNER=null;FT_ID=null;FT_Q='';FT_KEY='';loadUntouch();fullRender();}return;}
   const ld=t.closest('[data-load]'); if(ld){const it=LIDEAS[+ld.dataset.load];if(it) loadTrade(it);return;}
@@ -3268,21 +3272,133 @@ async function refreshConnected(){ // fresh rosters every time the app opens
 }
 function connectBox(){
   const conn=CONN.map(c=>{const l=LEAGUES.find(x=>x.live&&String(x.id)===c.id)||lgCacheGet(c.id)||{};
-    return `<li class="cn-l"><span><b>${esc(l.name||c.id)}</b><small>Sleeper · ${esc(c.uname||'')}</small></span><button type="button" class="btn" data-cnrm="${esc(c.id)}">Remove</button></li>`;}).join('');
+    return `<li class="cn-l"><span><b>${esc(l.name||c.id)}</b><small>${esc(c.platform||'Sleeper')}${c.platform==='Yahoo'?'':' · '+esc(c.uname||'')}</small></span><button type="button" class="btn" data-cnrm="${esc(c.id)}">Remove</button></li>`;}).join('');
   const found=(CN.leagues||[]).map(l=>{const on=CONN.some(c=>c.id===l.id);
     return `<li class="cn-l"><span><b>${esc(l.name)}</b><small>${l.teams} teams · ${esc(l.season)}</small></span>${on?'<span class="tag win">Connected</span>':`<button type="button" class="btn primary" data-cnadd="${esc(l.id)}" ${CN.adding?'disabled':''}>${CN.adding===l.id?'Connecting…':'Connect'}</button>`}</li>`;}).join('');
   return `<div class="box cn"><h3>Connect your league</h3>
-    <p class="muted" style="margin:0 0 10px">Type your <b>Sleeper username</b>. We read your leagues and rosters straight from Sleeper: no password, read-only, saved only on this device. Yahoo is coming next.</p>
+    <p class="muted" style="margin:0 0 10px">Type your <b>Sleeper username</b>. We read your leagues and rosters straight from Sleeper: no password, read-only, saved only on this device.</p>
     <div class="cn-row"><label class="sr" for="cnUser">Sleeper username</label><input id="cnUser" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="Sleeper username" value="${esc(CN.q)}"><button type="button" class="btn primary" data-cnfind="1" ${CN.busy?'disabled':''}>${CN.busy?'Looking…':'Find my leagues'}</button></div>
     ${CN.err==='OFFSITE'?`<p class="o-err" style="margin:10px 0 0">This preview can't reach Sleeper. Connecting a league works on the Fair Catch website.</p><a class="btn primary" style="margin-top:10px;display:inline-flex" href="https://amit20b.github.io/fair-catch/" target="_blank" rel="noopener">Open Fair Catch</a>`:CN.err?`<p class="o-err" style="margin:10px 0 0">${esc(CN.err)}</p>`:''}
     ${found?`<div class="sh-lbl">Your leagues${CN.user?` <small>(${esc(CN.user.name)})</small>`:''}</div><ul class="cn-list">${found}</ul>`:''}
+    ${yahooBox()}
     ${conn?`<div class="sh-lbl">Connected on this device</div><ul class="cn-list">${conn}</ul>`:''}
     ${CONN.length&&BUILTIN.length?`<label class="cn-demo"><input type="checkbox" data-cndemo="1" ${SHOWDEMO?'checked':''}> Also show the demo leagues</label>`:''}
     ${LEAGUE?'<div class="sh-act"><button type="button" class="btn" data-cnclose="1">Back to my league</button></div>':''}</div>`;
 }
 
+/* ---------- Connect a Yahoo league: sign in on Yahoo's own page, then read-only through our small helper ---------- */
+const YW='https://fair-catch-yahoo.amitbaum.workers.dev';
+const YT={get(){try{return JSON.parse(localStorage.getItem('faircatch-yahoo')||'null');}catch(e){return null;}},
+  set(t){try{t?localStorage.setItem('faircatch-yahoo',JSON.stringify(t)):localStorage.removeItem('faircatch-yahoo');}catch(e){}}};
+// Yahoo's JSON wraps lists as {"0":{..},"1":{..},count:n} and objects as arrays of one-key pieces
+const yarr=o=>o&&typeof o==='object'?Object.keys(o).filter(k=>/^\d+$/.test(k)).sort((a,b)=>a-b).map(k=>o[k]):[];
+const ymerge=a=>Array.isArray(a)?a.reduce((acc,e)=>Array.isArray(e)?Object.assign(acc,ymerge(e)):(e&&typeof e==='object'?Object.assign(acc,e):acc),{}):(a||{});
+async function yToken(force){
+  let t=YT.get(); if(!t||!t.at) throw new Error('YAHOO_SIGNIN');
+  if(force||Date.now()>(t.exp||0)-60000){
+    if(!t.rt) throw new Error('YAHOO_SIGNIN');
+    const r=await fetch(YW+'/refresh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({refresh_token:t.rt})});
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok||!j.access_token){YT.set(null);throw new Error('YAHOO_SIGNIN');}
+    t={at:j.access_token,rt:j.refresh_token||t.rt,exp:Date.now()+(+j.expires_in||3600)*1000};YT.set(t);
+  }
+  return t.at;
+}
+async function yj(path,retry){
+  const at=await yToken(false);
+  const r=await fetch(YW+'/api/'+path,{headers:{Authorization:'Bearer '+at}});
+  if(r.status===401&&!retry){await yToken(true);return yj(path,true);}
+  const j=await r.json().catch(()=>null);
+  if(!r.ok||!j||!j.fantasy_content) throw new Error((j&&j.error&&(j.error.description||j.error))||('Yahoo answered '+r.status));
+  return j.fantasy_content;
+}
+const yLoginUrl=()=>YW+'/login?return='+encodeURIComponent(location.origin+location.pathname);
+async function yFind(){
+  CN.ybusy=true;CN.yerr='';CN.yleagues=null;renderLeague();
+  try{
+    const fc=await yj('users;use_login=1/games;game_keys=nfl/leagues');
+    const u=ymerge(fc.users&&fc.users[0]&&fc.users[0].user);
+    const games=yarr(u.games).map(g=>ymerge(g.game));
+    const ls=[];games.forEach(g=>yarr(g.leagues).forEach(l=>{const x=ymerge(l.league);ls.push({key:x.league_key,id:String(x.league_id),name:x.name,teams:+x.num_teams||0,season:String(x.season||g.season||'')});}));
+    CN.yleagues=ls; if(!ls.length) CN.yerr='No Yahoo football leagues on this account for this season.';
+  }catch(e){const m=(e&&e.message)||String(e);CN.yerr=m==='YAHOO_SIGNIN'?'SIGNIN':/Load failed|Failed to fetch|NetworkError/i.test(m)?'Could not reach Yahoo. Check your connection and try again.':m;}
+  CN.ybusy=false;renderLeague();
+}
+async function yahooLeague(key){
+  const [lf,sdf,rf]=await Promise.all([yj('league/'+key+'/settings'),yj('league/'+key+'/standings'),yj('league/'+key+'/teams/roster')]);
+  const lg=ymerge(lf.league), set=ymerge(lg.settings);
+  const st=ymerge(ymerge(sdf.league).standings);
+  const nm=pl=>{const pos=pl.display_position||pl.primary_position||'';if(/DEF|DST/.test(pos))return appName(pl.editorial_team_full_name||(pl.name&&pl.name.full)||'');return appName(pl.name&&pl.name.full||'');};
+  const rosters={};
+  yarr(ymerge(rf.league).teams).forEach(x=>{const t=ymerge(x.team);const ro=t.roster||{};const ps=yarr((ro[0]||ro['0']||ro).players||{}).map(p=>ymerge(p.player));
+    rosters[t.team_key]={p:ps.map(nm).filter(Boolean),st:ps.filter(p=>!/^(BN|IR|IL|IR\+|NA)$/.test(ymerge(p.selected_position).position||'BN')).map(nm).filter(Boolean)};});
+  let me=null;
+  const teams=yarr(st.teams).map(x=>{const t=ymerge(x.team);const ts=t.team_standings||{},ot=ts.outcome_totals||{};const rid=+t.team_id;
+    if(+t.is_owned_by_current_login===1) me=rid;
+    const r=rosters[t.team_key]||{p:[],st:[]};
+    return {rid,name:String(t.name||('Team '+rid)).trim(),rec:`${ot.wins||0}-${ot.losses||0}${+ot.ties?'-'+ot.ties:''}`,pf:Math.round((+((t.team_points||{}).total)||+ts.points_for||0)*100)/100,place:+ts.rank||undefined,p:r.p,st:r.st};});
+  const slots={QB:0,RB:0,WR:0,TE:0,FLEX:0,K:0,DST:0,BN:0,IR:0};
+  (set.roster_positions||[]).forEach(o=>{const rp=o.roster_position||o;const p=rp.position,c=+rp.count||0;
+    if(p==='DEF')slots.DST+=c;else if(p==='Q/W/R/T')slots.SF=(slots.SF||0)+c;else if(/\//.test(p)||p==='W/R/T')slots.FLEX+=c;else if(p==='IR'||p==='IL')slots.IR+=c;else if(p in slots)slots[p]+=c;});
+  const mods={};(((set.stat_modifiers||{}).stats)||[]).forEach(o=>{const s=o.stat||o;mods[s.stat_id]=+s.value;});
+  const rec=mods[11]||0, sf=!!slots.SF||slots.QB>=2;
+  const s={mode:'redraft',qb:sf?'sf':'1qb',teams:String(nearest(+lg.num_teams||teams.length,[8,10,12,14,16])),
+    scoring:rec>=.75?'ppr':rec>=.25?'half':'std',tep:'0'};
+  const faab=+set.uses_faab===1;
+  const now=new Date().toLocaleString('sv-SE',{timeZone:'Asia/Jerusalem'}).slice(0,16);
+  return {id:String(lg.league_id),key,name:lg.name||'My league',platform:'Yahoo',live:true,week:+lg.current_week||1,fetched:now.slice(0,10),synced:now,s,slots,me,
+    median:false,teams,waiver:faab?'FAAB':'Rolling waivers',moves:[],season:String(lg.season||'')};
+}
+async function yAdd(key){
+  if(!isPro()&&CONN.length>=1&&!CONN.some(c=>c.key===key)){openPro();return;}
+  CN.adding=key;CN.yerr='';renderLeague();
+  try{
+    const l=await yahooLeague(key);
+    if(l.me==null) throw new Error('Could not find your team in that league.');
+    const old=LEAGUES.find(x=>String(x.id)===String(l.id)&&x.live);
+    if(old){Object.assign(old,l);} else {
+      if(!CONN.length&&!SHOWDEMO) BUILTIN.forEach(b=>{const i=LEAGUES.indexOf(b);if(i>=0)LEAGUES.splice(i,1);});
+      const dup=LEAGUES.findIndex(x=>!x.live&&String(x.id)===String(l.id)); if(dup>=0) LEAGUES.splice(dup,1);
+      LEAGUES.unshift(l);}
+    if(!CONN.some(c=>c.id===l.id)) CONN.push({platform:'Yahoo',id:l.id,key,uname:'Yahoo'});
+    saveConn();lgCacheSet(l);CN.open=false;CN.adding=null;LSUB='overview';useLeague(old||l);toast('Connected '+l.name);
+  }catch(e){CN.adding=null;const m=(e&&e.message)||String(e);CN.yerr=m==='YAHOO_SIGNIN'?'SIGNIN':m;renderLeague();}
+}
+async function refreshYahoo(){
+  for(const c of CONN){ if(c.platform!=='Yahoo'||!YT.get()) continue;
+    try{const l=await yahooLeague(c.key);const ex=LEAGUES.find(x=>x.live&&String(x.id)===c.id);
+      if(ex){Object.assign(ex,l);}else{LEAGUES.unshift(l);}lgCacheSet(l);
+      if(LEAGUE&&String(LEAGUE.id)===c.id){const me=LEAGUE.teams.find(x=>x.rid===LEAGUE.me);ROSTER=me?idsOf(me.p):[];LCACHE=null;if(mtab==='league'&&LSUB!=='builder')renderLeague();}
+    }catch(e){}
+  }
+}
+function yahooBox(){
+  if(!FC_SITE) return `<div class="cn-y"><b>Yahoo</b><p class="muted">Connecting Yahoo works on the Fair Catch website.</p></div>`;
+  const signed=!!YT.get();
+  const found=(CN.yleagues||[]).map(l=>{const on=CONN.some(c=>c.key===l.key||c.id===l.id&&c.platform==='Yahoo');
+    return `<li class="cn-l"><span><b>${esc(l.name)}</b><small>${l.teams} teams · ${esc(l.season)}</small></span>${on?'<span class="tag win">Connected</span>':`<button type="button" class="btn primary" data-yadd="${esc(l.key)}" ${CN.adding?'disabled':''}>${CN.adding===l.key?'Connecting…':'Connect'}</button>`}</li>`;}).join('');
+  const err=CN.yerr==='SIGNIN'?'Your Yahoo sign-in ended. Sign in again.':CN.yerr;
+  return `<div class="cn-y"><div class="sh-lbl">Yahoo</div>
+    <p class="muted" style="margin:0 0 10px">Sign in on Yahoo's own page and allow read-only access. Your password never reaches Fair Catch.</p>
+    <div class="cn-row">${signed&&CN.yerr!=='SIGNIN'?`<button type="button" class="btn primary" data-yfind="1" ${CN.ybusy?'disabled':''}>${CN.ybusy?'Looking…':'Find my Yahoo leagues'}</button><button type="button" class="btn" data-yout="1">Sign out of Yahoo</button>`
+      :`<a class="btn primary" href="${esc(yLoginUrl())}">Sign in with Yahoo</a>`}</div>
+    ${err?`<p class="o-err" style="margin:10px 0 0">${esc(err)}</p>`:''}
+    ${found?`<ul class="cn-list" style="margin-top:10px">${found}</ul>`:''}</div>`;
+}
+let Y_BACK=false;
+// coming back from Yahoo's sign-in page: the tokens ride in the #fragment, which never reaches a server
+(function yReturn(){
+  const h=location.hash.slice(1); if(!/yahoo_(at|error)=/.test(h)) return;
+  const q=new URLSearchParams(h); history.replaceState(null,'',location.pathname+location.search);
+  if(q.get('yahoo_at')) YT.set({at:q.get('yahoo_at'),rt:q.get('yahoo_rt')||'',exp:Date.now()+(+q.get('yahoo_exp')||3600)*1000});
+  else CN.yerr='Yahoo sign-in did not finish ('+(q.get('yahoo_error')||'cancelled')+').';
+  CN.open=true;LSUB='overview';Y_BACK=!!q.get('yahoo_at');
+})();
+
 fullRender();
 refreshConnected();
+refreshYahoo();
+if(Y_BACK){setMain('league');yFind();}else if(CN.yerr){setMain('league');}
 proValidate();
 (async()=>{
   try{
