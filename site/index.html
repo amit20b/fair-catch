@@ -3287,7 +3287,7 @@ function connectBox(){
 }
 
 /* ---------- Connect a Yahoo league: sign in on Yahoo's own page, then read-only through our small helper ---------- */
-const YW='https://fair-catch-yahoo.amitbaum.workers.dev';
+const YW='https://fair-catch-yahoo.amitibaum.workers.dev';
 const YT={get(){try{return JSON.parse(localStorage.getItem('faircatch-yahoo')||'null');}catch(e){return null;}},
   set(t){try{t?localStorage.setItem('faircatch-yahoo',JSON.stringify(t)):localStorage.removeItem('faircatch-yahoo');}catch(e){}}};
 // Yahoo's JSON wraps lists as {"0":{..},"1":{..},count:n} and objects as arrays of one-key pieces
