@@ -12,5 +12,10 @@ for name in ("data", "leaguedata", "statsdata", "marketdata", "offerdata"):
 scripts = re.findall(r"<script>(.*?)</script>", h, re.S)
 if not scripts or len(scripts[-1]) < 50000:
     sys.exit("app script missing or too short")
+m = re.search(r'<meta http-equiv="Content-Security-Policy" content="[^"]*\'sha256-([^\']+)\'', h)
+if m:
+    import hashlib, base64
+    if base64.b64encode(hashlib.sha256(scripts[-1].encode("utf-8")).digest()).decode() != m.group(1):
+        sys.exit("security policy does not match the app script (rebuild the page)")
 open(sys.argv[2], "w", encoding="utf-8").write(scripts[-1])
 print("page ok: %d KB" % (len(h) // 1024))

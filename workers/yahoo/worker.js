@@ -23,6 +23,17 @@ const cors = (req) => {
 };
 const json = (req, body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json', ...cors(req) } });
 const safeReturn = (u) => { try { const x = new URL(u); return APP_ORIGINS.includes(x.origin) ? x.origin + x.pathname : DEFAULT_RETURN; } catch { return DEFAULT_RETURN; } };
+// a light brake on misuse: per visitor address, a minute window (Cloudflare's rate limiter when bound, else per instance)
+const MEM = new Map();
+async function tooMany(req, env) {
+  const ip = req.headers.get('CF-Connecting-IP') || 'x';
+  if (env.RL && env.RL.limit) { try { const { success } = await env.RL.limit({ key: ip }); return !success; } catch {} }
+  const now = Date.now(), w = MEM.get(ip) || { t: now, n: 0 };
+  if (now - w.t > 60000) { w.t = now; w.n = 0; }
+  w.n++; MEM.set(ip, w); if (MEM.size > 5000) MEM.clear();
+  return w.n > 120;
+}
+const fromApp = (req) => APP_ORIGINS.includes(req.headers.get('Origin') || '');
 const b64 = (s) => btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 
 async function token(env, params) {
@@ -62,6 +73,9 @@ export default {
       }
     }
 
+    if ((url.pathname === '/refresh' || url.pathname.startsWith('/api/')) && !fromApp(req)) return json(req, { error: 'not allowed' }, 403);
+    if (await tooMany(req, env)) return json(req, { error: 'too many requests, try again in a minute' }, 429);
+
     if (url.pathname === '/refresh' && req.method === 'POST') {
       const { refresh_token } = await req.json().catch(() => ({}));
       if (!refresh_token) return json(req, { error: 'missing refresh_token' }, 400);
@@ -73,7 +87,7 @@ export default {
       const auth = req.headers.get('Authorization') || '';
       if (!auth.startsWith('Bearer ')) return json(req, { error: 'not signed in' }, 401);
       const path = url.pathname.slice(5) + url.search;
-      if (/\.\.|^\/|:\/\//.test(path)) return json(req, { error: 'bad path' }, 400);
+      if (/\.\.|^\/|:\/\//.test(path) || !/^(users;use_login=1|league\/|team\/)/.test(path)) return json(req, { error: 'bad path' }, 400);
       const target = FANTASY + path + (url.search ? '&' : '?') + 'format=json';
       const r = await fetch(target, { headers: { Authorization: auth } });
       return new Response(await r.text(), { status: r.status, headers: { 'Content-Type': 'application/json', ...cors(req) } });
