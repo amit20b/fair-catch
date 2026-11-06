@@ -13,5 +13,8 @@ for k in ("leaguedata", "offerdata"):
     src = block(P, k).group(2)
     m = block(H, k)
     H = H[:m.start(2)] + src + H[m.end(2):]
+# mark it as the owner's page, so Pro features stay open there without signing in
+if 'id="ownerflag"' not in H:
+    H = H.replace('<script type="application/json" id="leaguedata">', '<script type="application/json" id="ownerflag">1</script>\n<script type="application/json" id="leaguedata">', 1)
 open(out, "w", encoding="utf-8").write(H)
 print("merged", out, len(H))
