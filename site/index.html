@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-3yuy9iWNgf2nOBQZRBG/MNzC4J40x5GzO9yz2kv50Rw=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-+a1X/Wb6yIeGF7ksL3X36Lz1QxymhU2ZSXHTfs95+Oc=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070B1A">
 <meta name="color-scheme" content="dark">
@@ -711,6 +711,8 @@ button.pp{border:0;background:none;padding:0;margin:0;font:inherit;color:inherit
 .partner-row label{font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .partner-row select{flex:1 1 220px;min-width:0;padding:12px;border-radius:12px;border:1.5px solid var(--accent);background:var(--card);color:inherit;font:inherit;font-size:16px;font-weight:700}
 .ft-in{width:100%;padding:11px 12px;border-radius:12px;border:1px solid var(--line);background:var(--card-2);color:inherit;font:inherit;font-size:16px}
+.idea-why{display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--muted);margin:0 0 8px}.idea-why .tag{align-self:flex-start}.idea-why b{color:var(--ink)}
+.ft-sort{display:flex;gap:6px;margin:0 0 10px;flex-wrap:wrap}.ft-sort button{padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--ink);font:inherit;font-size:13px;cursor:pointer}.ft-sort button[aria-pressed=true]{border-color:var(--accent);background:var(--accent-soft,transparent);font-weight:700}
 .ft-sug{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
 .ft-sug button{width:100%;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 8px;padding:10px 12px;min-height:48px;border:1px solid var(--line);border-radius:12px;background:var(--card);cursor:pointer;text-align:left;color:inherit;font:inherit}
 .ft-sug button:hover{border-color:var(--accent)}
@@ -1404,6 +1406,36 @@ function marketGap(get,give){
   const pk=ids=>{const vs=ids.map(id=>byId[id][f]||0);const s=vs.reduce((t,v)=>t+v,0);const e=Math.pow(vs.reduce((t,v)=>t+Math.pow(v,2.5),0),1/2.5);return .5*(s+e);};
   const a=pk(get), b=pk(give); return Math.abs(a-b)/Math.max(a,b,1);
 }
+/* ---------- trade finder helpers: healthy lineups, why they say yes, how likely it is ---------- */
+// redraft only: a player who is out for the season, on IR or inactive cannot fill a lineup spot, so he does not count when judging a trade
+const gone=a=>{const k=a&&hurtNow(a);return !!k&&k.k!=='out';};
+const hl=ids=>S.mode==='redraft'?ids.filter(id=>!gone(byId[id])):ids;
+const hprof=ids=>teamProfile(hl(ids));
+// short-term injuries (out / doubtful this week): still tradeable, but we keep them out of offers
+const sick=a=>!!(a&&hurtNow(a));
+function tradeWhy(o,L){
+  const t=o.team, me=L.myT, mine=[], theirs=[];
+  const wk=p=>{const arr=L.teams.map(x=>x.prof.pos[p]).sort((a,b)=>a-b);return x=>arr.indexOf(x)/Math.max(1,arr.length-1);}; // 0 = weakest in the league
+  const gp=[...new Set(o.give.map(id=>byId[id].p))], rp=[...new Set(o.get.map(id=>byId[id].p))];
+  for(const p of gp){const f=wk(p)(t.prof.pos[p]); if(f<=.4) theirs.push(`fills their weak ${p} spot`);}
+  const lostStart=o.get.filter(id=>t.prof.startIds.includes(id)).length;
+  if(!lostStart) theirs.push('they give up bench depth, not a starter');
+  else if(o.thGain>0) theirs.push('their lineup still gets better');
+  for(const p of rp){const f=wk(p)(me.prof.pos[p]); if(f<=.4) mine.push(`fixes your weak ${p} spot`);}
+  const mylost=o.give.filter(id=>me.prof.startIds.includes(id)).length;
+  if(!mylost) mine.push('you only give up bench depth');
+  const hurtTheirs=t.ids.filter(id=>gone(byId[id])&&SLOT_POS.includes(byId[id].p)&&val(byId[id])>=300);
+  if(hurtTheirs.length&&gp.includes(byId[hurtTheirs[0]].p)) theirs.unshift(`${byId[hurtTheirs[0]].n} is out, so they need a ${byId[hurtTheirs[0]].p}`);
+  return {mine:mine.slice(0,2),theirs:theirs.slice(0,2)};
+}
+// chance the other manager says yes: close value, a better lineup for them, filling a need and not being asked for their best player
+function acceptScore(o){
+  let s=50+Math.max(-25,Math.min(35,o.thGain/10));
+  if(o.r.diff>0) s-=Math.min(25,o.r.pct*300); else s+=Math.min(15,o.r.pct*200);
+  if(o.get.length>=2&&o.give.length<o.get.length) s-=6;
+  return Math.max(5,Math.min(95,Math.round(s)));
+}
+const acceptLbl=n=>n>=70?['good','Likely to be accepted']:n>=45?['warn','Could go either way']:['bad','Probably a no'];
 function leagueData(){
   const key=lkey();
   if(LCACHE&&LKEY===key) return LCACHE;
@@ -1414,9 +1446,9 @@ function leagueData(){
   ['QB','RB','WR','TE'].forEach(p=>{posRank[p]=1+others.filter(t=>t.prof.pos[p]>myT.prof.pos[p]+1e-6).length;});
   // trade ideas: 1-for-1, 2-for-1 and 1-for-2 swaps that are close on value and make my starting lineup better
   const tradeable=t=>t.ids.filter(id=>{const a=byId[id];return a&&SLOT_POS.includes(a.p)&&val(a)>=150;});
-  const mine=tradeable(myT).filter(id=>!isUntouch(id)), ideas=[];
+  const mine=tradeable(myT).filter(id=>!isUntouch(id)&&!sick(byId[id])), ideas=[], myHP=hprof(myT.ids);
   for(const t of others){
-    const theirs=tradeable(t), pk=[];
+    const theirs=tradeable(t).filter(id=>!sick(byId[id])), pk=[], tHP=hprof(t.ids);
     for(const g of mine) for(const h of theirs) pk.push([[g],[h]]);
     for(let i=0;i<mine.length;i++)for(let j=i+1;j<mine.length;j++)for(const h of theirs) pk.push([[mine[i],mine[j]],[h]]);
     for(const g of mine)for(let i=0;i<theirs.length;i++)for(let j=i+1;j<theirs.length;j++) pk.push([[g],[theirs[i],theirs[j]]]);
@@ -1426,9 +1458,9 @@ function leagueData(){
       const r=evaluate(get,give);                       // A = what I receive
       if(r.pct>.08) continue;                           // near-even on value: a deal the other manager can actually accept
       if(S.mode==='redraft'&&marketGap(get,give)>.15) continue; // and near-even on real trade-market prices too
-      const myAfter=teamProfile([...myT.ids.filter(id=>!give.includes(id)),...get]);
-      const thAfter=teamProfile([...t.ids.filter(id=>!get.includes(id)),...give]);
-      const myGain=lineupGain(myT.prof,myAfter), thGain=lineupGain(t.prof,thAfter);
+      const myAfter=hprof([...myT.ids.filter(id=>!give.includes(id)),...get]);
+      const thAfter=hprof([...t.ids.filter(id=>!get.includes(id)),...give]);
+      const myGain=lineupGain(myHP,myAfter), thGain=lineupGain(tHP,thAfter);
       if(myGain<150||thGain<0) continue;               // must help both lineups, so the other manager has a reason to say yes
       found.push({team:t,give,get,r,myGain,thGain});
     }
@@ -1454,11 +1486,12 @@ function leagueData(){
   LKEY=key; return LCACHE;
 }
 /* ---------- trade finder: type a player you want, get offers for him ---------- */
-let FT_Q='', FT_ID=null, FT_RES=null, FT_KEY='', FT_LIMIT=4, FT_SHOWN=[];
+let FT_Q='', FT_ID=null, FT_RES=null, FT_KEY='', FT_LIMIT=4, FT_SHOWN=[], FT_SORT='me';
 function finderOffers(tid){
   const L=leagueData(), myT=L.myT, t=L.teams.find(x=>!x.me&&x.ids.includes(tid));
   if(!t) return null;
-  const ok=id=>{const a=byId[id];return a&&SLOT_POS.includes(a.p)&&val(a)>=60;};
+  const ok=id=>{const a=byId[id];return a&&SLOT_POS.includes(a.p)&&val(a)>=60&&!sick(a);};
+  const myBase=hprof(myT.ids), thBase=hprof(t.ids);
   const mine=myT.ids.filter(id=>ok(id)&&!isUntouch(id)).sort((a,b)=>val(byId[b])-val(byId[a])).slice(0,15);
   const extra=t.ids.filter(id=>id!==tid&&ok(id));
   const gets=[[tid],...extra.map(x=>[tid,x])], gives=[];
@@ -1471,17 +1504,18 @@ function finderOffers(tid){
     if(r.pct>.15) continue;
     const mg=S.mode==='redraft'?marketGap(get,give):0;
     if(mg>.25) continue;
-    const myAfter=teamProfile([...myT.ids.filter(id=>!give.includes(id)),...get]);
-    const thAfter=teamProfile([...t.ids.filter(id=>!get.includes(id)),...give]);
-    all.push({team:t,give,get,r,mg,myGain:myAfter.total-myT.prof.total,thGain:thAfter.total-t.prof.total});
+    const myAfter=hprof([...myT.ids.filter(id=>!give.includes(id)),...get]);
+    const thAfter=hprof([...t.ids.filter(id=>!get.includes(id)),...give]);
+    const o={team:t,give,get,r,mg,myGain:myAfter.total-myBase.total,thGain:thAfter.total-thBase.total}; o.acc=acceptScore(o); all.push(o);
   }
-  const score=o=>o.myGain+.6*Math.min(o.thGain,400)-2500*o.r.pct-25*(o.give.length+o.get.length);
+  const score=o=>FT_SORT==='accept'?o.acc*20+.3*o.myGain-1500*o.r.pct:o.myGain+.6*Math.min(o.thGain,400)-2500*o.r.pct-25*(o.give.length+o.get.length);
   const pickDistinct=(list,n)=>{const kept=[];for(const o of list.sort((a,b)=>score(b)-score(a))){if(kept.length>=n)break;
     if(kept.some(k=>k.give.join()===o.give.join()||(k.get.join()===o.get.join()&&k.give.every(id=>o.give.includes(id)))))continue;kept.push(o);}return kept;};
   // fair = the same bar as the trade ideas on value and market price, and it must not hurt their lineup much
-  const fair=pickDistinct(all.filter(o=>o.r.pct<=.08&&o.mg<=.15&&o.thGain>=-100&&o.myGain>=-300),16);
-  const close=fair.length?[]:pickDistinct(all.filter(o=>o.thGain>=-300&&o.myGain>=-300).sort((a,b)=>a.r.pct-b.r.pct).slice(0,60),4);
-  return {team:t,fair,close};
+  // a fair offer must also help your lineup (not just be even), and the other side must not get worse
+  const fair=pickDistinct(all.filter(o=>o.r.pct<=.08&&o.mg<=.15&&o.thGain>=-50&&o.myGain>=60),16);
+  const close=fair.length?[]:pickDistinct(all.filter(o=>o.thGain>=-300&&o.myGain>=-100).sort((a,b)=>a.r.pct-b.r.pct).slice(0,60),4);
+  return {team:t,fair,close,all};
 }
 function faMove(tid){ // the target is a free agent: best player to drop for him
   const L=leagueData(), me=L.myT, bench=me.ids.filter(id=>!me.prof.startIds.includes(id));
@@ -1494,6 +1528,7 @@ function finderCard(o,i){
   const sg=v=>`<b class="${v>=0?'up':'down'}">${v>=0?'+':'−'}${fmt(Math.abs(v))}</b>`;
   return `<li class="idea"><div class="idea-h"><span>with <b>${esc(o.team.name)}</b>${o.team.rec?` <small>(${esc(o.team.rec)})</small>`:''}</span><span class="tag ${lbl[0]}">${lbl[1]}</span></div>
     <div class="idea-b"><div><span class="lbl give">You give</span>${o.give.map(nameChip).join('')}</div><div><span class="lbl get">You get</span>${o.get.map(nameChip).join('')}</div></div>
+    ${(()=>{const w=LCACHE?tradeWhy(o,LCACHE):{mine:[],theirs:[]},ac=acceptLbl(o.acc==null?acceptScore(o):o.acc);return `<div class="idea-why"><span class="tag ${ac[0]==='good'?'win':ac[0]==='bad'?'lose':'even'}">${ac[1]}</span>${w.theirs.length?`<span><b>For them:</b> ${esc(w.theirs.join('; '))}</span>`:''}${w.mine.length?`<span><b>For you:</b> ${esc(w.mine.join('; '))}</span>`:''}</div>`;})()}
     <div class="idea-f"><span>Your lineup ${sg(o.myGain)} · Their lineup ${sg(o.thGain)}${o.thGain>=0?' <em>they gain too</em>':''}</span><button class="btn" type="button" data-ftload="${i}">Open in Trade builder</button></div></li>`;
 }
 /* shop your players: pick one or more of yours, find what each team would give back */
@@ -1501,27 +1536,27 @@ let SH_JOB=0, SH_WANT=new Set(), SH_TEAM=null, SH_SEL=new Set(), SH_RES=null, SH
 async function shopOffers(give,prog){
   const L=leagueData(), myT=L.myT, all=[];
   const ok=id=>{const a=byId[id];return a&&SLOT_POS.includes(a.p)&&val(a)>=60&&!hurtNow(a);};
-  const maxGet=Math.min(3,give.length+1);
+  const maxGet=Math.min(3,give.length+1), myBase=hprof(myT.ids);
   const OT=L.teams.filter(t=>!t.me);
   for(const [ti,t] of OT.entries()){ if(prog){prog(ti,OT.length,t.name);await fpPace();}
-    const pool=t.ids.filter(ok).sort((a,b)=>val(byId[b])-val(byId[a])).slice(0,14), gets=[];
+    const thBase=hprof(t.ids), pool=t.ids.filter(ok).sort((a,b)=>val(byId[b])-val(byId[a])).slice(0,14), gets=[];
     for(let i=0;i<pool.length;i++){gets.push([pool[i]]);
       if(maxGet>=2) for(let j=i+1;j<pool.length;j++){gets.push([pool[i],pool[j]]);if(maxGet>=3) for(let k=j+1;k<pool.length;k++) gets.push([pool[i],pool[j],pool[k]]);}}
     for(const get of gets){
       const r=evaluate(get,give); if(r.pct>.15) continue;
       const mg=S.mode==='redraft'?marketGap(get,give):0; if(mg>.25) continue;
-      const myAfter=teamProfile([...myT.ids.filter(id=>!give.includes(id)),...get]);
-      const thAfter=teamProfile([...t.ids.filter(id=>!get.includes(id)),...give]);
-      all.push({team:t,give:give.slice(),get,r,mg,myGain:myAfter.total-myT.prof.total,thGain:thAfter.total-t.prof.total});
+      const myAfter=hprof([...myT.ids.filter(id=>!give.includes(id)),...get]);
+      const thAfter=hprof([...t.ids.filter(id=>!get.includes(id)),...give]);
+      const o={team:t,give:give.slice(),get,r,mg,myGain:myAfter.total-myBase.total,thGain:thAfter.total-thBase.total}; o.acc=acceptScore(o); all.push(o);
     }
   }
-  const score=o=>o.myGain+.6*Math.min(o.thGain,400)-2500*o.r.pct-25*o.get.length;
+  const score=o=>FT_SORT==='accept'?o.acc*20+.3*o.myGain-1500*o.r.pct:o.myGain+.6*Math.min(o.thGain,400)-2500*o.r.pct-25*o.get.length;
   // at most two offers per team, so you see the whole league
   const pick=(list,n)=>{const kept=[],per={};for(const o of list.sort((a,b)=>score(b)-score(a))){if(kept.length>=n)break;
     const k=o.team.rid;if((per[k]||0)>=2)continue;if(kept.some(x=>x.team===o.team&&x.get.every(id=>o.get.includes(id))))continue;per[k]=(per[k]||0)+1;kept.push(o);}return kept;};
-  const fair=pick(all.filter(o=>o.r.pct<=.08&&o.mg<=.15&&o.thGain>=-100&&o.myGain>=-300),16);
-  const close=fair.length?[]:pick(all.filter(o=>o.thGain>=-300).sort((a,b)=>a.r.pct-b.r.pct).slice(0,80),4);
-  return {fair,close};
+  const fair=pick(all.filter(o=>o.r.pct<=.08&&o.mg<=.15&&o.thGain>=-50&&o.myGain>=60),16);
+  const close=fair.length?[]:pick(all.filter(o=>o.thGain>=-300&&o.myGain>=-100).sort((a,b)=>a.r.pct-b.r.pct).slice(0,80),4);
+  return {fair,close,all};
 }
 async function tradeFor(give,wants,prog){
   const L=leagueData(), myT=L.myT, all=[];
@@ -1529,9 +1564,9 @@ async function tradeFor(give,wants,prog){
   const okt=id=>{const a=byId[id];return a&&SLOT_POS.includes(a.p)&&val(a)>=60&&!hurtNow(a);};
   const groups={}; wants.forEach(id=>{const t=L.teams.find(x=>!x.me&&x.ids.includes(id)); if(t)(groups[t.rid]=groups[t.rid]||{t,ids:[]}).ids.push(id);});
   const combos=(arr,min,max)=>{const out=[];const go=(st,cur)=>{if(cur.length>=min)out.push(cur.slice());if(cur.length>=max)return;for(let i=st;i<arr.length;i++){cur.push(arr[i]);go(i+1,cur);cur.pop();}};go(0,[]);return out;};
-  const GV=Object.values(groups);
+  const GV=Object.values(groups), myBase=hprof(myT.ids);
   for(const [gi,g] of GV.entries()){
-    const t=g.t, mustGet=g.ids; if(prog&&GV.length>1){prog(gi,GV.length,t.name);await fpPace();}
+    const t=g.t, mustGet=g.ids, thBase=hprof(t.ids); if(prog&&GV.length>1){prog(gi,GV.length,t.name);await fpPace();}
     const mineP=myT.ids.filter(id=>okg(id)&&!give.includes(id)).sort((a,b)=>val(byId[b])-val(byId[a])).slice(0,14);
     const theirP=t.ids.filter(id=>okt(id)&&!mustGet.includes(id)).sort((a,b)=>val(byId[b])-val(byId[a])).slice(0,12);
     const giveSets=give.length?combos(mineP,0,give.length>=3?0:2).map(x=>[...give,...x]):combos(mineP,1,3);
@@ -1540,18 +1575,18 @@ async function tradeFor(give,wants,prog){
       if(gv.length>=4&&gt.length<=1) continue;
       const r=evaluate(gt,gv); if(r.pct>.15) continue;
       const mg=S.mode==='redraft'?marketGap(gt,gv):0; if(mg>.25) continue;
-      const myAfter=teamProfile([...myT.ids.filter(id=>!gv.includes(id)),...gt]);
-      const thAfter=teamProfile([...t.ids.filter(id=>!gt.includes(id)),...gv]);
-      all.push({team:t,give:gv,get:gt,r,mg,myGain:myAfter.total-myT.prof.total,thGain:thAfter.total-t.prof.total,exact:gv.length===give.length&&gt.length===mustGet.length});
+      const myAfter=hprof([...myT.ids.filter(id=>!gv.includes(id)),...gt]);
+      const thAfter=hprof([...t.ids.filter(id=>!gt.includes(id)),...gv]);
+      const o={team:t,give:gv,get:gt,r,mg,myGain:myAfter.total-myBase.total,thGain:thAfter.total-thBase.total,exact:gv.length===give.length&&gt.length===mustGet.length}; o.acc=acceptScore(o); all.push(o);
     }
   }
-  const score=o=>o.myGain+.6*Math.min(o.thGain,400)-2500*o.r.pct-25*(o.give.length+o.get.length)+(o.exact?100000:0);
+  const score=o=>(FT_SORT==='accept'?o.acc*20+.3*o.myGain-1500*o.r.pct:o.myGain+.6*Math.min(o.thGain,400)-2500*o.r.pct-25*(o.give.length+o.get.length))+(o.exact?100000:0);
   const pick=(list,n)=>{const kept=[],per={};for(const o of list.sort((a,b)=>score(b)-score(a))){if(kept.length>=n)break;
     const k=o.team.rid;if((per[k]||0)>=5)continue;if(kept.some(x=>x.team===o.team&&x.give.join()===o.give.join()))continue;
     if(kept.some(x=>x.team===o.team&&x.get.join()===o.get.join()&&x.give.every(id=>o.give.includes(id))))continue;per[k]=(per[k]||0)+1;kept.push(o);}return kept;};
-  const fair=pick(all.filter(o=>o.r.pct<=.08&&o.mg<=.15&&o.thGain>=-100&&o.myGain>=-300),16);
-  const close=fair.length?[]:pick(all.filter(o=>o.thGain>=-300).sort((a,b)=>a.r.pct-b.r.pct).slice(0,80),4);
-  return {fair,close};
+  const fair=pick(all.filter(o=>o.r.pct<=.08&&o.mg<=.15&&o.thGain>=-50&&o.myGain>=60),16);
+  const close=fair.length?[]:pick(all.filter(o=>o.thGain>=-300&&o.myGain>=-100).sort((a,b)=>a.r.pct-b.r.pct).slice(0,80),4);
+  return {fair,close,all};
 }
 function shopBox(){
   if(!LEAGUE||!LCACHE) return '';
@@ -1591,7 +1626,7 @@ function renderShop(){
   const R=SH_RES, card=(o,i)=>finderCard(o,i).replace('data-ftload=','data-shload=');
   if(R.fair.length){
     SH_SHOWN=R.fair.slice(0,SH_LIMIT);
-    out.innerHTML=`<p class="muted" style="margin:10px 0 8px">${R.fair.length} fair offer${R.fair.length>1?'s':''} for ${nm}, from ${new Set(R.fair.map(o=>o.team.rid)).size} team${new Set(R.fair.map(o=>o.team.rid)).size>1?'s':''}. Sorted by fairness and how much they help your lineup.</p><ul class="ideas">${SH_SHOWN.map(card).join('')}</ul>`
+    out.innerHTML=`<div class="ft-sort" style="margin-top:10px" role="group" aria-label="Sort offers"><button type="button" data-ftsort="me" aria-pressed="${FT_SORT==='me'}">Best for my lineup</button><button type="button" data-ftsort="accept" aria-pressed="${FT_SORT==='accept'}">Most likely to be accepted</button></div><p class="muted" style="margin:0 0 8px">${R.fair.length} fair offer${R.fair.length>1?'s':''} for ${nm}, from ${new Set(R.fair.map(o=>o.team.rid)).size} team${new Set(R.fair.map(o=>o.team.rid)).size>1?'s':''}. Sorted by fairness and how much they help your lineup.</p><ul class="ideas">${SH_SHOWN.map(card).join('')}</ul>`
       +(R.fair.length>SH_LIMIT?`<div style="text-align:center;margin-top:10px"><button class="btn" type="button" data-shmore="1">Show more offers (${R.fair.length-SH_LIMIT} more)</button></div>`:'');
   }else if(R.close.length){
     SH_SHOWN=R.close;
@@ -1619,9 +1654,11 @@ function renderFinder(){
   if(FT_KEY!==key){out.innerHTML=head+fcLoader('Finding offers…','Checking every roster for a fair deal',null,'ft');
     setTimeout(()=>{FT_RES=finderOffers(FT_ID);FT_KEY=key;const n=FT_RES&&FT_RES.fair?FT_RES.fair.length:0;fpFinish('ft',n?`${n} fair offer${n>1?'s':''} found`:'Done',()=>renderFinder());},60);return;}
   const R=FT_RES; let body;
+  const tg=hurtNow(a); const warn=tg?`<p class="muted" style="margin:0 0 8px"><span class="inj">${esc(tg.t)}</span> Check his status before you offer.</p>`:'';
+  const sortBar=`<div class="ft-sort" role="group" aria-label="Sort offers"><button type="button" data-ftsort="me" aria-pressed="${FT_SORT==='me'}">Best for my lineup</button><button type="button" data-ftsort="accept" aria-pressed="${FT_SORT==='accept'}">Most likely to be accepted</button></div>`;
   if(R.fair.length){
     FT_SHOWN=R.fair.slice(0,FT_LIMIT);
-    body=`<p class="muted" style="margin:0 0 8px">${R.fair.length} fair offer${R.fair.length>1?'s':''} for ${esc(a.n)}. Offers that help their lineup too are the easiest to get accepted.</p><ul class="ideas">${FT_SHOWN.map(finderCard).join('')}</ul>`
+    body=warn+sortBar+`<p class="muted" style="margin:0 0 8px">${R.fair.length} fair offer${R.fair.length>1?'s':''} for ${esc(a.n)}, all of them make your lineup better. Offers that help their lineup too are the easiest to get accepted.</p><ul class="ideas">${FT_SHOWN.map(finderCard).join('')}</ul>`
       +(R.fair.length>FT_LIMIT?`<div style="text-align:center;margin-top:10px"><button class="btn" type="button" data-ftmore="1">Show more offers (${R.fair.length-FT_LIMIT} more)</button></div>`:'');
   }else if(R.close.length){
     FT_SHOWN=R.close;
@@ -2853,6 +2890,7 @@ document.addEventListener('click',e=>{
   const fl=t.closest('[data-ftload]'); if(fl){const it=FT_SHOWN[+fl.dataset.ftload];if(it) loadTrade(it);return;}
   const fp=t.closest('[data-ftpick]'); if(fp){if(!isPro()){const f=freeUse('finder');if(!f.left){const o=document.getElementById('ftOut');if(o)o.innerHTML=proLock("You've used today's 3 free searches",'Pro finds unlimited fair trades with every team, all season.');return;}f.take();}FT_ID=+fp.dataset.ftpick;FT_LIMIT=4;const s=document.getElementById('ftSearch');if(s){s.value=byId[FT_ID].n;s.blur();}renderFinder();return;}
   const fc=t.closest('[data-ftclear]'); if(fc){FT_ID=null;FT_Q='';const s=document.getElementById('ftSearch');if(s){s.value='';s.focus();}renderFinder();return;}
+  const fso=t.closest('[data-ftsort]'); if(fso){FT_SORT=fso.dataset.ftsort;FT_KEY='';FT_LIMIT=4;SH_KEY='';if(fso.closest('#shOut'))renderShop();else renderFinder();return;}
   const fm=t.closest('[data-ftmore]'); if(fm){FT_LIMIT+=4;renderFinder();return;}
   const ls=t.closest('[data-lsub]'); if(ls){setLeagueSub(ls.dataset.lsub);return;}
   const cp=t.closest('[data-cpos]'); if(cp){chartPos=cp.dataset.cpos;chartLimit=120;renderChart();return;}
