@@ -23,7 +23,7 @@
      POST /refresh  {refresh_token} a fresh access token
      GET  /api/<fantasy path>       read-only Yahoo Fantasy API, e.g. /api/users;use_login=1/games;game_keys=nfl/leagues
 */
-const APP_ORIGINS = ['https://amit20b.github.io', 'http://localhost:8000'];
+const APP_ORIGINS = ['https://amit20b.github.io', 'https://faircatch.com', 'https://www.faircatch.com', 'http://localhost:8000'];
 const DEFAULT_RETURN = 'https://amit20b.github.io/fair-catch/';
 const AUTH = 'https://api.login.yahoo.com/oauth2/request_auth';
 const TOKEN = 'https://api.login.yahoo.com/oauth2/get_token';
