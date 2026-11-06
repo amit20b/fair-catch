@@ -1,0 +1,138 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Fair Catch Admin</title><meta name="color-scheme" content="dark light"><link rel="icon" type="image/png" href="icon-192.png">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-QOVecXRUOrTEUXRDM8tB/0Bnlf+IQKkTo9K5lvTjDy4='; style-src 'unsafe-inline'; img-src 'self' data:; connect-src https://fair-catch-yahoo.amitibaum.workers.dev; base-uri 'none'; form-action 'none'">
+<style>
+:root{--bg:#070B1A;--card:#0F1630;--card2:#151F40;--line:#25305A;--ink:#EEF2FF;--muted:#8E9BC4;--dim:#6A77A0;--accent:#C6FF3D;--on-accent:#0A1200;--bar:#C6FF3D;--bar2:#5CC8FF;--good:#3DDC97;--bad:#FF6B7A}
+@media (prefers-color-scheme:light){:root{--bg:#F4F6FB;--card:#FFFFFF;--card2:#EEF1F8;--line:#D8DEEE;--ink:#0B1230;--muted:#4F5B80;--dim:#7480A3;--accent:#3A6B00;--on-accent:#FFFFFF;--bar:#4E8A00;--bar2:#1F7FC4;--good:#127A4B;--bad:#C2283A}}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:1100px;margin:0 auto;padding:max(18px,env(safe-area-inset-top)) 16px 48px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+h1{margin:0;font-size:26px;letter-spacing:-.01em}h1 small{display:block;font-size:13px;font-weight:500;color:var(--muted);letter-spacing:0}
+.live{display:inline-flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}
+.live i{width:9px;height:9px;border-radius:50%;background:var(--good);animation:pulse 2s ease-in-out infinite}.live.err i{background:var(--bad);animation:none}
+@keyframes pulse{50%{opacity:.35}}
+button{font:inherit}.btn{border:1px solid var(--line);background:var(--card2);color:var(--ink);border-radius:10px;padding:8px 14px;font-weight:650;cursor:pointer;min-height:40px}
+.btn.primary{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}@media (max-width:760px){.kpis{grid-template-columns:1fr 1fr}}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+.kpi span{display:block;color:var(--muted);font-size:12.5px;font-weight:600}
+.kpi b{display:block;font-size:34px;line-height:1.1;margin-top:4px;font-variant-numeric:tabular-nums}
+.kpi small{color:var(--dim);font-size:12px}
+.kpi.hero{border-color:var(--accent)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}@media (max-width:760px){.grid2{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+.card h2{font-size:15px;margin:0 0 2px}.card p.sub{margin:0 0 10px;color:var(--muted);font-size:12.5px}
+.chart{position:relative}.chart svg{display:block;width:100%;height:160px;overflow:visible}
+.chart .tt{position:absolute;pointer-events:none;background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:5px 9px;font-size:12.5px;white-space:nowrap;transform:translate(-50%,-110%);display:none}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:10px 8px;border-top:1px solid var(--line);white-space:nowrap}
+th{color:var(--muted);font-size:12px;font-weight:650;border-top:none}td.e{white-space:normal;word-break:break-all;min-width:180px}
+.tag{display:inline-block;font-size:11.5px;font-weight:750;border-radius:999px;padding:2px 8px;border:1px solid var(--line);color:var(--muted)}
+.tag.pro{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}.tag.on{color:var(--good);border-color:var(--good)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--good);margin-right:6px}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.tools input{flex:1 1 200px;min-width:0;padding:9px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card2);color:var(--ink);font:inherit}
+.login{max-width:380px;margin:60px auto;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px}
+.login h2{margin:0 0 6px}.login label{display:block;font-size:13px;font-weight:650;color:var(--muted);margin:12px 0 6px}
+.login input{width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:var(--card2);color:var(--ink);font:inherit}
+.login .btn{width:100%;margin-top:14px;padding:12px}.err{color:var(--bad);font-weight:650;margin:10px 0 0}
+.muted{color:var(--muted)}.foot{color:var(--dim);font-size:12.5px;margin-top:14px}
+</style></head><body><main id="app"><p class="muted">Loading…</p></main>
+<script>
+(()=>{
+const API='https://fair-catch-yahoo.amitibaum.workers.dev';
+const $=s=>document.querySelector(s), app=$('#app');
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let ACC=null;try{ACC=JSON.parse(localStorage.getItem('faircatch-acc')||'null');}catch(e){}
+let DATA=null, LAST=0, ERR='', Q='', timer=null;
+const ago=ms=>{if(!ms)return '—';const s=Math.max(0,(Date.now()-ms)/1000);if(s<60)return 'just now';if(s<3600)return Math.floor(s/60)+' min ago';if(s<86400)return Math.floor(s/3600)+' h ago';return Math.floor(s/86400)+' d ago';};
+const dt=ms=>ms?new Date(ms).toLocaleString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+const n=x=>Number(x||0).toLocaleString('en-US');
+
+function loginView(msg){
+  app.innerHTML=`<form class="login" id="lf"><h2>Fair Catch admin</h2><p class="muted" style="margin:0">Sign in with the owner account.</p>
+  <label for="em">Email</label><input id="em" type="email" autocomplete="email" required>
+  <label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password" required>
+  <button class="btn primary" type="submit">Sign in</button>${msg?`<p class="err">${esc(msg)}</p>`:''}</form>`;
+  $('#lf').addEventListener('submit',async e=>{e.preventDefault();
+    try{const r=await fetch(API+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:$('#em').value,password:$('#pw').value})});
+      const j=await r.json();if(!r.ok)throw new Error(j.error||'Sign-in failed');ACC={tok:j.token,user:j.user};try{localStorage.setItem('faircatch-acc',JSON.stringify(ACC));}catch(e){}load();}
+    catch(err){loginView(err.message);}});
+}
+async function load(){
+  if(!ACC||!ACC.tok){loginView();return;}
+  try{
+    const r=await fetch(API+'/admin/stats',{headers:{Authorization:'Bearer '+ACC.tok}});
+    const j=await r.json().catch(()=>({}));
+    if(r.status===401){ACC=null;loginView('Your sign-in ended. Sign in again.');return;}
+    if(r.status===403){loginView(j.error||'This account is not the owner.');return;}
+    if(!r.ok)throw new Error(j.error||'Could not load');
+    DATA=j;LAST=Date.now();ERR='';render();
+  }catch(e){ERR=/fetch|Network|Load failed/.test(String(e.message))?'Offline: could not reach the server':e.message;if(DATA)render();else app.innerHTML=`<p class="err">${esc(ERR)}</p>`;}
+  clearTimeout(timer);timer=setTimeout(load,10000);
+}
+function days(list,from){ // fill the last 30 days, missing days = 0
+  const m=Object.fromEntries((list||[]).map(x=>[x.day,x.n]));const out=[];
+  for(let i=29;i>=0;i--){const d=new Date(from-i*864e5).toISOString().slice(0,10);out.push({day:d,n:m[d]||0});}return out;
+}
+function bars(id,rows,color,label){
+  const W=600,H=160,P=22,L=26,max=Math.max(1,...rows.map(r=>r.n)),bw=(W-L-4)/rows.length,gap=2;
+  const nice=max<=4?max:Math.ceil(max/4)*4;
+  let g='';for(let k=0;k<=2;k++){const y=H-P-(H-P-8)*k/2;g+=`<line x1="${L}" x2="${W}" y1="${y}" y2="${y}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${y+4}" text-anchor="end" font-size="11" fill="var(--dim)">${Math.round(nice*k/2)}</text>`;}
+  const b=rows.map((r,i)=>{const h=(H-P-8)*r.n/nice,x=L+i*bw+gap/2,w=Math.max(1,bw-gap),y=H-P-h;
+    return `<g data-i="${i}"><rect x="${L+i*bw}" y="0" width="${bw}" height="${H-P}" fill="transparent"/>${r.n?`<path d="M${x},${H-P}V${y+Math.min(4,h)}Q${x},${y} ${x+Math.min(4,w/2)},${y}H${x+w-Math.min(4,w/2)}Q${x+w},${y} ${x+w},${y+Math.min(4,h)}V${H-P}Z" fill="${color}"/>`:''}</g>`;}).join('');
+  const lab=[0,14,29].map(i=>`<text x="${L+i*bw+bw/2}" y="${H-6}" text-anchor="${i===0?'start':i===29?'end':'middle'}" font-size="11" fill="var(--dim)">${new Date(rows[i].day).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</text>`).join('');
+  return `<div class="chart" id="${id}"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="${esc(label)}">${g}${b}${lab}</svg><div class="tt"></div></div>`;
+}
+function hookBars(id,rows,unit){
+  const el=document.getElementById(id);if(!el)return;const tt=el.querySelector('.tt'),svg=el.querySelector('svg');
+  svg.addEventListener('pointermove',e=>{const g=e.target.closest('g[data-i]');if(!g){tt.style.display='none';return;}
+    const r=rows[+g.dataset.i],box=el.getBoundingClientRect();tt.innerHTML=`<b>${n(r.n)}</b> ${unit}<br><span class="muted">${new Date(r.day).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}</span>`;
+    tt.style.display='block';tt.style.left=(e.clientX-box.left)+'px';tt.style.top=(e.clientY-box.top)+'px';});
+  svg.addEventListener('pointerleave',()=>{tt.style.display='none';});
+}
+function render(){
+  const d=DATA, users=d.users||[], q=Q.trim().toLowerCase();
+  const list=q?users.filter(u=>u.email.includes(q)):users;
+  const onlineMs=d.online_ms||150000;
+  const proN=users.filter(u=>u.pro&&!u.owner).length, today=new Date().toISOString().slice(0,10);
+  const newToday=users.filter(u=>new Date(u.created).toISOString().slice(0,10)===today).length;
+  const vd=days(d.days_visitors,d.now), sd=days(d.days_signups,d.now);
+  app.innerHTML=`<header><h1>Fair Catch admin<small>Live from your server · refreshes every 10 seconds</small></h1>
+    <span class="live${ERR?' err':''}" id="live"><i></i><span id="upd"></span></span></header>
+    <section class="kpis">
+      <div class="kpi hero"><span>Online now</span><b>${n(d.online)}</b><small>${n(d.online_signed_in)} signed in · app open in the last ${Math.round(onlineMs/60000*10)/10} min</small></div>
+      <div class="kpi"><span>Sign-ups</span><b>${n(users.length)}</b><small>${newToday} today</small></div>
+      <div class="kpi"><span>Free Pro months given</span><b>${n(d.promo_used)} / ${n(d.promo_slots)}</b><small>${Math.max(0,d.promo_slots-d.promo_used)} left</small></div>
+      <div class="kpi"><span>Pro right now</span><b>${n(proN)}</b><small>not counting you</small></div>
+      <div class="kpi"><span>Visitors today</span><b>${n(d.visitors_today)}</b><small>different devices</small></div>
+      <div class="kpi"><span>Visitors, last 7 days</span><b>${n(d.visitors_7d)}</b><small>different devices</small></div>
+      <div class="kpi"><span>Visitors, all time</span><b>${n(d.visitors_all)}</b><small>since counting began</small></div>
+      <div class="kpi"><span>Signed-in devices</span><b>${n(d.sessions_active)}</b><small>active sessions</small></div>
+    </section>
+    <section class="grid2">
+      <div class="card"><h2>Visitors per day</h2><p class="sub">Different devices that opened the app, last 30 days</p>${bars('cv',vd,'var(--bar)','Visitors per day')}</div>
+      <div class="card"><h2>Sign-ups per day</h2><p class="sub">New accounts, last 30 days</p>${bars('cs',sd,'var(--bar2)','Sign-ups per day')}</div>
+    </section>
+    <section class="card"><h2>Accounts (${n(users.length)})</h2><p class="sub">Newest first. Green dot = using the app right now.</p>
+      <div class="tools"><input id="q" type="search" placeholder="Search email" value="${esc(Q)}" aria-label="Search email"><button class="btn" id="copy" type="button">Copy all emails</button><button class="btn" id="csv" type="button">Download CSV</button></div>
+      <div class="tablewrap"><table><thead><tr><th>Email</th><th>Joined</th><th>Last seen</th><th>Sign-in</th><th>Plan</th></tr></thead><tbody>
+      ${list.map(u=>{const on=u.last_seen&&d.now-u.last_seen<onlineMs;return `<tr><td class="e">${on?'<span class="dot" title="Online now"></span>':''}${esc(u.email)}</td><td>${dt(u.created)}</td><td>${on?'<span class="tag on">Online</span>':ago(u.last_seen)}</td><td>${esc(u.method)}</td><td>${u.owner?'<span class="tag pro">Owner</span>':u.pro?`<span class="tag pro">PRO</span> <span class="muted">${u.promo?'free month · ':''}until ${new Date(u.pro_until).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</span>`:'<span class="tag">Free</span>'+(u.promo?' <span class="muted">free month ended</span>':'')}</td></tr>`;}).join('')||'<tr><td colspan="5" class="muted">No accounts yet.</td></tr>'}
+      </tbody></table></div></section>
+    <p class="foot">Visitors are counted by a random number kept on each device, with no names or addresses. One person on a phone and a computer counts as 2. A visitor counts as online while the app is open on screen. <button class="btn" id="out" type="button" style="margin-left:6px">Sign out</button></p>`;
+  hookBars('cv',vd,'visitors');hookBars('cs',sd,'sign-ups');
+  const qi=$('#q');qi.addEventListener('input',()=>{Q=qi.value;const pos=qi.selectionStart;render();const x=$('#q');x.focus();x.setSelectionRange(pos,pos);});
+  $('#copy').onclick=async()=>{const t=users.map(u=>u.email).join('\n');try{await navigator.clipboard.writeText(t);$('#copy').textContent='Copied '+users.length;}catch(e){$('#copy').textContent='Copy failed';}};
+  $('#csv').onclick=()=>{const rows=[['email','joined','last_seen','sign_in','plan','pro_until','free_month']].concat(users.map(u=>[u.email,new Date(u.created).toISOString(),u.last_seen?new Date(u.last_seen).toISOString():'',u.method,u.owner?'owner':u.pro?'pro':'free',u.pro_until?new Date(u.pro_until).toISOString():'',u.promo?'yes':'no']));
+    const csv=rows.map(r=>r.map(c=>/[",\n]/.test(c)?'"'+String(c).replace(/"/g,'""')+'"':c).join(',')).join('\n');
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='fair-catch-accounts-'+new Date().toISOString().slice(0,10)+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);};
+  $('#out').onclick=()=>{try{localStorage.removeItem('faircatch-acc');}catch(e){}ACC=null;clearTimeout(timer);loginView();};
+  tick();
+}
+function tick(){const u=$('#upd');if(u)u.textContent=ERR?ERR:'Updated '+(Date.now()-LAST<5000?'just now':Math.round((Date.now()-LAST)/1000)+'s ago');}
+setInterval(tick,1000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')load();});
+load();
+})();
+</script></body></html>

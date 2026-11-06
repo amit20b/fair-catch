@@ -16,6 +16,9 @@
      POST /auth/password {old,new}
      POST /auth/delete               deletes the account and its sessions
      GET  /auth/google?return=<app url>   Google sign-in; comes back to the app with #fc_tok=<token>
+   Stats:
+     POST /stats/ping {vid}          an anonymous visit heartbeat (vid = random id kept on the device), about once a minute
+     GET  /admin/stats               owner only (a session of an OWNER_EMAILS account): sign-ups, emails, who is online, visits
    Yahoo routes:
      GET  /login?return=<app url>   sends the user to Yahoo's own sign-in page
      GET  /callback                 Yahoo sends the user back here; we swap the code for tokens
@@ -75,7 +78,11 @@ async function db(env) {
       env.DB.prepare('CREATE TABLE IF NOT EXISTS sessions (hash TEXT PRIMARY KEY, user_id INTEGER NOT NULL, created INTEGER NOT NULL, expires INTEGER NOT NULL)'),
       env.DB.prepare('CREATE INDEX IF NOT EXISTS sessions_user ON sessions(user_id)'),
       env.DB.prepare('CREATE TABLE IF NOT EXISTS promo_used (h TEXT PRIMARY KEY, at INTEGER NOT NULL)'),
+      env.DB.prepare('CREATE TABLE IF NOT EXISTS visits (vid TEXT PRIMARY KEY, first INTEGER NOT NULL, last INTEGER NOT NULL, uid INTEGER, pings INTEGER NOT NULL DEFAULT 0)'),
+      env.DB.prepare('CREATE INDEX IF NOT EXISTS visits_last ON visits(last)'),
+      env.DB.prepare('CREATE TABLE IF NOT EXISTS visit_days (day TEXT NOT NULL, vid TEXT NOT NULL, PRIMARY KEY (day, vid))'),
     ]);
+    try { await env.DB.prepare('ALTER TABLE users ADD COLUMN last_seen INTEGER').run(); } catch {}   // already there
     READY = true;
   }
   return env.DB;
@@ -87,6 +94,7 @@ const userOut = (u, env) => {
 async function newSession(D, uid) {
   const tok = b64u(rand(32)), now = Date.now();
   await D.prepare('INSERT INTO sessions (hash, user_id, created, expires) VALUES (?1, ?2, ?3, ?4)').bind(await sha(tok), uid, now, now + SESSION_DAYS * 864e5).run();
+  await D.prepare('UPDATE users SET last_seen = ?1 WHERE id = ?2').bind(now, uid).run();
   await D.prepare('DELETE FROM sessions WHERE expires < ?1').bind(now).run();
   return tok;
 }
@@ -141,7 +149,7 @@ async function authRoute(req, env, url) {
   }
   const u = await sessionUser(req, D);
   if (!u) return json(req, { error: 'Signed out. Sign in again.' }, 401);
-  if (p === '/auth/me' && req.method === 'GET') return json(req, { user: userOut(u, env) });
+  if (p === '/auth/me' && req.method === 'GET') { await D.prepare('UPDATE users SET last_seen = ?1 WHERE id = ?2').bind(Date.now(), u.id).run(); return json(req, { user: userOut(u, env) }); }
   if (p === '/auth/logout' && req.method === 'POST') {
     await D.prepare('DELETE FROM sessions WHERE hash = ?1').bind(await sha((req.headers.get('Authorization') || '').slice(7).trim())).run();
     return json(req, { ok: true });
@@ -162,6 +170,52 @@ async function authRoute(req, env, url) {
   }
   return json(req, { error: 'not found' }, 404);
 }
+/* ---------- stats ---------- */
+const ONLINE_MS = 150000;   // a visitor counts as online if the app pinged within the last 2.5 minutes (it pings every minute while open)
+const day = (ms) => new Date(ms).toISOString().slice(0, 10);
+async function statsRoute(req, env, url) {
+  const D = await db(env), now = Date.now();
+  if (url.pathname === '/stats/ping' && req.method === 'POST') {
+    const b = await req.json().catch(() => ({}));
+    const vid = String(b.vid || '');
+    if (!/^[A-Za-z0-9_-]{16,48}$/.test(vid)) return json(req, { error: 'bad id' }, 400);
+    const u = await sessionUser(req, D);
+    await D.batch([
+      D.prepare('INSERT INTO visits (vid, first, last, uid, pings) VALUES (?1, ?2, ?2, ?3, 1) ON CONFLICT(vid) DO UPDATE SET last = ?2, uid = COALESCE(?3, uid), pings = pings + 1').bind(vid, now, u ? u.id : null),
+      D.prepare('INSERT OR IGNORE INTO visit_days (day, vid) VALUES (?1, ?2)').bind(day(now), vid),
+      ...(u ? [D.prepare('UPDATE users SET last_seen = ?1 WHERE id = ?2').bind(now, u.id)] : []),
+    ]);
+    return json(req, { ok: true });
+  }
+  if (url.pathname === '/admin/stats' && req.method === 'GET') {
+    const u = await sessionUser(req, D);
+    if (!u || !owners(env).includes(u.email)) return json(req, { error: 'Owner only. Sign in with the owner account.' }, 403);
+    const since = day(now - 29 * 864e5);
+    const [users, online, onlineSigned, vToday, v7, vAll, sess, promo, daysV, daysU] = await Promise.all([
+      D.prepare('SELECT id, email, created, pro_until, promo, google_sub IS NOT NULL AS google, pw IS NOT NULL AS password, last_seen FROM users ORDER BY created DESC').all(),
+      D.prepare('SELECT COUNT(*) AS n FROM visits WHERE last > ?1').bind(now - ONLINE_MS).first(),
+      D.prepare('SELECT COUNT(DISTINCT uid) AS n FROM visits WHERE last > ?1 AND uid IS NOT NULL').bind(now - ONLINE_MS).first(),
+      D.prepare('SELECT COUNT(*) AS n FROM visit_days WHERE day = ?1').bind(day(now)).first(),
+      D.prepare('SELECT COUNT(DISTINCT vid) AS n FROM visit_days WHERE day >= ?1').bind(day(now - 6 * 864e5)).first(),
+      D.prepare('SELECT COUNT(*) AS n FROM visits').first(),
+      D.prepare('SELECT COUNT(*) AS n FROM sessions WHERE expires > ?1').bind(now).first(),
+      D.prepare('SELECT COUNT(*) AS n FROM promo_used').first(),
+      D.prepare('SELECT day, COUNT(*) AS n FROM visit_days WHERE day >= ?1 GROUP BY day ORDER BY day').bind(since).all(),
+      D.prepare("SELECT strftime('%Y-%m-%d', created / 1000, 'unixepoch') AS day, COUNT(*) AS n FROM users WHERE created >= ?1 GROUP BY day ORDER BY day").bind(Date.parse(since)).all(),
+    ]);
+    const own = owners(env);
+    return json(req, {
+      now, online_ms: ONLINE_MS,
+      online: online.n, online_signed_in: onlineSigned.n,
+      visitors_today: vToday.n, visitors_7d: v7.n, visitors_all: vAll.n,
+      sessions_active: sess.n, promo_used: promo.n, promo_slots: PROMO_SLOTS,
+      users: users.results.map((x) => ({ email: x.email, created: x.created, last_seen: x.last_seen || null, method: x.google ? (x.password ? 'Google + email' : 'Google') : 'Email', promo: !!x.promo, owner: own.includes(x.email), pro: own.includes(x.email) || (x.pro_until || 0) > now, pro_until: x.pro_until || null })),
+      days_visitors: daysV.results, days_signups: daysU.results,
+    });
+  }
+  return json(req, { error: 'not found' }, 404);
+}
+
 async function googleRoute(req, env, url) {
   const redirect_uri = url.origin + '/auth/google/callback';
   if (url.pathname === '/auth/google') {
@@ -239,10 +293,14 @@ export default {
 
     if (url.pathname === '/auth/google' || url.pathname === '/auth/google/callback') return googleRoute(req, env, url);
 
-    if ((url.pathname === '/refresh' || url.pathname.startsWith('/api/') || url.pathname.startsWith('/auth/')) && !fromApp(req)) { console.warn('blocked: origin not allowed', req.headers.get('Origin') || 'none'); return json(req, { error: 'not allowed' }, 403); }
+    if ((url.pathname === '/refresh' || url.pathname.startsWith('/api/') || url.pathname.startsWith('/auth/') || url.pathname.startsWith('/stats/') || url.pathname.startsWith('/admin/')) && !fromApp(req)) { console.warn('blocked: origin not allowed', req.headers.get('Origin') || 'none'); return json(req, { error: 'not allowed' }, 403); }
     if (await tooMany(req, env)) { console.warn('rate limited'); return json(req, { error: 'too many requests, try again in a minute' }, 429); }
 
 
+    if (url.pathname.startsWith('/stats/') || url.pathname.startsWith('/admin/')) {
+      try { return await statsRoute(req, env, url); }
+      catch (e) { console.warn('stats error', e && e.message); return json(req, { error: e.status ? e.message : 'Something went wrong.' }, e.status || 500); }
+    }
     if (url.pathname.startsWith('/auth/')) {
       try { return await authRoute(req, env, url); }
       catch (e) { console.warn('auth error', e && e.message); return json(req, { error: e.status ? e.message : 'Something went wrong. Try again.' }, e.status || 500); }
