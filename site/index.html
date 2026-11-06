@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-+a1X/Wb6yIeGF7ksL3X36Lz1QxymhU2ZSXHTfs95+Oc=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-klGoqdtYi0aWQTctqqyQqWS8Bg5Do91y2HTXVD3QGe0=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070B1A">
 <meta name="color-scheme" content="dark">
@@ -92,6 +92,40 @@ body{font-synthesis-weight:none}
 .ps-x:active{background:var(--card-2)}
 .pro-sheet .grab{width:40px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 10px}
 .ps-h{display:flex;justify-content:space-between;align-items:center}.ps-badge{background:var(--accent);color:var(--on-accent);font:800 12px/1 var(--f);letter-spacing:.08em;padding:6px 10px;border-radius:999px}
+.acc-in{border:1.5px solid var(--line);background:var(--card-2);color:var(--ink);font:700 13px/1 var(--f);border-radius:999px;padding:9px 16px;min-height:38px;cursor:pointer}
+.acc-in:hover{border-color:var(--muted)}
+.acc-av{width:38px;height:38px;border-radius:50%;border:none;background:var(--accent);color:var(--on-accent);font:800 16px/1 var(--f);display:inline-grid;place-items:center;cursor:pointer;flex:none}
+.acc-av.big{width:52px;height:52px;font-size:22px;cursor:default}
+#accSlot{display:inline-flex;justify-content:flex-end;margin-bottom:6px}
+.acc-k{font:800 12px/1 var(--f);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.acc-promo{display:flex;flex-direction:column;gap:6px;border:1.5px solid var(--accent-line);background:var(--accent-soft);border-radius:14px;padding:14px;margin:0 0 14px}
+.acc-promo b{font-family:var(--f-display);font-weight:400;font-size:26px;line-height:1;letter-spacing:.02em}
+.acc-promo span{font-size:14px;color:var(--muted);line-height:1.4}.acc-promo em{font-style:normal;font-weight:800;color:var(--ink)}
+.acc-promo .btn{align-self:flex-start;margin-top:4px;padding:11px 16px;font-size:14px}
+.acc-tabs{display:grid;grid-template-columns:1fr 1fr;background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:4px;margin:0 0 14px}
+.acc-tabs button{border:none;background:transparent;color:var(--muted);font:700 14px var(--f);padding:10px;border-radius:9px;cursor:pointer}
+.acc-tabs button[aria-selected=true]{background:var(--card-3);color:var(--ink)}
+.acc-g{display:flex;align-items:center;justify-content:center;gap:10px;border:1px solid var(--line);background:#fff;color:#1f1f1f;font:700 15px var(--f);border-radius:12px;padding:13px;text-decoration:none}
+.acc-or{display:flex;align-items:center;gap:10px;color:var(--dim);font-size:12.5px;margin:14px 0}.acc-or::before,.acc-or::after{content:"";flex:1;height:1px;background:var(--line)}
+.acc-form{display:flex;flex-direction:column;gap:12px}
+.acc-form label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:700;color:var(--muted)}
+.acc-form input{padding:13px 14px;border-radius:12px;border:1px solid var(--line);background:var(--card-2);color:var(--ink);font:inherit;font-weight:500}
+.acc-form input:focus{outline:2px solid var(--accent);outline-offset:1px}
+.acc-go{padding:14px;font-size:15px;border-radius:12px;font-weight:800}
+.acc-err{margin:12px 0 0}
+.acc-fine{color:var(--dim);font-size:12.5px;line-height:1.45;margin:14px 0 0}.acc-fine a{color:var(--muted)}
+.acc-who{display:flex;align-items:center;gap:14px;margin:6px 0 16px}.acc-who div{display:flex;flex-direction:column;gap:3px;min-width:0}
+.acc-who b{font-size:17px;overflow:hidden;text-overflow:ellipsis}.acc-who span{color:var(--muted);font-size:13px}
+.acc-plan{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border:1px solid var(--line);background:var(--card-2);border-radius:14px;padding:14px;margin:0 0 14px}
+.acc-plan.on{border-color:var(--accent-line)}.acc-plan div{display:flex;flex-direction:column;gap:3px;flex:1;min-width:160px}
+.acc-plan b{font-family:var(--f-display);font-weight:400;font-size:24px;line-height:1;letter-spacing:.02em}.acc-plan span{color:var(--muted);font-size:13px}
+.acc-plan .btn{padding:11px 16px;font-size:14px}
+.acc-list{list-style:none;padding:0;margin:0 0 14px;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.acc-list li{display:flex;justify-content:space-between;gap:10px;padding:12px 14px;font-size:14px}.acc-list li+li{border-top:1px solid var(--line)}.acc-list span{color:var(--muted)}
+.acc-pw{border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:0 0 14px}.acc-pw summary{cursor:pointer;font-weight:700;font-size:14px}.acc-pw .acc-form{margin-top:12px}
+.acc-out{width:100%;padding:13px;font-size:15px;border-radius:12px}
+.acc-del{display:block;margin:14px auto 0;border:none;background:none;color:var(--dim);font:600 13px var(--f);cursor:pointer;padding:8px}
+.acc-del.arm{color:var(--lose);font-weight:800}
 .ps-t{font-family:var(--f-display);font-weight:400;font-size:52px;line-height:.9;margin:12px 0 10px}
 .ps-f{list-style:none;margin:0 0 14px;padding:0;display:flex;flex-direction:column;gap:8px;font-size:14.5px}
 .ps-f i{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:rgba(61,220,151,.15);color:var(--win);font-style:normal;font-size:12px;font-weight:800;margin-right:10px}
@@ -746,7 +780,7 @@ button.pp{border:0;background:none;padding:0;margin:0;font:inherit;color:inherit
       <p>Fantasy football trade calculator · dynasty &amp; redraft</p>
     </div>
     <div class="fresh">
-      <span id="proSlot"></span>
+      <span id="accSlot"></span><span id="proSlot"></span>
       <span>Expert values <b id="dExp"></b> · Trade market <b id="dMkt"></b> · Stats <b id="dSt"></b></span>
       <span id="poolInfo"></span>
     </div>
@@ -809,6 +843,7 @@ button.pp{border:0;background:none;padding:0;margin:0;font:inherit;color:inherit
     <div><b>How values work.</b> Every player and pick gets a 0–10,000 value (10,000 = the #1 player), blended from full trade-value boards updated Oct 16. <b>Redraft 1QB:</b> FantasyCalc trade market for 1QB / 14-team / PPR (45%), the FantasyPros Week 6 trade value chart (30%) and Roto Street Journal's Week 6 chart (25%). <b>Redraft Superflex:</b> FantasyCalc superflex market (60%) and FantasyPros rest-of-season consensus (40%). <b>Dynasty:</b> the full FantasyCalc dynasty market (55%) and FantasyPros dynasty consensus (45%). Players on season-ending IR are removed from Redraft. Settings then reshape the values: scoring shifts RB/WR/TE, TE premium lifts tight ends, league size changes the curve, Contender adds this-season production, Rebuild rewards youth and picks.</div>
     <div style="margin-top:8px"><b>Star bonus.</b> Two good players are worth less than one star with the same total, because one lineup spot holds one player. The side receiving the best player gets extra credit. Within 5% is a fair trade.</div>
     <div style="margin-top:8px">Sources: <a href="https://fantasycalc.com" target="_blank" rel="noopener">FantasyCalc</a>, <a href="https://www.fantasypros.com/2026/10/fantasy-football-trade-value-chart-week-6-2026/" target="_blank" rel="noopener">FantasyPros trade value chart</a>, <a href="https://www.fantasypros.com/nfl/rankings/ros-ppr-overall.php" target="_blank" rel="noopener">FantasyPros rankings</a> (via <a href="https://github.com/dynastyprocess/data" target="_blank" rel="noopener">DynastyProcess</a>), <a href="https://www.rotostreetjournal.com/2026/10/13/2026-fantasy-football-week-6-trade-value-chart/" target="_blank" rel="noopener">Roto Street Journal</a>, <a href="https://www.sharpfootballanalysis.com/analysis/nfl-injury-report-ir-tracker/" target="_blank" rel="noopener">Sharp Football IR tracker</a>.</div>
+    <div style="margin-top:8px"><a href="privacy.html">Privacy policy</a> · <a href="terms.html">Terms of use</a> · Fair Catch is independent and not affiliated with the NFL, Sleeper or Yahoo.</div>
   </footer>
 </div>
 
@@ -1316,7 +1351,7 @@ function renderPickList(){
 /* ---------- settings ---------- */
 const HINTS={dynasty:'Long-term value: age, talent and picks.',contender:'Weights points this season. Picks lose value.',rebuild:'Rewards youth and picks, discounts older players.',redraft:'This season only. Picks removed. K and DST included.'};
 function renderSettings(){
-  {const ps=document.getElementById('proSlot');if(ps)ps.innerHTML=proBadge();}
+  {const ps=document.getElementById('proSlot');if(ps)ps.innerHTML=proBadge();const as=document.getElementById('accSlot');if(as)as.innerHTML=accBtn();}
   document.querySelectorAll('.seg').forEach(seg=>{const k=seg.dataset.key;seg.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===String(S[k]))));});
   document.getElementById('modeHint').textContent=HINTS[S.mode];
   const ml={dynasty:'Dynasty',contender:'Dynasty · Contend',rebuild:'Dynasty · Rebuild',redraft:'Redraft'}[S.mode];
@@ -2866,6 +2901,7 @@ document.addEventListener('click',e=>{
   const ip=t.closest('[data-ipos]'); if(ip){IDEA_POS=ip.dataset.ipos;IDEA_LIMIT=4;renderLeague();return;}
   const im=t.closest('[data-imore]'); if(im){IDEA_LIMIT+=6;renderLeague();return;}
   if(t.closest('[data-proclose]')){closePro();return;}
+  if(accClick(t,e)) return;
   {const pp=t.closest('[data-proplan]'); if(pp){proPick(pp.dataset.proplan);return;}}
   if(t.closest('[data-procta]')){proCheckout(e);return;}
   if(t.closest('[data-proact]')){proActivate((document.getElementById('proKey')||{}).value);return;}
@@ -2949,10 +2985,14 @@ document.getElementById('dSt').textContent=STATS&&STATS.week?'Week '+STATS.week:
 /* ---------- Fair Catch Pro: Lemon Squeezy license keys, checked from the browser ----------
    PROCFG is filled in once the Lemon Squeezy store exists. While it is empty, nothing is locked. */
 const PROCFG={store:0,products:[],monthly:'',season:'',priceM:'$4.99',priceS:'$24.99',owner:[]};
-const PRO_ON=!!(PROCFG.store&&(PROCFG.monthly||PROCFG.season));
+const PRO_ON=true; // accounts carry Pro (the first sign-ups get a free month); license keys still work once the store opens
 let PRO=(()=>{try{return JSON.parse(localStorage.getItem('faircatch-pro')||'null');}catch(e){return null;}})();
 const savePro=()=>{try{PRO?localStorage.setItem('faircatch-pro',JSON.stringify(PRO)):localStorage.removeItem('faircatch-pro');}catch(e){}};
-const isPro=()=>!PRO_ON||!!(PRO&&PRO.ok&&Date.now()-(PRO.checked||0)<21*864e5);
+let ACC=(()=>{try{return JSON.parse(localStorage.getItem('faircatch-acc')||'null');}catch(e){return null;}})();
+const saveAcc=()=>{try{ACC?localStorage.setItem('faircatch-acc',JSON.stringify(ACC)):localStorage.removeItem('faircatch-acc');}catch(e){}};
+const accPro=()=>!!(ACC&&ACC.user&&ACC.user.pro_until>Date.now());
+const OWNER_BUILD=!!document.getElementById('ownerflag'); // the owner's private page
+const isPro=()=>!PRO_ON||OWNER_BUILD||accPro()||!!(PRO&&PRO.ok&&Date.now()-(PRO.checked||0)<21*864e5);
 const FREE={finder:3};
 function freeUse(kind){
   const d=new Date().toISOString().slice(0,10);let u={};try{u=JSON.parse(localStorage.getItem('faircatch-free')||'{}');}catch(e){}
@@ -3028,7 +3068,8 @@ function proSheetHtml(){
        ${cur?`<div class="ps-plans" role="radiogroup" aria-label="Choose a plan">${pl.map(p=>`<button type="button" role="radio" aria-checked="${p===cur}" class="ps-plan${p===cur?' sel':''}" data-proplan="${p.id}"><span class="pp-dot"></span><span class="pp-mid"><span class="pp-name">${esc(p.name)}${p.tag?`<em>${esc(p.tag)}</em>`:''}</span><span class="pp-note">${esc(p.note)}</span></span><span class="pp-price"><b>${esc(p.price)}</b><small>${esc(p.per)}</small></span></button>`).join('')}</div>
        <a class="ps-cta" href="${esc(cur.url)}" target="_blank" rel="noopener" data-procta="1"><span>Continue to checkout</span><span class="pc-r"><span class="pc-num">${esc(cur.price)}</span>${PS_ICON.arrow}</span></a>
        <div class="ps-trust"><span>${PS_ICON.lock}Secure checkout by Lemon Squeezy</span><span>${PS_ICON.mail}Your license key arrives by email in seconds</span><span>${PS_ICON.dev}One key for your phone and your computer</span></div>`:''}
-       <details class="ps-have"${PROCFG.demo||PS.err||!cur?' open':''}><summary>Already bought? Enter your license key</summary>
+       ${cur?'':accProOffer()}
+       <details class="ps-have"${PROCFG.demo||PS.err||(!cur&&!accOfferOn())?' open':''}><summary>Already bought? Enter your license key</summary>
        <div class="ps-key"><label class="sr" for="proKey">License key</label><input id="proKey" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Paste your license key"><button type="button" class="btn primary" data-proact="1" ${PS.busy?'disabled':''}>${PS.busy?'Checking…':'Activate'}</button></div>
        <p class="ps-msg" id="psMsg">${esc(PS.msg||'')}</p>
        ${PS.err?`<p class="o-err" style="margin:8px 0 0">${esc(PS.err)}</p>`:''}</details>`;})()}`;
@@ -3047,6 +3088,125 @@ function openPro(){
     if(pct>=99){ clearInterval(iv); fpFinish('proopen','Ready',()=>{ if(run===PS.open&&!s.hidden) s.innerHTML=proSheetHtml(); }); } },110);
 }
 function closePro(){PS.open=(PS.open||0)+1;const s=document.getElementById('prosheet');if(s){s.hidden=true;document.getElementById('proscrim').hidden=true;}}
+/* ---------- accounts: sign up, sign in, account page ---------- */
+let ACFG=(()=>{try{return JSON.parse(localStorage.getItem('faircatch-acfg')||'null');}catch(e){return null;}})();
+const AS={tab:'up',busy:false,err:'',msg:'',del:0,welcome:false};
+async function accApi(path,o={}){
+  const r=await fetch(YW+'/auth/'+path,{method:o.method||'GET',headers:{'Content-Type':'application/json',...(ACC&&ACC.tok?{Authorization:'Bearer '+ACC.tok}:{})},body:o.body?JSON.stringify(o.body):undefined});
+  const j=await r.json().catch(()=>({})); if(!r.ok){const e=new Error(j.error||'Something went wrong. Try again.');e.status=r.status;throw e;} return j;
+}
+const accNetErr=e=>/Failed to fetch|NetworkError|Load failed/.test(String(e&&e.message))?'Could not reach Fair Catch. Check your connection and try again.':(e&&e.message)||String(e);
+async function accConfig(){try{const j=await accApi('config');ACFG={...j,at:Date.now()};try{localStorage.setItem('faircatch-acfg',JSON.stringify(ACFG));}catch(e){}renderAcc();{const as=document.getElementById('accSlot');if(as)as.innerHTML=accBtn();}const s=document.getElementById('prosheet');if(s&&!s.hidden&&!isPro())s.innerHTML=proSheetHtml();}catch(e){}}
+async function accRefresh(){
+  if(!ACC||!ACC.tok) return;
+  const was=isPro();
+  try{const j=await accApi('me');ACC.user=j.user;saveAcc();}
+  catch(e){if(e.status===401){ACC=null;saveAcc();}}
+  renderAcc(); if(was!==isPro()) fullRender(); else renderSettings();
+}
+const accOfferOn=()=>!!(ACFG&&ACFG.spots>0&&!(ACC&&ACC.user));
+function accProOffer(){
+  if(accOfferOn()) return `<div class="acc-promo"><b>Get Pro free for a month</b><span>The first 10 people to create an account get every Pro feature free for ${ACFG.days||30} days. ${ACFG.spots} of 10 spots left.</span><button type="button" class="btn primary" data-acc="up">Create a free account</button></div>`;
+  return `<p class="ps-msg">Pro checkout opens soon.${ACC&&ACC.user?'':' Create a free account to be ready.'}</p>`;
+}
+function accBtn(){
+  if(ACC&&ACC.user){const u=ACC.user;return `<button type="button" class="acc-av" data-acc="1" aria-label="Your account">${esc(u.email.charAt(0).toUpperCase())}</button>`;}
+  return `<button type="button" class="acc-in" data-acc="${accOfferOn()?'up':'in'}">${accOfferOn()?'Sign up':'Sign in'}</button>`;
+}
+const G_SVG='<svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>';
+const ACC_X='<button type="button" class="ps-x" data-accclose="1" aria-label="Close"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>';
+const fmtDay=ms=>new Date(ms).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+function accHtml(){
+  const head=`<div class="ps-h"><span class="acc-k">Account</span>${ACC_X}</div>`;
+  if(!(ACC&&ACC.user)){
+    const up=AS.tab==='up', g=ACFG&&ACFG.google;
+    return `${head}
+     <h2 class="ps-t">${up?'Create your account':'Welcome back'}</h2>
+     ${up&&accOfferOn()?`<div class="acc-promo"><b>Pro free for a month</b><span>The first 10 people to sign up get every Pro feature free for ${ACFG.days||30} days. <em>${ACFG.spots} of 10 spots left.</em></span></div>`:''}
+     <div class="acc-tabs" role="tablist"><button type="button" role="tab" aria-selected="${up}" data-acctab="up">Sign up</button><button type="button" role="tab" aria-selected="${!up}" data-acctab="in">Sign in</button></div>
+     ${g?`<a class="acc-g" href="${esc(YW+'/auth/google?return='+encodeURIComponent(location.origin+location.pathname))}">${G_SVG}<span>Continue with Google</span></a><div class="acc-or"><span>or with email</span></div>`:''}
+     <form class="acc-form" id="accForm" novalidate>
+       <label><span>Email</span><input id="accEmail" type="email" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" required placeholder="you@email.com" value="${esc(AS.email||'')}"></label>
+       <label><span>Password</span><input id="accPw" type="password" autocomplete="${up?'new-password':'current-password'}" minlength="8" required placeholder="${up?'At least 8 characters':'Your password'}"></label>
+       <button type="submit" class="btn primary acc-go" ${AS.busy?'disabled':''}>${AS.busy?'One moment…':up?'Create account':'Sign in'}</button>
+     </form>
+     ${AS.err?`<p class="o-err acc-err" role="alert">${esc(AS.err)}</p>`:''}
+     <p class="acc-fine">We keep your email and a scrambled copy of your password, nothing else. Your leagues stay on this device.${up?' By creating an account you agree to the <a href="terms.html" target="_blank" rel="noopener">terms of use</a> and <a href="privacy.html" target="_blank" rel="noopener">privacy policy</a>.':''}</p>`;
+  }
+  const u=ACC.user, pro=accPro(), lic=!!(PRO&&PRO.ok), left=Math.max(0,Math.ceil((u.pro_until-Date.now())/864e5));
+  const f=freeUse('finder');
+  const plan=u.owner?`<div class="acc-plan on"><span class="ps-badge">PRO</span><div><b>Owner</b><span>Every Pro feature, always.</span></div></div>`
+    :pro?`<div class="acc-plan on"><span class="ps-badge">PRO</span><div><b>${u.promo?'Free month, early member':'Pro'}</b><span>Ends ${esc(fmtDay(u.pro_until))} · ${left} day${left===1?'':'s'} left</span></div></div>`
+    :lic?`<div class="acc-plan on"><span class="ps-badge">PRO</span><div><b>Pro</b><span>With a license key on this device.</span></div></div>`
+    :`<div class="acc-plan"><div><b>Free plan</b><span>${u.promo?'Your free Pro month has ended. ':''}1 connected league and ${FREE.finder} trade finder searches a day.</span></div><button type="button" class="btn primary" data-pro="1">Upgrade to Pro</button></div>`;
+  return `${head}
+   ${AS.welcome?`<div class="acc-promo"><b>${pro&&u.promo?'You got a free month of Pro':'You are in'}</b><span>${pro&&u.promo?'You are one of the first 10. Every Pro feature is open until '+esc(fmtDay(u.pro_until))+'.':'Your account is ready.'}</span></div>`:''}
+   <div class="acc-who"><span class="acc-av big">${esc(u.email.charAt(0).toUpperCase())}</span><div><b>${esc(u.email)}</b><span>Member since ${esc(new Date(u.created).toLocaleDateString('en-US',{month:'long',year:'numeric'}))} · ${u.google?'Google':'Email'} sign-in</span></div></div>
+   ${plan}
+   <ul class="acc-list">
+     <li><span>Connected leagues</span><b>${CONN.length}</b></li>
+     <li><span>Format</span><b>${esc({dynasty:'Dynasty',contender:'Contend',rebuild:'Rebuild',redraft:'Redraft'}[S.mode]||S.mode)} · ${S.qb==='sf'?'Superflex':'1QB'}</b></li>
+     <li><span>Trade finder today</span><b>${isPro()?'Unlimited':f.left+' of '+f.lim+' left'}</b></li>
+   </ul>
+   <details class="acc-pw"><summary>${u.password?'Change password':'Add a password'}</summary>
+     <form class="acc-form" id="accPwForm" novalidate>
+       ${u.password?`<label><span>Current password</span><input id="accOld" type="password" autocomplete="current-password" required></label>`:''}
+       <label><span>New password</span><input id="accNew" type="password" autocomplete="new-password" minlength="8" required placeholder="At least 8 characters"></label>
+       <button type="submit" class="btn primary" ${AS.busy?'disabled':''}>${AS.busy?'Saving…':'Save password'}</button>
+     </form></details>
+   ${AS.err?`<p class="o-err acc-err" role="alert">${esc(AS.err)}</p>`:''}${AS.msg?`<p class="ps-msg">${esc(AS.msg)}</p>`:''}
+   <button type="button" class="btn acc-out" data-accout="1">Sign out</button>
+   <button type="button" class="acc-del${AS.del?' arm':''}" data-accdel="1">${AS.del?'Tap again to delete your account for good':'Delete account'}</button>`;
+}
+function renderAcc(){const s=document.getElementById('accsheet');if(s&&!s.hidden)s.innerHTML=accHtml();}
+function openAcc(tab){
+  let s=document.getElementById('accsheet');
+  if(!s){document.body.insertAdjacentHTML('beforeend','<div class="scrim" id="accscrim" data-accclose="1" hidden></div><div class="sheet pro-sheet acc-sheet" id="accsheet" role="dialog" aria-label="Your account" hidden></div>');s=document.getElementById('accsheet');}
+  if(tab==='up'||tab==='in') AS.tab=tab;
+  AS.err='';AS.msg='';AS.del=0;s.hidden=false;document.getElementById('accscrim').hidden=false;s.innerHTML=accHtml();
+  if(!ACFG||Date.now()-(ACFG.at||0)>60000) accConfig();
+}
+function closeAcc(){const s=document.getElementById('accsheet');if(s){s.hidden=true;document.getElementById('accscrim').hidden=true;}AS.welcome=false;}
+async function accSubmit(){
+  const email=(document.getElementById('accEmail')||{}).value||'', pw=(document.getElementById('accPw')||{}).value||'';
+  AS.email=email.trim();
+  if(!email.trim()||!pw){AS.err='Enter your email and a password.';renderAcc();return;}
+  AS.busy=true;AS.err='';renderAcc();
+  try{
+    const was=isPro(), j=await accApi(AS.tab==='up'?'signup':'login',{method:'POST',body:{email,password:pw}});
+    ACC={tok:j.token,user:j.user};saveAcc();AS.busy=false;AS.welcome=!!j.welcome;AS.email='';
+    accConfig(); renderAcc(); if(was!==isPro()){fullRender(); if(j.welcome&&j.user.promo) celebratePro();} else renderSettings();
+    toast(j.welcome?'Account created':'Signed in'); VPING();
+  }catch(e){AS.busy=false;AS.err=accNetErr(e);renderAcc();}
+}
+async function accPassword(){
+  const o=(document.getElementById('accOld')||{}).value||'', n=(document.getElementById('accNew')||{}).value||'';
+  AS.busy=true;AS.err='';AS.msg='';renderAcc();
+  try{await accApi('password',{method:'POST',body:{old:o,new:n}});AS.busy=false;AS.msg='Password saved.';ACC.user.password=true;saveAcc();renderAcc();}
+  catch(e){AS.busy=false;AS.err=accNetErr(e);renderAcc();if(e.status===401&&/Signed out/.test(e.message)){ACC=null;saveAcc();renderAcc();renderSettings();}}
+}
+async function accSignOut(){
+  const was=isPro(); try{await accApi('logout',{method:'POST'});}catch(e){}
+  ACC=null;saveAcc();AS.tab='in';closeAcc();toast('Signed out');if(was!==isPro())fullRender();else renderSettings();
+}
+async function accDelete(){
+  if(!AS.del){AS.del=1;renderAcc();setTimeout(()=>{if(AS.del){AS.del=0;renderAcc();}},5000);return;}
+  AS.busy=true;renderAcc();
+  try{const was=isPro();await accApi('delete',{method:'POST'});ACC=null;saveAcc();AS.busy=false;AS.del=0;closeAcc();toast('Account deleted');if(was!==isPro())fullRender();else renderSettings();}
+  catch(e){AS.busy=false;AS.del=0;AS.err=accNetErr(e);renderAcc();}
+}
+function accClick(t,e){
+  const a=t.closest('[data-acc]'); if(a){closePro();openAcc(a.dataset.acc);return true;}
+  if(t.closest('[data-accclose]')){closeAcc();return true;}
+  const tb=t.closest('[data-acctab]'); if(tb){AS.tab=tb.dataset.acctab;AS.err='';renderAcc();return true;}
+  if(t.closest('[data-accout]')){accSignOut();return true;}
+  if(t.closest('[data-accdel]')){accDelete();return true;}
+  return false;
+}
+document.addEventListener('submit',e=>{
+  if(e.target.id==='accForm'){e.preventDefault();accSubmit();}
+  else if(e.target.id==='accPwForm'){e.preventDefault();accPassword();}
+});
 /* ---------- Pro unlocked: field goal from the camera behind the net ---------- */
 const FGX=(()=>{
 const rnd=(a,b)=>a+Math.random()*(b-a);
@@ -3425,7 +3585,12 @@ async function refreshYahoo(){
     }catch(e){}
   }
 }
+// Yahoo answers 403 to every Fantasy call until it approves the app; until then Yahoo is shown as coming soon.
+// Set to true once Yahoo approves (the owner can still test it: localStorage 'faircatch-ytest' = 1).
+const YAHOO_READY=false;
 function yahooBox(){
+  if(!YAHOO_READY&&!(()=>{try{return localStorage.getItem('faircatch-ytest')==='1';}catch(e){return false;}})())
+    return `<div class="cn-y"><div class="sh-lbl">Yahoo</div><p class="muted" style="margin:0">Yahoo leagues are coming soon. For now, connect a Sleeper league, or add players by hand in the trade calculator.</p></div>`;
   if(!FC_SITE) return `<div class="cn-y"><b>Yahoo</b><p class="muted">Connecting Yahoo works on the Fair Catch website.</p></div>`;
   const signed=!!YT.get();
   const found=(CN.yleagues||[]).map(l=>{const on=CONN.some(c=>c.key===l.key||c.id===l.id&&c.platform==='Yahoo');
@@ -3438,7 +3603,7 @@ function yahooBox(){
     ${err?`<p class="o-err" style="margin:10px 0 0">${esc(err)}</p>`:''}
     ${found?`<ul class="cn-list" style="margin-top:10px">${found}</ul>`:''}</div>`;
 }
-let Y_BACK=false;
+let Y_BACK=false, ACC_BACK=false, VPING=()=>{};
 // coming back from Yahoo's sign-in page: the tokens ride in the #fragment, which never reaches a server
 (function yReturn(){
   const h=location.hash.slice(1); if(!/yahoo_(at|error)=/.test(h)) return;
@@ -3448,9 +3613,25 @@ let Y_BACK=false;
   CN.open=true;LSUB='overview';Y_BACK=!!q.get('yahoo_at');
 })();
 
+// coming back from Google sign-in: the session rides in the #fragment, which never reaches a server
+(function accReturn(){
+  const h=location.hash.slice(1); if(!/fc_(tok|err)=/.test(h)) return;
+  const q=new URLSearchParams(h); history.replaceState(null,'',location.pathname+location.search);
+  if(q.get('fc_tok')){ACC={tok:q.get('fc_tok'),user:null};saveAcc();AS.welcome=q.get('fc_new')==='1';ACC_BACK=true;}
+  else {AS.err=q.get('fc_err')||'Sign-in did not finish.';ACC_BACK=true;}
+})();
 fullRender();
 refreshConnected();
 refreshYahoo();
+// anonymous visit counter: a random id kept on this device, one ping a minute while the app is on screen (no names, no addresses)
+(function visitPing(){
+  if(OWNER_BUILD) return;
+  let vid=''; try{vid=localStorage.getItem('faircatch-vid')||'';if(!/^[A-Za-z0-9_-]{16,48}$/.test(vid)){const a=new Uint8Array(18);crypto.getRandomValues(a);vid=btoa(String.fromCharCode(...a)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');localStorage.setItem('faircatch-vid',vid);}}catch(e){return;}
+  const ping=()=>{if(document.visibilityState!=='visible')return;fetch(YW+'/stats/ping',{method:'POST',headers:{'Content-Type':'application/json',...(ACC&&ACC.tok?{Authorization:'Bearer '+ACC.tok}:{})},body:JSON.stringify({vid}),keepalive:true}).catch(()=>{});};
+  VPING=ping;ping();setInterval(ping,60000);document.addEventListener('visibilitychange',ping);
+})();
+accRefresh().then(()=>{if(ACC_BACK){openAcc(ACC&&ACC.user?'':'in');if(AS.welcome&&accPro()&&ACC.user.promo)celebratePro();}});
+accConfig();
 if(Y_BACK){setMain('league');yFind();}else if(CN.yerr){setMain('league');}
 proValidate();
 (async()=>{
