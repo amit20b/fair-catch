@@ -2,7 +2,7 @@
 <html lang="en" class="boot">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-v7T8TdliAVgIRWSycpPIcyfeDVg6psLGgGk6IzXduos=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-R4y13L3itXua1lKoKKz7Pr5GxnsFBhNe07966ehtAb0=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070B1A">
 <meta name="color-scheme" content="dark">
@@ -801,6 +801,10 @@ button.pp{border:0;background:none;padding:0;margin:0;font:inherit;color:inherit
 #lgBuilder .calc{gap:14px}
 /* picker sheet */
 .scrim{position:fixed;inset:0;background:rgba(5,12,8,.55);z-index:50}
+html.sheet-lock,html.sheet-lock body{overflow:hidden;overscroll-behavior:none}
+html.sheet-lock body{position:fixed;left:0;right:0;width:100%}
+.scrim{touch-action:none}
+.sheet,.sheet *{overscroll-behavior:contain}
 .sheet{position:fixed;left:0;right:0;bottom:0;top:calc(env(safe-area-inset-top,0px) + 10px);z-index:51;background:var(--card);border-radius:20px 20px 0 0;border-top:1px solid var(--line);display:flex;flex-direction:column;
   padding:10px max(12px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))}
 @media (min-width:700px){.sheet{left:50%;right:auto;bottom:auto;top:max(6%,calc(env(safe-area-inset-top,0px) + 10px));transform:translateX(-50%);width:520px;height:min(640px,84%);border-radius:18px;border:1px solid var(--line)}}
@@ -3978,5 +3982,15 @@ proValidate();
     save();
   }catch(e){}
 })();
+
+/* while any sheet is open, freeze the page behind it so only the sheet scrolls (iOS ignores overflow:hidden alone) */
+(()=>{const ids=['scrim','pscrim','hscrim','oscrim','proscrim','accscrim'];let y=0,on=false;
+  const sync=()=>{const open=ids.some(i=>{const e=document.getElementById(i);return e&&!e.hidden;});
+    if(open&&!on){on=true;y=window.scrollY||0;document.body.style.top=(-y)+'px';document.documentElement.classList.add('sheet-lock');}
+    else if(!open&&on){on=false;document.documentElement.classList.remove('sheet-lock');document.body.style.top='';window.scrollTo(0,y);}};
+  const mo=new MutationObserver(sync);ids.forEach(i=>{const e=document.getElementById(i);if(e)mo.observe(e,{attributes:true,attributeFilter:['hidden']});});
+  // a drag that starts on the dimmed backdrop must never move the page
+  ids.forEach(i=>{const e=document.getElementById(i);if(e)e.addEventListener('touchmove',ev=>ev.preventDefault(),{passive:false});});
+  sync();})();
 })();
 </script>
