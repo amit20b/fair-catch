@@ -2,7 +2,7 @@
 <html lang="en" class="boot">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-9ywRDX23ia//K4K2eaVC+m3AbVXTG0kjyyUNobFqj8Q=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-oZKf/Pvx7LszqBYtsgNZMcr5KCLasisNjING56BHA08=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070B1A">
 <meta name="color-scheme" content="dark">
@@ -3780,7 +3780,7 @@ accRefresh().then(()=>{
 try{if(sessionStorage.getItem('faircatch-synced-open')==='1'){sessionStorage.removeItem('faircatch-synced-open');setTimeout(()=>{openAcc('');toast('Your saved leagues are loaded');},400);}}catch(e){}
 accConfig();
 // show the page once it is filled in, then let bars animate again
-requestAnimationFrame(()=>requestAnimationFrame(()=>document.documentElement.classList.remove('boot')));
+{const unboot=()=>document.documentElement.classList.remove('boot');requestAnimationFrame(()=>requestAnimationFrame(unboot));setTimeout(unboot,250);}
 // open instantly next time: the app is kept on the device and refreshed in the background
 if('serviceWorker' in navigator&&location.protocol==='https:'&&!OWNER_BUILD&&FC_SITE){
   navigator.serviceWorker.register('sw.js').catch(()=>{});
