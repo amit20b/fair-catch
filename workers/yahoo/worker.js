@@ -5,6 +5,8 @@
      GOOGLE_CLIENT_ID     text    (optional: turns on "Continue with Google")
      GOOGLE_CLIENT_SECRET secret  (optional, type it there yourself)
      OWNER_EMAILS         text    (optional: comma separated; always Pro, never use a free-month spot)
+     MAIL_FROM            text    (optional, e.g. "Fair Catch <hello@faircatch.com>"; turns on email: verify + password reset)
+     RESEND_API_KEY       secret  (optional; or bind Cloudflare Email Service as EMAIL). Sending needs a verified domain.
    Bindings (Settings > Bindings):
      DB                   a D1 database (accounts). Tables are created on first use.
    Account routes (JSON, called from the app; the session token goes in "Authorization: Bearer"):
@@ -15,6 +17,12 @@
      POST /auth/logout
      POST /auth/password {old,new}
      POST /auth/delete               deletes the account and its sessions
+     GET  /auth/sync                 ->  {data, updated}   the account's saved leagues and settings
+     POST /auth/sync {data}          saves them (a JSON string, up to 512 KB)
+     POST /auth/forgot {email, app}  emails a reset link (always answers ok, so it never tells who has an account)
+     POST /auth/reset {token, new}   sets a new password from the link, signs out everywhere else
+     POST /auth/verify/send {app}    emails a verification link again
+     GET  /auth/verify?t=&r=         the link in that email; marks the email verified and returns to the app
      GET  /auth/google?return=<app url>   Google sign-in; comes back to the app with #fc_tok=<token>
    Stats:
      POST /stats/ping {vid}          an anonymous visit heartbeat (vid = random id kept on the device), about once a minute
@@ -81,16 +89,49 @@ async function db(env) {
       env.DB.prepare('CREATE TABLE IF NOT EXISTS visits (vid TEXT PRIMARY KEY, first INTEGER NOT NULL, last INTEGER NOT NULL, uid INTEGER, pings INTEGER NOT NULL DEFAULT 0)'),
       env.DB.prepare('CREATE INDEX IF NOT EXISTS visits_last ON visits(last)'),
       env.DB.prepare('CREATE TABLE IF NOT EXISTS visit_days (day TEXT NOT NULL, vid TEXT NOT NULL, PRIMARY KEY (day, vid))'),
+      env.DB.prepare('CREATE TABLE IF NOT EXISTS user_data (user_id INTEGER PRIMARY KEY, data TEXT NOT NULL, updated INTEGER NOT NULL)'),
+      env.DB.prepare('CREATE TABLE IF NOT EXISTS tokens (hash TEXT PRIMARY KEY, user_id INTEGER NOT NULL, kind TEXT NOT NULL, expires INTEGER NOT NULL)'),
     ]);
     try { await env.DB.prepare('ALTER TABLE users ADD COLUMN last_seen INTEGER').run(); } catch {}   // already there
+    try { await env.DB.prepare('ALTER TABLE users ADD COLUMN verified INTEGER NOT NULL DEFAULT 0').run(); } catch {}
     READY = true;
   }
   return env.DB;
 }
 const userOut = (u, env) => {
   const own = owners(env).includes(u.email);
-  return { email: u.email, created: u.created, pro_until: own ? 4102444800000 : (u.pro_until || 0), promo: !!u.promo, owner: own, google: !!u.google_sub, password: !!u.pw };
+  return { email: u.email, created: u.created, pro_until: own ? 4102444800000 : (u.pro_until || 0), promo: !!u.promo, owner: own, google: !!u.google_sub, password: !!u.pw, verified: !!(u.verified || u.google_sub) };
 };
+/* ---------- email (verify + password reset) ---------- */
+const mailOn = (env) => !!(env.MAIL_FROM && (env.EMAIL || env.RESEND_API_KEY));
+async function sendMail(env, to, subject, text, html) {
+  if (env.EMAIL && env.EMAIL.send) { await env.EMAIL.send({ to, from: env.MAIL_FROM, subject, text, html }); return; }
+  const r = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: 'Bearer ' + env.RESEND_API_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ from: env.MAIL_FROM, to: [to], subject, text, html }) });
+  if (!r.ok) throw new Error('email failed ' + r.status);
+}
+const mailHtml = (title, body, btn, link) => `<div style="background:#070B1A;padding:32px 16px;font-family:Arial,sans-serif"><div style="max-width:480px;margin:0 auto;background:#0F1630;border:1px solid #25305A;border-radius:16px;padding:28px;color:#EEF2FF">
+<div style="font-weight:900;font-size:22px;letter-spacing:.04em">FAIR CATCH</div><h1 style="font-size:22px;margin:22px 0 10px">${title}</h1><p style="color:#B6C0E0;font-size:15px;line-height:1.5;margin:0 0 22px">${body}</p>
+<a href="${link}" style="display:inline-block;background:#C6FF3D;color:#0A1200;font-weight:800;text-decoration:none;padding:13px 22px;border-radius:12px">${btn}</a>
+<p style="color:#7480A3;font-size:12.5px;line-height:1.5;margin:22px 0 0">If the button does not work, copy this link:<br><span style="word-break:break-all">${link}</span></p>
+<p style="color:#7480A3;font-size:12.5px;margin:16px 0 0">If you did not ask for this, ignore this email.</p></div></div>`;
+async function newToken(D, uid, kind, minutes) {
+  const t = b64u(rand(32));
+  await D.prepare('DELETE FROM tokens WHERE (user_id = ?1 AND kind = ?2) OR expires < ?3').bind(uid, kind, Date.now()).run();
+  await D.prepare('INSERT INTO tokens (hash, user_id, kind, expires) VALUES (?1, ?2, ?3, ?4)').bind(await sha(t), uid, kind, Date.now() + minutes * 60000).run();
+  return t;
+}
+async function useToken(D, t, kind) {
+  const h = await sha(String(t || ''));
+  const row = await D.prepare('SELECT user_id FROM tokens WHERE hash = ?1 AND kind = ?2 AND expires > ?3').bind(h, kind, Date.now()).first();
+  if (row) await D.prepare('DELETE FROM tokens WHERE hash = ?1').bind(h).run();
+  return row ? row.user_id : null;
+}
+async function sendVerify(req, env, D, u, app) {
+  const t = await newToken(D, u.id, 'verify', 60 * 48);
+  const link = new URL(req.url).origin + '/auth/verify?' + new URLSearchParams({ t, r: safeReturn(app || '') });
+  await sendMail(env, u.email, 'Confirm your email for Fair Catch', 'Confirm your email for Fair Catch: ' + link,
+    mailHtml('Confirm your email', 'Tap the button to confirm this is your email.' + (PROMO_SLOTS ? ' If you are one of the first sign-ups, this also starts your free month of Pro.' : ''), 'Confirm email', link));
+}
 async function newSession(D, uid) {
   const tok = b64u(rand(32)), now = Date.now();
   await D.prepare('INSERT INTO sessions (hash, user_id, created, expires) VALUES (?1, ?2, ?3, ?4)').bind(await sha(tok), uid, now, now + SESSION_DAYS * 864e5).run();
@@ -112,9 +153,10 @@ async function givePromo(D, env, u) {
   const r = await D.prepare('INSERT OR IGNORE INTO promo_used (h, at) SELECT ?1, ?2 WHERE (SELECT COUNT(*) FROM promo_used) < ?3').bind(await sha('promo:' + u.email), Date.now(), PROMO_SLOTS).run();
   if (r && r.meta ? r.meta.changes : r.changes) await D.prepare('UPDATE users SET promo = 1, pro_until = ?1 WHERE id = ?2').bind(Date.now() + PROMO_DAYS * 864e5, u.id).run();
 }
+// with email on, a password account gets its free month only once the email is confirmed (stops fake accounts taking the spots)
 async function createUser(D, env, email, fields) {
   const r = await D.prepare('INSERT INTO users (email, pw, salt, google_sub, created) VALUES (?1, ?2, ?3, ?4, ?5) RETURNING *').bind(email, fields.pw || null, fields.salt || null, fields.google_sub || null, Date.now()).first();
-  await givePromo(D, env, r);
+  if (!mailOn(env) || fields.google_sub) await givePromo(D, env, r);
   return await D.prepare('SELECT * FROM users WHERE id = ?1').bind(r.id).first();
 }
 // stricter brake for password guesses: 10 tries a minute per address, per instance
@@ -129,7 +171,7 @@ async function authRoute(req, env, url) {
   const p = url.pathname, D = await db(env);
   if (p === '/auth/config' && req.method === 'GET') {
     const c = await D.prepare('SELECT COUNT(*) AS n FROM promo_used').first();
-    return json(req, { google: !!(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET), spots: Math.max(0, PROMO_SLOTS - (c ? c.n : 0)), days: PROMO_DAYS });
+    return json(req, { google: !!(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET), spots: Math.max(0, PROMO_SLOTS - (c ? c.n : 0)), days: PROMO_DAYS, email: mailOn(env) });
   }
   if ((p === '/auth/signup' || p === '/auth/login') && req.method === 'POST') {
     if (authTooMany(req)) return json(req, { error: 'Too many tries. Wait a minute and try again.' }, 429);
@@ -140,15 +182,65 @@ async function authRoute(req, env, url) {
       if (pw.length < 8 || pw.length > 200) return json(req, { error: 'Use a password of at least 8 characters.' }, 400);
       if (await D.prepare('SELECT id FROM users WHERE email = ?1').bind(email).first()) return json(req, { error: 'That email already has an account. Sign in instead.' }, 409);
       const salt = hex(rand(16)), u = await createUser(D, env, email, { pw: await hashPw(pw, salt), salt });
-      return json(req, { token: await newSession(D, u.id), user: userOut(u, env), welcome: true });
+      let sent = false;
+      if (mailOn(env)) { try { await sendVerify(req, env, D, u, b.app); sent = true; } catch (e) { console.warn('verify mail failed', e.message); } }
+      return json(req, { token: await newSession(D, u.id), user: userOut(u, env), welcome: true, verify_sent: sent });
     }
     const u = await D.prepare('SELECT * FROM users WHERE email = ?1').bind(email).first();
     if (!u || !u.pw) { if (u && u.google_sub) return json(req, { error: 'This account uses Google. Tap "Continue with Google".' }, 401); await hashPw(pw || 'x', '00'.repeat(16)); return json(req, { error: 'Wrong email or password.' }, 401); }
     if (!same(await hashPw(pw, u.salt), u.pw)) return json(req, { error: 'Wrong email or password.' }, 401);
     return json(req, { token: await newSession(D, u.id), user: userOut(u, env) });
   }
+  if (p === '/auth/forgot' && req.method === 'POST') {
+    if (authTooMany(req)) return json(req, { error: 'Too many tries. Wait a minute and try again.' }, 429);
+    if (!mailOn(env)) return json(req, { error: 'Password reset by email is not available yet. Write to support.' }, 503);
+    const b = await req.json().catch(() => ({}));
+    const email = cleanEmail(b.email);
+    const u = okEmail(email) ? await D.prepare('SELECT * FROM users WHERE email = ?1').bind(email).first() : null;
+    if (u) {
+      const t = await newToken(D, u.id, 'reset', 30);
+      const link = safeReturn(b.app || '') + '#fc_reset=' + t;
+      try { await sendMail(env, u.email, 'Reset your Fair Catch password', 'Reset your Fair Catch password (the link works for 30 minutes): ' + link, mailHtml('Reset your password', 'Tap the button to choose a new password. The link works for 30 minutes.', 'Choose a new password', link)); }
+      catch (e) { console.warn('reset mail failed', e.message); }
+    }
+    return json(req, { ok: true });
+  }
+  if (p === '/auth/reset' && req.method === 'POST') {
+    if (authTooMany(req)) return json(req, { error: 'Too many tries. Wait a minute and try again.' }, 429);
+    const b = await req.json().catch(() => ({}));
+    const nw = String(b.new || '');
+    if (nw.length < 8 || nw.length > 200) return json(req, { error: 'Use a new password of at least 8 characters.' }, 400);
+    const uid = await useToken(D, b.token, 'reset');
+    if (!uid) return json(req, { error: 'This reset link has expired or was already used. Ask for a new one.' }, 400);
+    const salt = hex(rand(16));
+    await D.prepare('UPDATE users SET pw = ?1, salt = ?2, verified = 1 WHERE id = ?3').bind(await hashPw(nw, salt), salt, uid).run();
+    await D.prepare('DELETE FROM sessions WHERE user_id = ?1').bind(uid).run();
+    const u = await D.prepare('SELECT * FROM users WHERE id = ?1').bind(uid).first();
+    return json(req, { token: await newSession(D, uid), user: userOut(u, env) });
+  }
   const u = await sessionUser(req, D);
   if (!u) return json(req, { error: 'Signed out. Sign in again.' }, 401);
+  if (p === '/auth/sync' && req.method === 'GET') {
+    const r = await D.prepare('SELECT data, updated FROM user_data WHERE user_id = ?1').bind(u.id).first();
+    return json(req, r ? { data: r.data, updated: r.updated } : { data: null, updated: 0 });
+  }
+  if (p === '/auth/sync' && req.method === 'POST') {
+    const b = await req.json().catch(() => ({}));
+    const data = typeof b.data === 'string' ? b.data : '';
+    if (!data || data.length > 512 * 1024) return json(req, { error: 'Too much to save.' }, 413);
+    try { const o = JSON.parse(data); if (!o || typeof o !== 'object' || Array.isArray(o)) throw 0; } catch { return json(req, { error: 'bad data' }, 400); }
+    const now = Date.now();
+    await D.prepare('INSERT INTO user_data (user_id, data, updated) VALUES (?1, ?2, ?3) ON CONFLICT(user_id) DO UPDATE SET data = ?2, updated = ?3').bind(u.id, data, now).run();
+    return json(req, { ok: true, updated: now });
+  }
+  if (p === '/auth/verify/send' && req.method === 'POST') {
+    if (!mailOn(env)) return json(req, { error: 'Email is not set up yet.' }, 503);
+    if (u.verified) return json(req, { ok: true, already: true });
+    if (authTooMany(req)) return json(req, { error: 'Too many tries. Wait a minute and try again.' }, 429);
+    const b = await req.json().catch(() => ({}));
+    try { await sendVerify(req, env, D, u, b.app); } catch (e) { return json(req, { error: 'Could not send the email. Try again later.' }, 502); }
+    return json(req, { ok: true });
+  }
   if (p === '/auth/me' && req.method === 'GET') { await D.prepare('UPDATE users SET last_seen = ?1 WHERE id = ?2').bind(Date.now(), u.id).run(); return json(req, { user: userOut(u, env) }); }
   if (p === '/auth/logout' && req.method === 'POST') {
     await D.prepare('DELETE FROM sessions WHERE hash = ?1').bind(await sha((req.headers.get('Authorization') || '').slice(7).trim())).run();
@@ -165,7 +257,7 @@ async function authRoute(req, env, url) {
     return json(req, { ok: true });
   }
   if (p === '/auth/delete' && req.method === 'POST') {
-    await D.batch([D.prepare('DELETE FROM sessions WHERE user_id = ?1').bind(u.id), D.prepare('DELETE FROM users WHERE id = ?1').bind(u.id)]);
+    await D.batch([D.prepare('DELETE FROM sessions WHERE user_id = ?1').bind(u.id), D.prepare('DELETE FROM user_data WHERE user_id = ?1').bind(u.id), D.prepare('DELETE FROM tokens WHERE user_id = ?1').bind(u.id), D.prepare('DELETE FROM users WHERE id = ?1').bind(u.id)]);
     return json(req, { ok: true });
   }
   return json(req, { error: 'not found' }, 404);
@@ -192,7 +284,7 @@ async function statsRoute(req, env, url) {
     if (!u || !owners(env).includes(u.email)) return json(req, { error: 'Owner only. Sign in with the owner account.' }, 403);
     const since = day(now - 29 * 864e5);
     const [users, online, onlineSigned, vToday, v7, vAll, sess, promo, daysV, daysU] = await Promise.all([
-      D.prepare('SELECT id, email, created, pro_until, promo, google_sub IS NOT NULL AS google, pw IS NOT NULL AS password, last_seen FROM users ORDER BY created DESC').all(),
+      D.prepare('SELECT id, email, created, pro_until, promo, google_sub IS NOT NULL AS google, pw IS NOT NULL AS password, last_seen, verified, (SELECT updated FROM user_data WHERE user_id = users.id) AS synced FROM users ORDER BY created DESC').all(),
       D.prepare('SELECT COUNT(*) AS n FROM visits WHERE last > ?1').bind(now - ONLINE_MS).first(),
       D.prepare('SELECT COUNT(DISTINCT uid) AS n FROM visits WHERE last > ?1 AND uid IS NOT NULL').bind(now - ONLINE_MS).first(),
       D.prepare('SELECT COUNT(*) AS n FROM visit_days WHERE day = ?1').bind(day(now)).first(),
@@ -209,7 +301,7 @@ async function statsRoute(req, env, url) {
       online: online.n, online_signed_in: onlineSigned.n,
       visitors_today: vToday.n, visitors_7d: v7.n, visitors_all: vAll.n,
       sessions_active: sess.n, promo_used: promo.n, promo_slots: PROMO_SLOTS,
-      users: users.results.map((x) => ({ email: x.email, created: x.created, last_seen: x.last_seen || null, method: x.google ? (x.password ? 'Google + email' : 'Google') : 'Email', promo: !!x.promo, owner: own.includes(x.email), pro: own.includes(x.email) || (x.pro_until || 0) > now, pro_until: x.pro_until || null })),
+      users: users.results.map((x) => ({ email: x.email, created: x.created, last_seen: x.last_seen || null, method: x.google ? (x.password ? 'Google + email' : 'Google') : 'Email', promo: !!x.promo, owner: own.includes(x.email), pro: own.includes(x.email) || (x.pro_until || 0) > now, pro_until: x.pro_until || null, verified: !!(x.verified || x.google), synced: x.synced || null })),
       days_visitors: daysV.results, days_signups: daysU.results,
     });
   }
@@ -292,6 +384,17 @@ export default {
     }
 
     if (url.pathname === '/auth/google' || url.pathname === '/auth/google/callback') return googleRoute(req, env, url);
+    if (url.pathname === '/auth/verify' && req.method === 'GET') {
+      const back = safeReturn(url.searchParams.get('r') || '');
+      try {
+        const D = await db(env), uid = await useToken(D, url.searchParams.get('t'), 'verify');
+        if (!uid) return Response.redirect(back + '#fc_err=' + encodeURIComponent('That link has expired. Open Account and send a new one.'), 302);
+        await D.prepare('UPDATE users SET verified = 1 WHERE id = ?1').bind(uid).run();
+        const u = await D.prepare('SELECT * FROM users WHERE id = ?1').bind(uid).first();
+        if (u && !u.promo) await givePromo(D, env, u);
+        return Response.redirect(back + '#fc_verified=1', 302);
+      } catch (e) { return Response.redirect(back + '#fc_err=' + encodeURIComponent('Could not confirm right now. Try the link again.'), 302); }
+    }
 
     if ((url.pathname === '/refresh' || url.pathname.startsWith('/api/') || url.pathname.startsWith('/auth/') || url.pathname.startsWith('/stats/') || url.pathname.startsWith('/admin/')) && !fromApp(req)) { console.warn('blocked: origin not allowed', req.headers.get('Origin') || 'none'); return json(req, { error: 'not allowed' }, 403); }
     if (await tooMany(req, env)) { console.warn('rate limited'); return json(req, { error: 'too many requests, try again in a minute' }, 429); }
