@@ -2,7 +2,7 @@
 <html lang="en" class="boot">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-kp7W4I2VkiVsQ3ckDWVAPwbyy82Fn0n3T7xh0ef5MBA=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-yjvLK85X1A9oYQ6+F+xrSE1vO1RwtJ5Hf3RMid8acvM=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070B1A">
 <meta name="color-scheme" content="dark">
@@ -589,6 +589,11 @@ footer{text-align:left!important;border-top:1px solid var(--line);padding-top:14
 .sh-act{display:flex;align-items:center;gap:10px;justify-content:flex-end;margin-top:10px;flex-wrap:wrap}.sh-act .muted{margin-right:auto;font-size:13px}
 .sh-act .btn:disabled{opacity:.45;cursor:not-allowed}
 .inj{font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:5px;background:var(--lose-soft);color:var(--lose);white-space:nowrap}
+.mo-src{border:1px solid var(--line,#26304f);border-radius:14px;padding:10px 12px;margin:0 0 8px}
+.mo-h{display:flex;justify-content:space-between;gap:8px;align-items:baseline;font-size:13px;margin-bottom:6px}
+.mo-m{display:flex;gap:10px;align-items:center;font-size:12.5px;margin-top:6px;flex-wrap:wrap}
+.mo-better{margin:0 0 16px 14px;padding-left:10px;border-left:2px solid var(--line,#26304f)}
+.mo-up{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12.5px;margin:4px 0 8px}
 .bwhy{font-size:11px;font-weight:700;color:var(--green);white-space:nowrap;flex:none;margin-right:6px;max-width:42%;overflow:hidden;text-overflow:ellipsis}
 .bres{font-size:11.5px;font-weight:700;color:var(--muted);white-space:nowrap;flex:none}
 .bres.ok{color:var(--win)}
@@ -1645,6 +1650,71 @@ function tradeFit(o){
   if(th.tin.size&&th.tout.size&&th.edge>.12&&o.r&&o.r.diff>0){acc-=6; warn.push('they usually come out ahead in trades');}
   return {acc:Math.max(-25,Math.min(25,acc)),my,theirs:[...new Set(theirs)],mine:[...new Set(mine)],warn};
 }
+/* ---------- based on your offers: trades you built for this league, and better versions of each ---------- */
+const MYTR_KEY=()=>'faircatch-mytrades-'+(LEAGUE?LEAGUE.id:'');
+function loadMyTr(){try{const a=JSON.parse(localStorage.getItem(MYTR_KEY())||'[]');return Array.isArray(a)?a.filter(x=>x&&Array.isArray(x.get)&&Array.isArray(x.give)):[];}catch(e){return [];}}
+function saveMyTr(a){try{localStorage.setItem(MYTR_KEY(),JSON.stringify(a.slice(0,12)));}catch(e){}}
+const trK=x=>x.rid+'|'+[...x.get].sort().join(',')+'|'+[...x.give].sort().join(',');
+let LOADED_K='';
+function recordMyTrade(sent){
+  if(!inLeagueCtx()||!T.A.length||!T.B.length||PARTNER==null) return;
+  const e={rid:PARTNER,get:names(T.A),give:names(T.B),t:Date.now(),sent:!!sent};
+  if(!sent&&trK(e)===LOADED_K) return; // an idea we suggested, opened but not changed
+  let a=loadMyTr(); const old=a.find(x=>trK(x)===trK(e)); if(old&&!sent&&a[0]===old) return;
+  if(old) e.sent=e.sent||!!old.sent;
+  a=a.filter(x=>trK(x)!==trK(e));
+  if(a[0]&&!a[0].sent&&a[0].rid===e.rid&&e.t-a[0].t<180000) a.shift(); // still editing the same trade
+  a.unshift(e); saveMyTr(a); MO_KEY='';
+}
+let MO_KEY='', MO_RES=[], MO_SHOWN=[];
+function improveOffer(src){
+  const L=leagueData(), t=L.teams.find(x=>!x.me&&x.rid===src.rid); if(!t) return null;
+  const get=ids(src.get), give=ids(src.give);
+  if(get.length<src.get.length||give.length<src.give.length||!get.every(id=>t.ids.includes(id))||!give.every(id=>L.myT.ids.includes(id))) return null; // players have moved since
+  const myB=hprof(L.myT.ids), thB=hprof(t.ids);
+  const r=evaluate(get,give), base={team:t,give,get,r,mg:S.mode==='redraft'?marketGap(get,give):0,
+    myGain:hprof([...L.myT.ids.filter(id=>!give.includes(id)),...get]).total-myB.total,thGain:hprof([...t.ids.filter(id=>!get.includes(id)),...give]).total-thB.total};
+  base.acc=acceptScore(base);
+  const main=get.slice().sort((a,b)=>val(byId[b])-val(byId[a]))[0];
+  const res=finderOffers(main); const pool=res?res.all:[];
+  const key=o=>[...o.give].sort().join()+'|'+[...o.get].sort().join(), bk=key(base);
+  const shared=o=>o.give.filter(id=>give.includes(id)).length+o.get.filter(id=>get.includes(id)).length;
+  const better=o=>key(o)!==bk&&o.r.pct<=.12&&o.thGain>=-150&&((o.myGain>=base.myGain+60&&o.acc>=base.acc-4)||(o.acc>=base.acc+8&&o.myGain>=base.myGain-40));
+  const sc=o=>Math.min(o.myGain-base.myGain,500)+10*Math.min(o.acc-base.acc,25)+220*shared(o)-15*(o.give.length+o.get.length);
+  const kept=[];
+  for(const o of pool.filter(better).sort((a,b)=>sc(b)-sc(a))){ if(kept.length>=2) break;
+    if(kept.some(k=>key(k)===key(o)||(k.give.join()===o.give.join()))) continue;
+    const up=o.myGain-base.myGain, ac=o.acc-base.acc;
+    o.kind=up>=60&&ac>=5?'Better for both':up>=60?'More for you':'Easier yes'; o.dMy=up; o.dAcc=ac; kept.push(o); }
+  return {src,base,better:kept};
+}
+function myOffersRes(){
+  const list=loadMyTr().slice(0,4), k=lkey()+'|'+JSON.stringify(list.map(trK));
+  if(MO_KEY===k) return MO_RES;
+  MO_RES=list.map(x=>{try{return improveOffer(x);}catch(e){return null;}}).filter(Boolean); MO_KEY=k; return MO_RES;
+}
+function myOffersBox(){
+  if(!LEAGUE||!LCACHE) return '';
+  const R=myOffersRes(); MO_SHOWN=[];
+  const ago=t=>{const d=Math.floor((Date.now()-t)/864e5);return d<=0?'today':d===1?'yesterday':d+' days ago';};
+  const sg=v=>`${v>=0?'+':'−'}${fmt(Math.abs(v))}`;
+  if(!R.length) return `<div class="box" id="moBox"><h3>Based on your offers</h3><p class="muted" style="margin:0">Build a trade with a team in the Trade builder, and we'll show better versions of it here: more for you, or easier for them to say yes to.</p></div>`;
+  let n=0, free=1;
+  const body=R.map(x=>{
+    const b=x.base, ac=acceptLbl(b.acc), src=`<div class="mo-src"><div class="mo-h"><span>Your offer to <b>${esc(b.team.name)}</b> · ${ago(x.src.t)}${x.src.sent?' · copied':''}</span><button type="button" class="linkbtn" data-model="${esc(trK(x.src))}" aria-label="Remove this offer">Remove</button></div>
+      <div class="idea-b"><div><span class="lbl give">You give</span>${b.give.map(nameChip).join('')}</div><div><span class="lbl get">You get</span>${b.get.map(nameChip).join('')}</div></div>
+      <div class="mo-m"><span class="tag ${ac[0]==='good'?'win':ac[0]==='bad'?'lose':'even'}">${ac[1]}</span><span>Your lineup ${sg(b.myGain)}</span></div></div>`;
+    if(!x.better.length) return src+`<p class="note" style="text-align:left;margin:6px 0 14px">This one is already about as good as it gets with ${esc(b.team.name)}.</p>`;
+    const cards=x.better.map(o=>{
+      if(!isPro()&&free<=0) return ''; free--;
+      const i=n++; MO_SHOWN[i]=o;
+      const d=`<div class="mo-up"><span class="tag win">${o.kind}</span><span>${o.dMy>=20?`Your lineup <b class="up">${sg(o.dMy)}</b> more`:''}${o.dMy>=20&&o.dAcc>=3?' · ':''}${o.dAcc>=3?`Chance of a yes <b class="up">${b.acc}% → ${o.acc}%</b>`:''}</span></div>`;
+      return finderCard(o,i).replace('data-ftload=','data-moload=').replace('<div class="idea-b">',d+'<div class="idea-b">');}).join('');
+    return src+`<ul class="ideas mo-better">${cards}</ul>`;
+  }).join('');
+  const locked=!isPro()&&R.reduce((t,x)=>t+x.better.length,0)>1;
+  return `<div class="box" id="moBox"><h3>Based on your offers</h3><p class="muted" style="margin:0 0 10px">Trades you built in the Trade builder for this league, and similar versions that do better: more for you, or easier for them to accept.</p>${body}${locked?proLock('More improved offers','Pro improves every trade you build.'):''}</div>`;
+}
 /* ---------- trade finder: type a player you want, get offers for him ---------- */
 let FT_Q='', FT_ID=null, FT_RES=null, FT_KEY='', FT_LIMIT=4, FT_SHOWN=[], FT_SORT='me';
 function finderOffers(tid){
@@ -1830,7 +1900,7 @@ function renderFinder(){
   }else{FT_SHOWN=[];body=`<p class="muted" style="margin:0">Nothing on your roster adds up to ${esc(a.n)}'s value in a deal ${esc(own.name)} would take. Try a cheaper target at the same position.</p>`;}
   out.innerHTML=head+body;
 }
-function loadTrade(it){PARTNER=it.team.rid;TL={A:it.get.slice(),B:it.give.slice(),example:false};LSUB='builder';if(mtab==='league'){T=TL;}setMain('league');window.scrollTo(0,0);toast('Trade loaded in Trade builder');}
+function loadTrade(it){PARTNER=it.team.rid;LOADED_K=trK({rid:it.team.rid,get:names(it.get),give:names(it.give)});TL={A:it.get.slice(),B:it.give.slice(),example:false};LSUB='builder';if(mtab==='league'){T=TL;}setMain('league');window.scrollTo(0,0);toast('Trade loaded in Trade builder');}
 function lockRow(id){const on=isUntouch(id);return `<div class="lockrow${on?' on':''}">${nameChip(id)}<button type="button" class="lockbtn" data-untouch="${id}" aria-pressed="${on}" aria-label="${on?'Untouchable: tap to allow trading':'Mark as untouchable'}" title="${on?'Untouchable':'Tradeable'}">${on?'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" fill="currentColor"/><path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="2.2"/></svg>':'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 11V8a4 4 0 0 1 7.5-2" stroke="currentColor" stroke-width="2.2"/></svg>'}</button></div>`;}
 function nameChip(id){const a=byId[id];if(!a)return '';return `<span class="lp">${posChip(a)}${teamTag(a,1)}<b class="pp" data-pp="${a.id}">${esc(a.n)}</b><i class="num">${fmt(val(a))}</i></span>`;}
 function rankTag(rk,N){const c=rk<=Math.ceil(N*.3)?'good':rk>N-Math.ceil(N*.3)?'bad':'';return `<span class="rk-chip ${c}">${rk}<small>/${N}</small></span>`;}
@@ -1904,6 +1974,7 @@ function renderLeague(){
     ${UNTOUCH.size?`<p class="note" style="text-align:left;margin:6px 0 0">Not offering your untouchables: ${[...UNTOUCH].filter(id=>byId[id]).map(id=>esc(byId[id].n)).join(', ')}. <button type="button" class="linkbtn" data-lsub="roster">Change</button></p>`:''}
     <div id="ftOut"></div>
   </div>
+  ${myOffersBox()}
   ${shopBox()}
   <div class="box"><h3>Trade ideas</h3>
     <p class="muted" style="margin:0 0 10px">Every idea is within 8% on value, close on real trade-market prices (no robberies either way), and makes <b>both</b> starting lineups better, so the other manager has a real reason to accept.${UNTOUCH.size?` Your ${UNTOUCH.size} untouchable${UNTOUCH.size>1?'s are':' is'} never offered.`:''}</p>
@@ -2981,6 +3052,7 @@ function renderShot(){
 }
 function render(){
   autoPartner();
+  try{recordMyTrade(false);}catch(e){}
   const r=evaluate(T.A,T.B), g=grade(r);
   renderHead(r,g); renderCols(r,g); renderPanel(r,g);
   if(pickSide) renderPickList();
@@ -3053,6 +3125,8 @@ document.addEventListener('click',e=>{
   if(t.closest('[data-shgo]')){if(!isPro()){const f=freeUse('finder');if(!f.left){SH_RUN=false;const o=document.getElementById('shOut');if(o)o.innerHTML=proLock("You've used today's 3 free searches",'Pro finds unlimited fair trades with every team, all season.');return;}f.take();}SH_RUN=true;SH_LIMIT=4;renderShop();return;}
   if(t.closest('[data-shmore]')){SH_LIMIT+=4;renderShop();return;}
   const sl=t.closest('[data-shload]'); if(sl){const it=SH_SHOWN[+sl.dataset.shload];if(it) loadTrade(it);return;}
+  const ml=t.closest('[data-moload]'); if(ml){const it=MO_SHOWN[+ml.dataset.moload];if(it) loadTrade(it);return;}
+  const md=t.closest('[data-model]'); if(md){saveMyTr(loadMyTr().filter(x=>trK(x)!==md.dataset.model));MO_KEY='';const b=document.getElementById('moBox');if(b)b.outerHTML=myOffersBox();return;}
   const fl=t.closest('[data-ftload]'); if(fl){const it=FT_SHOWN[+fl.dataset.ftload];if(it) loadTrade(it);return;}
   const fp=t.closest('[data-ftpick]'); if(fp){if(!isPro()){const f=freeUse('finder');if(!f.left){const o=document.getElementById('ftOut');if(o)o.innerHTML=proLock("You've used today's 3 free searches",'Pro finds unlimited fair trades with every team, all season.');return;}f.take();}FT_ID=+fp.dataset.ftpick;FT_LIMIT=4;const s=document.getElementById('ftSearch');if(s){s.value=byId[FT_ID].n;s.blur();}renderFinder();return;}
   const fc=t.closest('[data-ftclear]'); if(fc){FT_ID=null;FT_Q='';const s=document.getElementById('ftSearch');if(s){s.value='';s.focus();}renderFinder();return;}
@@ -3077,6 +3151,7 @@ document.getElementById('scrim').onclick=closePicker;
 document.getElementById('sheetClose').onclick=closePicker;
 document.getElementById('clear').onclick=()=>{T={A:[],B:[],example:false};if(inLeagueCtx()){PARTNER=null;TL=T;}render();};
 document.getElementById('copy').onclick=()=>{
+  try{recordMyTrade(true);}catch(e){}
   const r=evaluate(T.A,T.B), g=grade(r);
   const line=ids=>ids.map(id=>byId[id].n).join(', ')||'nothing';
   const txt=`Trade check (${[...document.querySelectorAll('#chips .chip')].slice(0,-1).map(c=>c.textContent).join(' · ')})\nI receive: ${line(T.A)}\nThey receive: ${line(T.B)}\nResult: ${g.status} ${g.line}`;
@@ -3394,7 +3469,7 @@ document.addEventListener('submit',e=>{
 });
 /* ---------- account sync: leagues, settings and trades follow the account to any device ----------
    Kept on the device only, never sent: the session, Yahoo sign-in tokens, a Pro license key, the visit id, the free-use counter. */
-const SYNC_RX=/^faircatch-(v4|connected|league|showdemo|slpuser|untouch-.*|moves-seen-.*|lg-.*)$/;
+const SYNC_RX=/^faircatch-(v4|connected|league|showdemo|slpuser|untouch-.*|moves-seen-.*|mytrades-.*|lg-.*)$/;
 const SY={at:(()=>{try{return +localStorage.getItem('faircatch-syncat')||0;}catch(e){return 0;}})(),last:(()=>{try{return localStorage.getItem('faircatch-synch')||'';}catch(e){return '';}})(),err:false,busy:false,timer:null};
 const hashStr=s=>{let a=5381,b=52711;for(let i=0;i<s.length;i++){const c=s.charCodeAt(i);a=(a*33)^c;b=(b*33)^c;}return (a>>>0).toString(36)+(b>>>0).toString(36)+s.length;};
 function syncSnap(){
