@@ -2,7 +2,7 @@
 <html lang="en" class="boot">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-yjvLK85X1A9oYQ6+F+xrSE1vO1RwtJ5Hf3RMid8acvM=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-v7T8TdliAVgIRWSycpPIcyfeDVg6psLGgGk6IzXduos=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070B1A">
 <meta name="color-scheme" content="dark">
@@ -594,7 +594,7 @@ footer{text-align:left!important;border-top:1px solid var(--line);padding-top:14
 .mo-m{display:flex;gap:10px;align-items:center;font-size:12.5px;margin-top:6px;flex-wrap:wrap}
 .mo-better{margin:0 0 16px 14px;padding-left:10px;border-left:2px solid var(--line,#26304f)}
 .mo-up{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12.5px;margin:4px 0 8px}
-.bwhy{font-size:11px;font-weight:700;color:var(--green);white-space:nowrap;flex:none;margin-right:6px;max-width:42%;overflow:hidden;text-overflow:ellipsis}
+.bwhy{font-size:12px;font-weight:700;color:var(--green);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bres{font-size:11.5px;font-weight:700;color:var(--muted);white-space:nowrap;flex:none}
 .bres.ok{color:var(--win)}
 
@@ -1384,7 +1384,7 @@ function closePicker(){const was=pickSide;pickSide=null;document.getElementById(
   const s=document.getElementById('pickSearch'); if(document.activeElement===s) s.blur();
   if(was==='R') render();}
 function pickRow(x,extra){
-  return `<li><button type="button" class="${extra||''}" data-pick="${x.a.id}"><span class="rk">${RANK[x.a.id]}</span><div class="av ${x.a.p}" style="width:42px;height:42px;font-size:13px">${avFace(x.a)}${teamTag(x.a)}</div><div class="pmeta" style="flex:1;min-width:0"><div class="pname">${esc(x.a.n)}</div><div class="prow">${posChip(x.a)}<span class="team-code">${esc(x.a.p==='PICK'?'Rookie pick':(x.a.t||'FA'))}</span>${x.a.a!=null?`<span class="team-code">· ${Math.floor(x.a.a)}y</span>`:''}${pickSide==='A'&&inLeagueCtx()&&!partnerTeam()&&ownerOf(x.a.id)?`<span class="owner">${esc(ownerOf(x.a.id).name)}</span>`:''}</div></div><span class="rv">${fmt(x.v)}</span>${extra==='bal'&&x.why?`<span class="bwhy">${esc(x.why)}</span>`:''}${extra==='bal'?`<span class="bres ${x.fair?'ok':''}">${x.fair?'→ Fair':('→ '+Math.round(x.pct*100)+'% gap')}</span>`:''}${extra==='bal'?'<svg class="spark" width="16" height="16" viewBox="0 0 18 18" aria-hidden="true"><path d="M9 1l1.8 5.2L16 8l-5.2 1.8L9 15l-1.8-5.2L2 8l5.2-1.8z" fill="currentColor"/></svg>':''}${extra==='on'?'<span class="tick">✓</span>':''}</button></li>`;
+  return `<li><button type="button" class="${extra||''}" data-pick="${x.a.id}"><span class="rk">${RANK[x.a.id]}</span><div class="av ${x.a.p}" style="width:42px;height:42px;font-size:13px">${avFace(x.a)}${teamTag(x.a)}</div><div class="pmeta" style="flex:1;min-width:0"><div class="pname">${esc(x.a.n)}</div><div class="prow">${posChip(x.a)}<span class="team-code">${esc(x.a.p==='PICK'?'Rookie pick':(x.a.t||'FA'))}</span>${x.a.a!=null?`<span class="team-code">· ${Math.floor(x.a.a)}y</span>`:''}${pickSide==='A'&&inLeagueCtx()&&!partnerTeam()&&ownerOf(x.a.id)?`<span class="owner">${esc(ownerOf(x.a.id).name)}</span>`:''}</div>${extra==='bal'&&x.why?`<div class="bwhy">${esc(x.why)}</div>`:''}</div><span class="rv">${fmt(x.v)}</span>${extra==='bal'?`<span class="bres ${x.fair?'ok':''}">${x.fair?'→ Fair':('→ '+Math.round(x.pct*100)+'% gap')}</span>`:''}${extra==='bal'?'<svg class="spark" width="16" height="16" viewBox="0 0 18 18" aria-hidden="true"><path d="M9 1l1.8 5.2L16 8l-5.2 1.8L9 15l-1.8-5.2L2 8l5.2-1.8z" fill="currentColor"/></svg>':''}${extra==='on'?'<span class="tick">✓</span>':''}</button></li>`;
 }
 function renderPickList(){
   const term=normalize(document.getElementById('pickSearch').value.trim());
