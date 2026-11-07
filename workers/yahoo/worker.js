@@ -16,7 +16,8 @@
      GET  /auth/me                   ->  {user}
      POST /auth/logout
      POST /auth/password {old,new}
-     POST /auth/delete               deletes the account and its sessions
+     POST /auth/delete {password}    deletes the account, its data and its sessions (a password account must type its password)
+     POST /auth/logout_all           signs the account out on every device
      GET  /auth/sync                 ->  {data, updated}   the account's saved leagues and settings
      POST /auth/sync {data}          saves them (a JSON string, up to 512 KB)
      POST /auth/forgot {email, app}  emails a reset link (always answers ok, so it never tells who has an account)
@@ -46,7 +47,7 @@ const cors = (req) => {
     ? { 'Access-Control-Allow-Origin': o, 'Access-Control-Allow-Headers': 'Authorization, Content-Type', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Vary': 'Origin' }
     : {};
 };
-const json = (req, body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json', ...cors(req) } });
+const json = (req, body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer', ...cors(req) } });
 const safeReturn = (u) => { try { const x = new URL(u); return APP_ORIGINS.includes(x.origin) ? x.origin + x.pathname : DEFAULT_RETURN; } catch { return DEFAULT_RETURN; } };
 // a light brake on misuse: per visitor address, a minute window (Cloudflare's rate limiter when bound, else per instance)
 const MEM = new Map();
@@ -91,6 +92,7 @@ async function db(env) {
       env.DB.prepare('CREATE TABLE IF NOT EXISTS visit_days (day TEXT NOT NULL, vid TEXT NOT NULL, PRIMARY KEY (day, vid))'),
       env.DB.prepare('CREATE TABLE IF NOT EXISTS user_data (user_id INTEGER PRIMARY KEY, data TEXT NOT NULL, updated INTEGER NOT NULL)'),
       env.DB.prepare('CREATE TABLE IF NOT EXISTS tokens (hash TEXT PRIMARY KEY, user_id INTEGER NOT NULL, kind TEXT NOT NULL, expires INTEGER NOT NULL)'),
+      env.DB.prepare('CREATE TABLE IF NOT EXISTS limits (k TEXT PRIMARY KEY, n INTEGER NOT NULL, first INTEGER NOT NULL)'),
     ]);
     try { await env.DB.prepare('ALTER TABLE users ADD COLUMN last_seen INTEGER').run(); } catch {}   // already there
     try { await env.DB.prepare('ALTER TABLE users ADD COLUMN verified INTEGER NOT NULL DEFAULT 0').run(); } catch {}
@@ -159,6 +161,23 @@ async function createUser(D, env, email, fields) {
   if (!mailOn(env) || fields.google_sub) await givePromo(D, env, r);
   return await D.prepare('SELECT * FROM users WHERE id = ?1').bind(r.id).first();
 }
+/* ---------- brakes that hold across all servers (kept in the database) ----------
+   per account: 8 wrong passwords in 15 minutes locks sign-in for that account for 15 minutes
+   per address: 5 new accounts a day */
+async function hit(D, k, windowMs) {
+  const now = Date.now();
+  await D.prepare('INSERT INTO limits (k, n, first) VALUES (?1, 1, ?2) ON CONFLICT(k) DO UPDATE SET n = CASE WHEN first < ?3 THEN 1 ELSE n + 1 END, first = CASE WHEN first < ?3 THEN ?2 ELSE first END').bind(k, now, now - windowMs).run();
+  const r = await D.prepare('SELECT n FROM limits WHERE k = ?1').bind(k).first();
+  if (Math.random() < 0.02) await D.prepare('DELETE FROM limits WHERE first < ?1').bind(now - 2 * 864e5).run();
+  return r ? r.n : 1;
+}
+async function count(D, k, windowMs) {
+  const r = await D.prepare('SELECT n, first FROM limits WHERE k = ?1').bind(k).first();
+  return r && r.first >= Date.now() - windowMs ? r.n : 0;
+}
+const LOCK_N = 8, LOCK_MS = 15 * 60000, SIGNUPS_PER_DAY = 5;
+const WEAK = new Set(['password', 'password1', 'password123', '12345678', '123456789', '1234567890', 'qwerty123', 'qwertyuiop', '11111111', '00000000', 'iloveyou', 'football', 'football1', 'fantasy1', 'abcd1234', 'letmein1', '87654321', 'aaaaaaaa', 'passw0rd', 'welcome1']);
+const pwProblem = (pw) => pw.length < 8 || pw.length > 200 ? 'Use a password of at least 8 characters.' : WEAK.has(pw.toLowerCase()) ? 'That password is too easy to guess. Pick another one.' : '';
 // stricter brake for password guesses: 10 tries a minute per address, per instance
 const AMEM = new Map();
 function authTooMany(req) {
@@ -169,6 +188,8 @@ function authTooMany(req) {
 }
 async function authRoute(req, env, url) {
   const p = url.pathname, D = await db(env);
+  const len = +(req.headers.get('Content-Length') || 0);
+  if (len > (p === '/auth/sync' ? 600 * 1024 : 16 * 1024)) return json(req, { error: 'Too much data.' }, 413);
   if (p === '/auth/config' && req.method === 'GET') {
     const c = await D.prepare('SELECT COUNT(*) AS n FROM promo_used').first();
     return json(req, { google: !!(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET), spots: Math.max(0, PROMO_SLOTS - (c ? c.n : 0)), days: PROMO_DAYS, email: mailOn(env) });
@@ -179,16 +200,22 @@ async function authRoute(req, env, url) {
     const email = cleanEmail(b.email), pw = String(b.password || '');
     if (!okEmail(email)) return json(req, { error: 'Enter a valid email address.' }, 400);
     if (p === '/auth/signup') {
-      if (pw.length < 8 || pw.length > 200) return json(req, { error: 'Use a password of at least 8 characters.' }, 400);
+      const bad = pwProblem(pw); if (bad) return json(req, { error: bad }, 400);
       if (await D.prepare('SELECT id FROM users WHERE email = ?1').bind(email).first()) return json(req, { error: 'That email already has an account. Sign in instead.' }, 409);
+      const ipk = 'su:' + await sha((req.headers.get('CF-Connecting-IP') || 'x') + day(Date.now()));
+      if (await count(D, ipk, 864e5) >= SIGNUPS_PER_DAY) return json(req, { error: 'Too many new accounts from this connection today. Try again tomorrow.' }, 429);
+      await hit(D, ipk, 864e5);
       const salt = hex(rand(16)), u = await createUser(D, env, email, { pw: await hashPw(pw, salt), salt });
       let sent = false;
       if (mailOn(env)) { try { await sendVerify(req, env, D, u, b.app); sent = true; } catch (e) { console.warn('verify mail failed', e.message); } }
       return json(req, { token: await newSession(D, u.id), user: userOut(u, env), welcome: true, verify_sent: sent });
     }
+    const lk = 'lf:' + await sha(email);
+    if (await count(D, lk, LOCK_MS) >= LOCK_N) return json(req, { error: 'Too many wrong passwords for this account. Wait 15 minutes' + (mailOn(env) ? ', or reset your password.' : '.') }, 429);
     const u = await D.prepare('SELECT * FROM users WHERE email = ?1').bind(email).first();
-    if (!u || !u.pw) { if (u && u.google_sub) return json(req, { error: 'This account uses Google. Tap "Continue with Google".' }, 401); await hashPw(pw || 'x', '00'.repeat(16)); return json(req, { error: 'Wrong email or password.' }, 401); }
-    if (!same(await hashPw(pw, u.salt), u.pw)) return json(req, { error: 'Wrong email or password.' }, 401);
+    if (!u || !u.pw) { await hit(D, lk, LOCK_MS); if (u && u.google_sub) return json(req, { error: 'This account uses Google. Tap "Continue with Google".' }, 401); await hashPw(pw || 'x', '00'.repeat(16)); return json(req, { error: 'Wrong email or password.' }, 401); }
+    if (!same(await hashPw(pw, u.salt), u.pw)) { await hit(D, lk, LOCK_MS); return json(req, { error: 'Wrong email or password.' }, 401); }
+    await D.prepare('DELETE FROM limits WHERE k = ?1').bind(lk).run();
     return json(req, { token: await newSession(D, u.id), user: userOut(u, env) });
   }
   if (p === '/auth/forgot' && req.method === 'POST') {
@@ -209,7 +236,7 @@ async function authRoute(req, env, url) {
     if (authTooMany(req)) return json(req, { error: 'Too many tries. Wait a minute and try again.' }, 429);
     const b = await req.json().catch(() => ({}));
     const nw = String(b.new || '');
-    if (nw.length < 8 || nw.length > 200) return json(req, { error: 'Use a new password of at least 8 characters.' }, 400);
+    const bad = pwProblem(nw); if (bad) return json(req, { error: bad }, 400);
     const uid = await useToken(D, b.token, 'reset');
     if (!uid) return json(req, { error: 'This reset link has expired or was already used. Ask for a new one.' }, 400);
     const salt = hex(rand(16));
@@ -250,13 +277,23 @@ async function authRoute(req, env, url) {
     if (authTooMany(req)) return json(req, { error: 'Too many tries. Wait a minute and try again.' }, 429);
     const b = await req.json().catch(() => ({}));
     const nw = String(b.new || '');
-    if (nw.length < 8 || nw.length > 200) return json(req, { error: 'Use a new password of at least 8 characters.' }, 400);
+    const bad = pwProblem(nw); if (bad) return json(req, { error: bad }, 400);
     if (u.pw && !same(await hashPw(String(b.old || ''), u.salt), u.pw)) return json(req, { error: 'Your current password is not right.' }, 401);
     const salt = hex(rand(16));
     await D.prepare('UPDATE users SET pw = ?1, salt = ?2 WHERE id = ?3').bind(await hashPw(nw, salt), salt, u.id).run();
+    await D.prepare('DELETE FROM sessions WHERE user_id = ?1 AND hash != ?2').bind(u.id, await sha((req.headers.get('Authorization') || '').slice(7).trim())).run();
+    return json(req, { ok: true, others_signed_out: true });
+  }
+  if (p === '/auth/logout_all' && req.method === 'POST') {
+    await D.prepare('DELETE FROM sessions WHERE user_id = ?1').bind(u.id).run();
     return json(req, { ok: true });
   }
   if (p === '/auth/delete' && req.method === 'POST') {
+    if (u.pw) {
+      if (authTooMany(req)) return json(req, { error: 'Too many tries. Wait a minute and try again.' }, 429);
+      const b = await req.json().catch(() => ({}));
+      if (!same(await hashPw(String(b.password || ''), u.salt), u.pw)) return json(req, { error: 'Type your password to delete the account.' }, 401);
+    }
     await D.batch([D.prepare('DELETE FROM sessions WHERE user_id = ?1').bind(u.id), D.prepare('DELETE FROM user_data WHERE user_id = ?1').bind(u.id), D.prepare('DELETE FROM tokens WHERE user_id = ?1').bind(u.id), D.prepare('DELETE FROM users WHERE id = ?1').bind(u.id)]);
     return json(req, { ok: true });
   }
