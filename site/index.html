@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-+VadDtW37YB9qCpA+PL1swoSI8aH2vmZMmIRQuWd6xA=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-wawuVjzIJ3NpYcvQGN4lHLk/h1l+qAdRMnYmDXHcd94=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070B1A">
 <meta name="color-scheme" content="dark">
@@ -126,6 +126,9 @@ body{font-synthesis-weight:none}
 .acc-list{list-style:none;padding:0;margin:0 0 14px;border:1px solid var(--line);border-radius:14px;overflow:hidden}
 .acc-list li{display:flex;justify-content:space-between;gap:10px;padding:12px 14px;font-size:14px}.acc-list li+li{border-top:1px solid var(--line)}.acc-list span{color:var(--muted)}
 .acc-pw{border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:0 0 14px}.acc-pw summary{cursor:pointer;font-weight:700;font-size:14px}.acc-pw .acc-form{margin-top:12px}
+.acc-link{display:block;margin:12px auto 0;border:none;background:none;color:var(--muted);font:700 14px var(--f);text-decoration:underline;cursor:pointer;padding:8px}
+.acc-verify{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border:1.5px solid var(--warn,#F5B84B);border-radius:14px;padding:14px;margin:0 0 14px}
+.acc-verify div{display:flex;flex-direction:column;gap:3px;flex:1;min-width:170px}.acc-verify b{font-size:15px}.acc-verify span{color:var(--muted);font-size:13px}
 .acc-out{width:100%;padding:13px;font-size:15px;border-radius:12px}
 .acc-del{display:block;margin:14px auto 0;border:none;background:none;color:var(--dim);font:600 13px var(--f);cursor:pointer;padding:8px}
 .acc-del.arm{color:var(--lose);font-weight:800}
@@ -3118,7 +3121,7 @@ function openPro(){
 function closePro(){PS.open=(PS.open||0)+1;const s=document.getElementById('prosheet');if(s){s.hidden=true;document.getElementById('proscrim').hidden=true;}}
 /* ---------- accounts: sign up, sign in, account page ---------- */
 let ACFG=(()=>{try{return JSON.parse(localStorage.getItem('faircatch-acfg')||'null');}catch(e){return null;}})();
-const AS={tab:'up',busy:false,err:'',msg:'',del:0,welcome:false};
+const AS={tab:'up',busy:false,err:'',msg:'',del:0,welcome:false,verifySent:false,reset:null,forgot:false};
 async function accApi(path,o={}){
   const r=await fetch(YW+'/auth/'+path,{method:o.method||'GET',headers:{'Content-Type':'application/json',...(ACC&&ACC.tok?{Authorization:'Bearer '+ACC.tok}:{})},body:o.body?JSON.stringify(o.body):undefined});
   const j=await r.json().catch(()=>({})); if(!r.ok){const e=new Error(j.error||'Something went wrong. Try again.');e.status=r.status;throw e;} return j;
@@ -3144,14 +3147,31 @@ function accBtn(){
 const G_SVG='<svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>';
 const EYE_SVG='<svg class="eo" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg><svg class="ec" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 3l18 18M10.6 5.1A10.8 10.8 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4M6.6 6.6C3.8 8.4 2 12 2 12s3.6 7 10 7c1.8 0 3.4-.5 4.8-1.3M9.9 9.9a3 3 0 0 0 4.2 4.2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
 const ACC_X='<button type="button" class="ps-x" data-accclose="1" aria-label="Close"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>';
+const agoShort=ms=>{const s=(Date.now()-ms)/1000;return s<60?'just now':s<3600?Math.floor(s/60)+' min ago':s<86400?Math.floor(s/3600)+' h ago':new Date(ms).toLocaleDateString('en-US',{month:'short',day:'numeric'});};
+const accOfferSoon=()=>!!(ACFG&&ACFG.spots>0&&ACC&&ACC.user&&!ACC.user.promo&&!ACC.user.owner);
 const fmtDay=ms=>new Date(ms).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
 function accHtml(){
   const head=`<div class="ps-h"><span class="acc-k">Account</span>${ACC_X}</div>`;
+  if(AS.reset) return `${head}
+     <h2 class="ps-t">Choose a new password</h2>
+     <form class="acc-form" id="accResetForm" novalidate>
+       <label><span>New password</span><span class="pw-wrap"><input id="accResetPw" type="password" autocomplete="new-password" minlength="8" required placeholder="At least 8 characters"><button type="button" class="pw-eye" data-pweye="1" aria-label="Show password" aria-pressed="false">${EYE_SVG}</button></span></label>
+       <button type="submit" class="btn primary acc-go" ${AS.busy?'disabled':''}>${AS.busy?'Saving…':'Save and sign in'}</button>
+     </form>${AS.err?`<p class="o-err acc-err" role="alert">${esc(AS.err)}</p>`:''}`;
+  if(!(ACC&&ACC.user)&&AS.forgot) return `${head}
+     <h2 class="ps-t">Reset your password</h2>
+     <p class="muted" style="margin:0 0 14px">Enter the email of your account. We will send you a link to choose a new password.</p>
+     <form class="acc-form" id="accForgotForm" novalidate>
+       <label><span>Email</span><input id="accEmail" type="email" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" required placeholder="you@email.com" value="${esc(AS.email||'')}"></label>
+       <button type="submit" class="btn primary acc-go" ${AS.busy?'disabled':''}>${AS.busy?'Sending…':'Send reset link'}</button>
+     </form>
+     ${AS.err?`<p class="o-err acc-err" role="alert">${esc(AS.err)}</p>`:''}${AS.msg?`<p class="ps-msg">${esc(AS.msg)}</p>`:''}
+     <button type="button" class="acc-link" data-accforgot="0">Back to sign in</button>`;
   if(!(ACC&&ACC.user)){
     const up=AS.tab==='up', g=ACFG&&ACFG.google;
     return `${head}
      <h2 class="ps-t">${up?'Create your account':'Welcome back'}</h2>
-     ${up&&accOfferOn()?`<div class="acc-promo"><b>Pro free for a month</b><span>The first 10 people to sign up get every Pro feature free for ${ACFG.days||30} days. <em>${ACFG.spots} of 10 spots left.</em></span></div>`:''}
+     ${up&&accOfferOn()?`<div class="acc-promo"><b>Pro free for a month</b><span>The first 10 people to sign up get every Pro feature free for ${ACFG.days||30} days${ACFG.email?', starting when they confirm their email':''}. <em>${ACFG.spots} of 10 spots left.</em></span></div>`:''}
      <div class="acc-tabs" role="tablist"><button type="button" role="tab" aria-selected="${up}" data-acctab="up">Sign up</button><button type="button" role="tab" aria-selected="${!up}" data-acctab="in">Sign in</button></div>
      ${g?`<a class="acc-g" href="${esc(YW+'/auth/google?return='+encodeURIComponent(location.origin+location.pathname))}">${G_SVG}<span>Continue with Google</span></a><div class="acc-or"><span>or with email</span></div>`:''}
      <form class="acc-form" id="accForm" novalidate>
@@ -3159,8 +3179,9 @@ function accHtml(){
        <label><span>Password</span><span class="pw-wrap"><input id="accPw" type="password" autocomplete="${up?'new-password':'current-password'}" minlength="8" required placeholder="${up?'At least 8 characters':'Your password'}"><button type="button" class="pw-eye" data-pweye="1" aria-label="Show password" aria-pressed="false">${EYE_SVG}</button></span></label>
        <button type="submit" class="btn primary acc-go" ${AS.busy?'disabled':''}>${AS.busy?'One moment…':up?'Create account':'Sign in'}</button>
      </form>
-     ${AS.err?`<p class="o-err acc-err" role="alert">${esc(AS.err)}</p>`:''}
-     <p class="acc-fine">We keep your email and a scrambled copy of your password, nothing else. Your leagues stay on this device.${up?' By creating an account you agree to the <a href="terms.html" target="_blank" rel="noopener">terms of use</a> and <a href="privacy.html" target="_blank" rel="noopener">privacy policy</a>.':''}</p>`;
+     ${!up&&ACFG&&ACFG.email?'<button type="button" class="acc-link" data-accforgot="1">Forgot your password?</button>':''}
+     ${AS.err?`<p class="o-err acc-err" role="alert">${esc(AS.err)}</p>`:''}${AS.msg?`<p class="ps-msg">${esc(AS.msg)}</p>`:''}
+     <p class="acc-fine">We keep your email and a scrambled copy of your password. Once you are signed in, your leagues and settings are saved to your account so they follow you to any device.${up?' By creating an account you agree to the <a href="terms.html" target="_blank" rel="noopener">terms of use</a> and <a href="privacy.html" target="_blank" rel="noopener">privacy policy</a>.':''}</p>`;
   }
   const u=ACC.user, pro=accPro(), lic=!!(PRO&&PRO.ok), left=Math.max(0,Math.ceil((u.pro_until-Date.now())/864e5));
   const f=freeUse('finder');
@@ -3169,13 +3190,15 @@ function accHtml(){
     :lic?`<div class="acc-plan on"><span class="ps-badge">PRO</span><div><b>Pro</b><span>With a license key on this device.</span></div></div>`
     :`<div class="acc-plan"><div><b>Free plan</b><span>${u.promo?'Your free Pro month has ended. ':''}1 connected league and ${FREE.finder} trade finder searches a day.</span></div><button type="button" class="btn primary" data-pro="1">Upgrade to Pro</button></div>`;
   return `${head}
-   ${AS.welcome?`<div class="acc-promo"><b>${pro&&u.promo?'You got a free month of Pro':'You are in'}</b><span>${pro&&u.promo?'You are one of the first 10. Every Pro feature is open until '+esc(fmtDay(u.pro_until))+'.':'Your account is ready.'}</span></div>`:''}
+   ${AS.welcome?`<div class="acc-promo"><b>${pro&&u.promo?'You got a free month of Pro':'You are in'}</b><span>${pro&&u.promo?'You are one of the first 10. Every Pro feature is open until '+esc(fmtDay(u.pro_until))+'.':AS.verifySent?'We sent a link to '+esc(u.email)+'. Tap it to confirm your email'+(accOfferSoon()?' and start your free month of Pro.':'.'):'Your account is ready.'}</span></div>`:''}
+   ${!u.verified&&ACFG&&ACFG.email&&!AS.welcome?`<div class="acc-verify"><div><b>Confirm your email</b><span>${accOfferSoon()?'Your free month of Pro starts once you confirm. ':''}Check your inbox for our link.</span></div><button type="button" class="btn" data-accverify="1" ${AS.busy?'disabled':''}>Send it again</button></div>`:''}
    <div class="acc-who"><span class="acc-av big">${esc(u.email.charAt(0).toUpperCase())}</span><div><b>${esc(u.email)}</b><span>Member since ${esc(new Date(u.created).toLocaleDateString('en-US',{month:'long',year:'numeric'}))} · ${u.google?'Google':'Email'} sign-in</span></div></div>
    ${plan}
    <ul class="acc-list">
      <li><span>Connected leagues</span><b>${CONN.length}</b></li>
      <li><span>Format</span><b>${esc({dynasty:'Dynasty',contender:'Contend',rebuild:'Rebuild',redraft:'Redraft'}[S.mode]||S.mode)} · ${S.qb==='sf'?'Superflex':'1QB'}</b></li>
      <li><span>Trade finder today</span><b>${isPro()?'Unlimited':f.left+' of '+f.lim+' left'}</b></li>
+     <li><span>Saved to your account</span><b>${SY.err?'Not saved, will retry':SY.at?'Yes · '+esc(agoShort(SY.at)):'Saving…'}</b></li>
    </ul>
    <details class="acc-pw"><summary>${u.password?'Change password':'Add a password'}</summary>
      <form class="acc-form" id="accPwForm" novalidate>
@@ -3191,22 +3214,40 @@ function renderAcc(){const s=document.getElementById('accsheet');if(s&&!s.hidden
 function openAcc(tab){
   let s=document.getElementById('accsheet');
   if(!s){document.body.insertAdjacentHTML('beforeend','<div class="scrim" id="accscrim" data-accclose="1" hidden></div><div class="sheet pro-sheet acc-sheet" id="accsheet" role="dialog" aria-label="Your account" hidden></div>');s=document.getElementById('accsheet');}
-  if(tab==='up'||tab==='in') AS.tab=tab;
+  if(tab==='up'||tab==='in'){AS.tab=tab;AS.forgot=false;}
   AS.err='';AS.msg='';AS.del=0;s.hidden=false;document.getElementById('accscrim').hidden=false;s.innerHTML=accHtml();
   if(!ACFG||Date.now()-(ACFG.at||0)>60000) accConfig();
 }
-function closeAcc(){const s=document.getElementById('accsheet');if(s){s.hidden=true;document.getElementById('accscrim').hidden=true;}AS.welcome=false;}
+function closeAcc(){const s=document.getElementById('accsheet');if(s){s.hidden=true;document.getElementById('accscrim').hidden=true;}AS.welcome=false;AS.forgot=false;AS.reset=null;}
 async function accSubmit(){
   const email=(document.getElementById('accEmail')||{}).value||'', pw=(document.getElementById('accPw')||{}).value||'';
   AS.email=email.trim();
   if(!email.trim()||!pw){AS.err='Enter your email and a password.';renderAcc();return;}
   AS.busy=true;AS.err='';renderAcc();
   try{
-    const was=isPro(), j=await accApi(AS.tab==='up'?'signup':'login',{method:'POST',body:{email,password:pw}});
-    ACC={tok:j.token,user:j.user};saveAcc();AS.busy=false;AS.welcome=!!j.welcome;AS.email='';
+    const was=isPro(), j=await accApi(AS.tab==='up'?'signup':'login',{method:'POST',body:{email,password:pw,app:location.origin+location.pathname}});
+    ACC={tok:j.token,user:j.user};saveAcc();AS.busy=false;AS.welcome=!!j.welcome;AS.verifySent=!!j.verify_sent;AS.email='';
     accConfig(); renderAcc(); if(was!==isPro()){fullRender(); if(j.welcome&&j.user.promo) celebratePro();} else renderSettings();
-    toast(j.welcome?'Account created':'Signed in'); VPING();
+    toast(j.welcome?'Account created':'Signed in'); VPING(); syncPull(true);
   }catch(e){AS.busy=false;AS.err=accNetErr(e);renderAcc();}
+}
+async function accForgot(){
+  const email=(document.getElementById('accEmail')||{}).value||''; AS.email=email.trim();
+  if(!AS.email){AS.err='Enter your email.';renderAcc();return;}
+  AS.busy=true;AS.err='';AS.msg='';renderAcc();
+  try{await accApi('forgot',{method:'POST',body:{email:AS.email,app:location.origin+location.pathname}});AS.busy=false;AS.msg='If that email has an account, a reset link is on its way. Check your inbox (and spam).';renderAcc();}
+  catch(e){AS.busy=false;AS.err=accNetErr(e);renderAcc();}
+}
+async function accReset(){
+  const n=(document.getElementById('accResetPw')||{}).value||'';
+  AS.busy=true;AS.err='';renderAcc();
+  try{const was=isPro(),j=await accApi('reset',{method:'POST',body:{token:AS.reset,new:n}});ACC={tok:j.token,user:j.user};saveAcc();AS.busy=false;AS.reset=null;AS.msg='New password saved. You are signed in.';renderAcc();toast('Password changed');if(was!==isPro())fullRender();else renderSettings();syncPull(true);}
+  catch(e){AS.busy=false;AS.err=accNetErr(e);renderAcc();}
+}
+async function accVerifySend(){
+  AS.busy=true;AS.err='';AS.msg='';renderAcc();
+  try{const j=await accApi('verify/send',{method:'POST',body:{app:location.origin+location.pathname}});AS.busy=false;AS.msg=j.already?'Your email is already confirmed.':'Sent. Check your inbox (and spam).';if(j.already)accRefresh();renderAcc();}
+  catch(e){AS.busy=false;AS.err=accNetErr(e);renderAcc();}
 }
 async function accPassword(){
   const o=(document.getElementById('accOld')||{}).value||'', n=(document.getElementById('accNew')||{}).value||'';
@@ -3230,13 +3271,60 @@ function accClick(t,e){
   if(t.closest('[data-accclose]')){closeAcc();return true;}
   const tb=t.closest('[data-acctab]'); if(tb){AS.tab=tb.dataset.acctab;AS.err='';renderAcc();return true;}
   if(t.closest('[data-accout]')){accSignOut();return true;}
+  const fg=t.closest('[data-accforgot]'); if(fg){AS.forgot=fg.dataset.accforgot==='1';AS.err='';AS.msg='';renderAcc();return true;}
+  if(t.closest('[data-accverify]')){accVerifySend();return true;}
   if(t.closest('[data-accdel]')){accDelete();return true;}
   return false;
 }
 document.addEventListener('submit',e=>{
   if(e.target.id==='accForm'){e.preventDefault();accSubmit();}
   else if(e.target.id==='accPwForm'){e.preventDefault();accPassword();}
+  else if(e.target.id==='accForgotForm'){e.preventDefault();accForgot();}
+  else if(e.target.id==='accResetForm'){e.preventDefault();accReset();}
 });
+/* ---------- account sync: leagues, settings and trades follow the account to any device ----------
+   Kept on the device only, never sent: the session, Yahoo sign-in tokens, a Pro license key, the visit id, the free-use counter. */
+const SYNC_RX=/^faircatch-(v4|connected|league|showdemo|slpuser|untouch-.*|moves-seen-.*|lg-.*)$/;
+const SY={at:(()=>{try{return +localStorage.getItem('faircatch-syncat')||0;}catch(e){return 0;}})(),last:(()=>{try{return localStorage.getItem('faircatch-synch')||'';}catch(e){return '';}})(),err:false,busy:false,timer:null};
+const hashStr=s=>{let a=5381,b=52711;for(let i=0;i<s.length;i++){const c=s.charCodeAt(i);a=(a*33)^c;b=(b*33)^c;}return (a>>>0).toString(36)+(b>>>0).toString(36)+s.length;};
+function syncSnap(){
+  const o={};try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(SYNC_RX.test(k))o[k]=localStorage.getItem(k);}}catch(e){}
+  let s=JSON.stringify(o);
+  if(s.length>480000){for(const k of Object.keys(o))if(k.startsWith('faircatch-lg-'))delete o[k];s=JSON.stringify(o);}   // league caches are fetched again if they do not fit
+  return s;
+}
+const syncMark=(s,at)=>{SY.last=hashStr(s);SY.at=at||Date.now();SY.err=false;try{localStorage.setItem('faircatch-synch',SY.last);localStorage.setItem('faircatch-syncat',String(SY.at));}catch(e){}};
+async function syncPush(){
+  if(!(ACC&&ACC.tok)||SY.busy) return;
+  const s=syncSnap(); if(hashStr(s)===SY.last) return;
+  if(s==='{}') return;
+  SY.busy=true;
+  try{const j=await accApi('sync',{method:'POST',body:{data:s}});syncMark(s,j.updated);}catch(e){SY.err=true;if(e.status===401){ACC=null;saveAcc();renderSettings();}}
+  SY.busy=false; renderAcc();
+}
+// fresh: just signed in on this device. Then the account's saved copy wins, unless the account has nothing saved yet.
+async function syncPull(fresh){
+  if(!(ACC&&ACC.tok)) return;
+  let j; try{j=await accApi('sync');}catch(e){SY.err=true;renderAcc();return;}
+  const local=syncSnap();
+  if(!j.data){ if(local!=='{}') await syncPush(); return; }
+  if(j.data===local){syncMark(local,j.updated);renderAcc();return;}
+  const localChanged=hashStr(local)!==SY.last;
+  if(!fresh&&localChanged&&SY.at>=j.updated){ await syncPush(); return; }   // this device has newer edits
+  if(!fresh&&j.updated<=SY.at){ await syncPush(); return; }
+  // apply the account's copy and start again with it
+  let o; try{o=JSON.parse(j.data);}catch(e){return;}
+  try{
+    const drop=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(SYNC_RX.test(k)&&!(k in o))drop.push(k);}
+    drop.forEach(k=>localStorage.removeItem(k));
+    for(const [k,v] of Object.entries(o)) if(SYNC_RX.test(k)&&typeof v==='string') localStorage.setItem(k,v);
+  }catch(e){return;}
+  syncMark(syncSnap(),j.updated);
+  try{sessionStorage.setItem('faircatch-synced-open',ACC_BACK||AS.welcome||document.getElementById('accsheet')&&!document.getElementById('accsheet').hidden?'1':'');}catch(e){}
+  location.reload();
+}
+setInterval(()=>{if(ACC&&ACC.tok&&document.visibilityState==='visible')syncPush();},5000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')syncPush();else syncPull(false);});
 /* ---------- Pro unlocked: field goal from the camera behind the net ---------- */
 const FGX=(()=>{
 const rnd=(a,b)=>a+Math.random()*(b-a);
@@ -3644,12 +3732,18 @@ let Y_BACK=false, ACC_BACK=false, VPING=()=>{};
 })();
 
 // coming back from Google sign-in: the session rides in the #fragment, which never reaches a server
-(function accReturn(){
-  const h=location.hash.slice(1); if(!/fc_(tok|err)=/.test(h)) return;
+function accReturn(){
+  const h=location.hash.slice(1); if(!/fc_(tok|err|reset|verified)=/.test(h)) return false;
   const q=new URLSearchParams(h); history.replaceState(null,'',location.pathname+location.search);
-  if(q.get('fc_tok')){ACC={tok:q.get('fc_tok'),user:null};saveAcc();AS.welcome=q.get('fc_new')==='1';ACC_BACK=true;}
+  if(q.get('fc_reset')){AS.reset=q.get('fc_reset');ACC_BACK=true;}
+  else if(q.get('fc_verified')){AS.welcome=true;AS.verified=true;ACC_BACK=true;}
+  else if(q.get('fc_tok')){ACC={tok:q.get('fc_tok'),user:null};saveAcc();AS.welcome=q.get('fc_new')==='1';ACC_BACK=true;}
   else {AS.err=q.get('fc_err')||'Sign-in did not finish.';ACC_BACK=true;}
-})();
+  return true;
+}
+accReturn();
+// a link from an email opened while the app is already open on this page
+window.addEventListener('hashchange',()=>{if(accReturn()){accRefresh().then(()=>{openAcc(ACC&&ACC.user?'':'in');if(AS.verified)toast('Email confirmed');if(AS.welcome&&accPro()&&ACC.user.promo)celebratePro();});}});
 fullRender();
 refreshConnected();
 refreshYahoo();
@@ -3660,7 +3754,11 @@ refreshYahoo();
   const ping=()=>{if(document.visibilityState!=='visible')return;fetch(YW+'/stats/ping',{method:'POST',headers:{'Content-Type':'application/json',...(ACC&&ACC.tok?{Authorization:'Bearer '+ACC.tok}:{})},body:JSON.stringify({vid}),keepalive:true}).catch(()=>{});};
   VPING=ping;ping();setInterval(ping,60000);document.addEventListener('visibilitychange',ping);
 })();
-accRefresh().then(()=>{if(ACC_BACK){openAcc(ACC&&ACC.user?'':'in');if(AS.welcome&&accPro()&&ACC.user.promo)celebratePro();}});
+accRefresh().then(()=>{
+  if(ACC_BACK){openAcc(ACC&&ACC.user?'':'in');if(AS.verified)toast('Email confirmed');if(AS.welcome&&accPro()&&ACC.user.promo)celebratePro();}
+  syncPull(false);
+});
+try{if(sessionStorage.getItem('faircatch-synced-open')==='1'){sessionStorage.removeItem('faircatch-synced-open');setTimeout(()=>{openAcc('');toast('Your saved leagues are loaded');},400);}}catch(e){}
 accConfig();
 if(Y_BACK){setMain('league');yFind();}else if(CN.yerr){setMain('league');}
 proValidate();
