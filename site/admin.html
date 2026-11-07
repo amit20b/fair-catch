@@ -1,7 +1,7 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
 <title>Fair Catch Admin</title><meta name="color-scheme" content="dark light"><link rel="icon" type="image/png" href="icon-192.png">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-WusbcjKJKydxEhTDtOSuZTrXbTFmuYB+lsI85vZDpSM='; style-src 'unsafe-inline'; img-src 'self' data:; connect-src https://fair-catch-yahoo.amitibaum.workers.dev; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-8NjosEmy6HInws9F/O6NA2y+jyPT12LjNOzG72wDkg4='; style-src 'unsafe-inline'; img-src 'self' data:; connect-src https://fair-catch-yahoo.amitibaum.workers.dev; base-uri 'none'; form-action 'none'">
 <style>
 :root{--bg:#070B1A;--card:#0F1630;--card2:#151F40;--line:#25305A;--ink:#EEF2FF;--muted:#8E9BC4;--dim:#6A77A0;--accent:#C6FF3D;--on-accent:#0A1200;--bar:#C6FF3D;--bar2:#5CC8FF;--good:#3DDC97;--bad:#FF6B7A}
 @media (prefers-color-scheme:light){:root{--bg:#F4F6FB;--card:#FFFFFF;--card2:#EEF1F8;--line:#D8DEEE;--ink:#0B1230;--muted:#4F5B80;--dim:#7480A3;--accent:#3A6B00;--on-accent:#FFFFFF;--bar:#4E8A00;--bar2:#1F7FC4;--good:#127A4B;--bad:#C2283A}}
@@ -42,6 +42,7 @@ th{color:var(--muted);font-size:12px;font-weight:650;border-top:none}td.e{white-
 </style></head><body><main id="app"><p class="muted">Loading…</p></main>
 <script>
 (()=>{
+if(window.top!==window.self){document.body.innerHTML='<p style="padding:40px">Open this page in its own window.</p>';return;}
 const API='https://fair-catch-yahoo.amitibaum.workers.dev';
 const $=s=>document.querySelector(s), app=$('#app');
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

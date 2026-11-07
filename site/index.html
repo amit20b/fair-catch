@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-wawuVjzIJ3NpYcvQGN4lHLk/h1l+qAdRMnYmDXHcd94=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-ZOnxBJVOoT55CP5bDYjPr4UQaex+j9CzRHqVE4mWwwE=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070B1A">
 <meta name="color-scheme" content="dark">
@@ -129,6 +129,8 @@ body{font-synthesis-weight:none}
 .acc-link{display:block;margin:12px auto 0;border:none;background:none;color:var(--muted);font:700 14px var(--f);text-decoration:underline;cursor:pointer;padding:8px}
 .acc-verify{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border:1.5px solid var(--warn,#F5B84B);border-radius:14px;padding:14px;margin:0 0 14px}
 .acc-verify div{display:flex;flex-direction:column;gap:3px;flex:1;min-width:170px}.acc-verify b{font-size:15px}.acc-verify span{color:var(--muted);font-size:13px}
+.acc-all{margin-top:8px;background:transparent}
+.acc-delpw{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:700;color:var(--muted);margin:14px 0 0}.acc-delpw input{padding:12px 48px 12px 14px;border-radius:12px;border:1px solid var(--lose);background:var(--card-2);color:var(--ink);font:inherit;width:100%}
 .acc-out{width:100%;padding:13px;font-size:15px;border-radius:12px}
 .acc-del{display:block;margin:14px auto 0;border:none;background:none;color:var(--dim);font:600 13px var(--f);cursor:pointer;padding:8px}
 .acc-del.arm{color:var(--lose);font-weight:800}
@@ -1141,7 +1143,7 @@ function renderHead(r,g){
   const from=PILL||{l:50,w:0,c:tgt.c};
   const gauge=`<div class="fbar" role="img" aria-label="${esc(g.status+'. '+g.line)}"><div class="fmid"></div><div class="ffill ${from.c}" id="ffill" style="left:${from.l}%;width:${from.w}%"></div></div>`;
   PILL_TARGET=tgt;
-  const btn=(side,label)=>`<button class="addbtn" type="button" data-open="${side}" aria-label="Add players ${label}">${plusIcon}${T[side].length?`<span class="cnt">${T[side].length}</span>`:''}</button>`;
+  const btn=(side,label)=>`<button class="addbtn" type="button" data-open="${side}" aria-label="Add players ${esc(label)}">${plusIcon}${T[side].length?`<span class="cnt">${T[side].length}</span>`:''}</button>`;
   document.getElementById('head').innerHTML=`
   <div class="teams">
     <div class="team">${btn('B',theirName()+' receives')}<div style="min-width:0">${inLeagueCtx()?`<button type="button" class="tname tpick${theirName().length>14?' long':''}" data-open="TEAM" aria-label="Choose the team you are trading with">${esc(theirName())} <span aria-hidden="true">▾</span></button>`:`<div class="tname">Their Team</div>`}<div class="tsub num">${fmt(r.B)}</div></div></div>
@@ -3019,10 +3021,12 @@ const PROCFG={store:0,products:[],monthly:'',season:'',priceM:'$4.99',priceS:'$2
 const PRO_ON=true; // accounts carry Pro (the first sign-ups get a free month); license keys still work once the store opens
 let PRO=(()=>{try{return JSON.parse(localStorage.getItem('faircatch-pro')||'null');}catch(e){return null;}})();
 const savePro=()=>{try{PRO?localStorage.setItem('faircatch-pro',JSON.stringify(PRO)):localStorage.removeItem('faircatch-pro');}catch(e){}};
+const cleanName=s=>String(s==null?'':s).replace(/[\u0000-\u001f\u007f<>"`]/g,'').replace(/\s+/g,' ').trim().slice(0,48);
 let ACC=(()=>{try{return JSON.parse(localStorage.getItem('faircatch-acc')||'null');}catch(e){return null;}})();
 const saveAcc=()=>{try{ACC?localStorage.setItem('faircatch-acc',JSON.stringify(ACC)):localStorage.removeItem('faircatch-acc');}catch(e){}};
 const accPro=()=>!!(ACC&&ACC.user&&ACC.user.pro_until>Date.now());
 const OWNER_BUILD=!!document.getElementById('ownerflag'); // the owner's private page
+try{if(!OWNER_BUILD&&window.top!==window.self&&/github\.io$|faircatch\.com$/.test(location.hostname)){document.documentElement.innerHTML='<body style="background:#070B1A;color:#EEF2FF;font:16px system-ui;padding:40px;text-align:center"><p>Fair Catch opens in its own window.</p><p><a style="color:#C6FF3D" target="_top" href="'+location.href.replace(/"/g,'')+'">Open Fair Catch</a></p></body>';throw 0;}}catch(e){if(e===0)throw new Error('framed');}
 const isPro=()=>!PRO_ON||OWNER_BUILD||accPro()||!!(PRO&&PRO.ok&&Date.now()-(PRO.checked||0)<21*864e5);
 const FREE={finder:3};
 function freeUse(kind){
@@ -3208,7 +3212,9 @@ function accHtml(){
      </form></details>
    ${AS.err?`<p class="o-err acc-err" role="alert">${esc(AS.err)}</p>`:''}${AS.msg?`<p class="ps-msg">${esc(AS.msg)}</p>`:''}
    <button type="button" class="btn acc-out" data-accout="1">Sign out</button>
-   <button type="button" class="acc-del${AS.del?' arm':''}" data-accdel="1">${AS.del?'Tap again to delete your account for good':'Delete account'}</button>`;
+   <button type="button" class="btn acc-out acc-all" data-accall="1">Sign out on all devices</button>
+   ${AS.del&&u.password?`<label class="acc-delpw"><span>Type your password to delete your account and everything saved in it</span><span class="pw-wrap"><input id="accDelPw" type="password" autocomplete="current-password"><button type="button" class="pw-eye" data-pweye="1" aria-label="Show password" aria-pressed="false">${EYE_SVG}</button></span></label>`:''}
+   <button type="button" class="acc-del${AS.del?' arm':''}" data-accdel="1">${AS.del?'Delete my account for good':'Delete account'}</button>`;
 }
 function renderAcc(){const s=document.getElementById('accsheet');if(s&&!s.hidden)s.innerHTML=accHtml();}
 function openAcc(tab){
@@ -3252,7 +3258,7 @@ async function accVerifySend(){
 async function accPassword(){
   const o=(document.getElementById('accOld')||{}).value||'', n=(document.getElementById('accNew')||{}).value||'';
   AS.busy=true;AS.err='';AS.msg='';renderAcc();
-  try{await accApi('password',{method:'POST',body:{old:o,new:n}});AS.busy=false;AS.msg='Password saved.';ACC.user.password=true;saveAcc();renderAcc();}
+  try{await accApi('password',{method:'POST',body:{old:o,new:n}});AS.busy=false;AS.msg='Password saved. Other devices were signed out.';ACC.user.password=true;saveAcc();renderAcc();}
   catch(e){AS.busy=false;AS.err=accNetErr(e);renderAcc();if(e.status===401&&/Signed out/.test(e.message)){ACC=null;saveAcc();renderAcc();renderSettings();}}
 }
 async function accSignOut(){
@@ -3260,10 +3266,16 @@ async function accSignOut(){
   ACC=null;saveAcc();AS.tab='in';closeAcc();toast('Signed out');if(was!==isPro())fullRender();else renderSettings();
 }
 async function accDelete(){
-  if(!AS.del){AS.del=1;renderAcc();setTimeout(()=>{if(AS.del){AS.del=0;renderAcc();}},5000);return;}
+  if(!AS.del){AS.del=1;renderAcc();if(!(ACC.user&&ACC.user.password))setTimeout(()=>{if(AS.del){AS.del=0;renderAcc();}},5000);else setTimeout(()=>{const i=document.getElementById('accDelPw');i&&i.focus();},50);return;}
+  const pw=(document.getElementById('accDelPw')||{}).value||'';
+  if(ACC.user&&ACC.user.password&&!pw){AS.err='Type your password to delete the account.';renderAcc();return;}
   AS.busy=true;renderAcc();
-  try{const was=isPro();await accApi('delete',{method:'POST'});ACC=null;saveAcc();AS.busy=false;AS.del=0;closeAcc();toast('Account deleted');if(was!==isPro())fullRender();else renderSettings();}
-  catch(e){AS.busy=false;AS.del=0;AS.err=accNetErr(e);renderAcc();}
+  try{const was=isPro();await accApi('delete',{method:'POST',body:{password:pw}});ACC=null;saveAcc();AS.busy=false;AS.del=0;closeAcc();toast('Account deleted');if(was!==isPro())fullRender();else renderSettings();}
+  catch(e){AS.busy=false;AS.err=accNetErr(e);renderAcc();}
+}
+async function accSignOutAll(){
+  const was=isPro(); try{await accApi('logout_all',{method:'POST'});}catch(e){}
+  ACC=null;saveAcc();AS.tab='in';closeAcc();toast('Signed out on all devices');if(was!==isPro())fullRender();else renderSettings();
 }
 function accClick(t,e){
   const a=t.closest('[data-acc]'); if(a){closePro();openAcc(a.dataset.acc);return true;}
@@ -3271,6 +3283,7 @@ function accClick(t,e){
   if(t.closest('[data-accclose]')){closeAcc();return true;}
   const tb=t.closest('[data-acctab]'); if(tb){AS.tab=tb.dataset.acctab;AS.err='';renderAcc();return true;}
   if(t.closest('[data-accout]')){accSignOut();return true;}
+  if(t.closest('[data-accall]')){accSignOutAll();return true;}
   const fg=t.closest('[data-accforgot]'); if(fg){AS.forgot=fg.dataset.accforgot==='1';AS.err='';AS.msg='';renderAcc();return true;}
   if(t.closest('[data-accverify]')){accVerifySend();return true;}
   if(t.closest('[data-accdel]')){accDelete();return true;}
@@ -3522,7 +3535,7 @@ async function sleeperLeague(lid,uid){
   const miss=[...all].filter(s=>s!=='0'&&!SLPDEF[s]&&!SIDS[s]);
   if(miss.length>3&&!SLP_ALL){try{SLP_ALL=await sj('/players/nfl');}catch(e){SLP_ALL={};}}
   const nm=s=>{s=String(s);if(s==='0')return '';if(SLPDEF[s])return SLPDEF[s];if(SIDS[s])return SIDS[s];const p=SLP_ALL&&SLP_ALL[s];return p?appName(p.full_name||((p.first_name||'')+' '+(p.last_name||'')).trim()):'';};
-  const uname={};us.forEach(u=>{uname[u.user_id]=((u.metadata&&u.metadata.team_name)||u.display_name||'').trim();});
+  const uname={};us.forEach(u=>{uname[u.user_id]=cleanName((u.metadata&&u.metadata.team_name)||u.display_name||'');});
   const teams=ro.map(r=>{const st=r.settings||{};return {rid:r.roster_id,name:uname[r.owner_id]||('Team '+r.roster_id),
     rec:`${st.wins||0}-${st.losses||0}${st.ties?'-'+st.ties:''}`,pf:Math.round(((st.fpts||0)+(st.fpts_decimal||0)/100)*100)/100,
     p:(r.players||[]).map(nm).filter(Boolean),st:(r.starters||[]).map(nm)};});
@@ -3542,7 +3555,7 @@ async function sleeperLeague(lid,uid){
       drop:Object.entries(t.drops||{}).filter(([,r])=>+r===rid).map(([s])=>nm(s)).filter(Boolean)}));
   }).filter(m=>m.add.length||m.drop.length);
   const now=new Date().toLocaleString('sv-SE',{timeZone:'Asia/Jerusalem'}).slice(0,16);
-  return {id:String(lid),name:lg.name||'My league',platform:'Sleeper',live:true,user:uid,week,fetched:now.slice(0,10),synced:now,s,slots,me:mine?mine.roster_id:null,
+  return {id:String(lid),name:cleanName(lg.name)||'My league',platform:'Sleeper',live:true,user:uid,week,fetched:now.slice(0,10),synced:now,s,slots,me:mine?mine.roster_id:null,
     median:set.league_average_match===1,faab:set.waiver_type===2?(set.waiver_budget||100):undefined,teams,
     waiver:set.waiver_type===2?`FAAB ($${set.waiver_budget||100} budget)`:'Rolling waivers',moves,season:lg.season};
 }
@@ -3558,7 +3571,7 @@ function setDemo(on){
   BUILTIN.forEach(b=>{const i=LEAGUES.indexOf(b);if(on&&i<0)LEAGUES.push(b);if(!on&&i>=0&&CONN.length)LEAGUES.splice(i,1);});
   if(!LEAGUES.includes(LEAGUE)) useLeague(LEAGUES[0]); else renderLeague();
 }
-const FC_SITE=/github\.io$|^localhost$|^127\./.test(location.hostname)||location.protocol==='file:';
+const FC_SITE=/github\.io$|(^|\.)faircatch\.com$|^localhost$|^127\./.test(location.hostname)||location.protocol==='file:';
 async function cnFind(){
   const q=(document.getElementById('cnUser')||{}).value||CN.q; CN.q=q.trim().replace(/^@+/,'').trim(); if(!CN.q) return;
   try{localStorage.setItem('faircatch-slpuser',CN.q);}catch(e){}
@@ -3569,7 +3582,7 @@ async function cnFind(){
     if(!SLP_STATE){try{SLP_STATE=await sj('/state/nfl');}catch(e){SLP_STATE={};}}
     const season=SLP_STATE.league_season||SLP_STATE.season||String(new Date().getFullYear());
     const ls=(await sj(`/user/${u.user_id}/leagues/nfl/${season}`))||[];
-    CN.user={id:u.user_id,name:u.display_name||CN.q};CN.leagues=ls.map(l=>({id:String(l.league_id),name:l.name,teams:l.total_rosters,season:l.season,status:l.status}));
+    CN.user={id:u.user_id,name:cleanName(u.display_name||CN.q)};CN.leagues=ls.map(l=>({id:String(l.league_id),name:cleanName(l.name),teams:l.total_rosters,season:l.season,status:l.status}));
     if(!ls.length) CN.err=`${CN.user.name} has no Sleeper leagues for the ${season} season.`;
   }catch(e){const m=(e&&e.message)||String(e);CN.err=/Load failed|Failed to fetch|NetworkError|network/i.test(m)?(FC_SITE?'Could not reach Sleeper. Check your connection and try again.':'OFFSITE'):m;}
   CN.busy=false;renderLeague();
@@ -3650,7 +3663,7 @@ async function yFind(){
     const fc=await yj('users;use_login=1/games;game_keys=nfl/leagues');
     const u=ymerge(fc.users&&fc.users[0]&&fc.users[0].user);
     const games=yarr(u.games).map(g=>ymerge(g.game));
-    const ls=[];games.forEach(g=>yarr(g.leagues).forEach(l=>{const x=ymerge(l.league);ls.push({key:x.league_key,id:String(x.league_id),name:x.name,teams:+x.num_teams||0,season:String(x.season||g.season||'')});}));
+    const ls=[];games.forEach(g=>yarr(g.leagues).forEach(l=>{const x=ymerge(l.league);ls.push({key:x.league_key,id:String(x.league_id),name:cleanName(x.name),teams:+x.num_teams||0,season:String(x.season||g.season||'')});}));
     CN.yleagues=ls; if(!ls.length) CN.yerr='No Yahoo football leagues on this account for this season.';
   }catch(e){const m=(e&&e.message)||String(e);CN.yerr=m==='YAHOO_SIGNIN'?'SIGNIN':/Load failed|Failed to fetch|NetworkError/i.test(m)?'Could not reach Yahoo. Check your connection and try again.':m;}
   CN.ybusy=false;renderLeague();
@@ -3667,7 +3680,7 @@ async function yahooLeague(key){
   const teams=yarr(st.teams).map(x=>{const t=ymerge(x.team);const ts=t.team_standings||{},ot=ts.outcome_totals||{};const rid=+t.team_id;
     if(+t.is_owned_by_current_login===1) me=rid;
     const r=rosters[t.team_key]||{p:[],st:[]};
-    return {rid,name:String(t.name||('Team '+rid)).trim(),rec:`${ot.wins||0}-${ot.losses||0}${+ot.ties?'-'+ot.ties:''}`,pf:Math.round((+((t.team_points||{}).total)||+ts.points_for||0)*100)/100,place:+ts.rank||undefined,p:r.p,st:r.st};});
+    return {rid,name:cleanName(t.name)||('Team '+rid),rec:`${ot.wins||0}-${ot.losses||0}${+ot.ties?'-'+ot.ties:''}`,pf:Math.round((+((t.team_points||{}).total)||+ts.points_for||0)*100)/100,place:+ts.rank||undefined,p:r.p,st:r.st};});
   const slots={QB:0,RB:0,WR:0,TE:0,FLEX:0,K:0,DST:0,BN:0,IR:0};
   (set.roster_positions||[]).forEach(o=>{const rp=o.roster_position||o;const p=rp.position,c=+rp.count||0;
     if(p==='DEF')slots.DST+=c;else if(p==='Q/W/R/T')slots.SF=(slots.SF||0)+c;else if(/\//.test(p)||p==='W/R/T')slots.FLEX+=c;else if(p==='IR'||p==='IL')slots.IR+=c;else if(p in slots)slots[p]+=c;});
@@ -3677,7 +3690,7 @@ async function yahooLeague(key){
     scoring:rec>=.75?'ppr':rec>=.25?'half':'std',tep:'0'};
   const faab=+set.uses_faab===1;
   const now=new Date().toLocaleString('sv-SE',{timeZone:'Asia/Jerusalem'}).slice(0,16);
-  return {id:String(lg.league_id),key,name:lg.name||'My league',platform:'Yahoo',live:true,week:+lg.current_week||1,fetched:now.slice(0,10),synced:now,s,slots,me,
+  return {id:String(lg.league_id),key,name:cleanName(lg.name)||'My league',platform:'Yahoo',live:true,week:+lg.current_week||1,fetched:now.slice(0,10),synced:now,s,slots,me,
     median:false,teams,waiver:faab?'FAAB':'Rolling waivers',moves:[],season:String(lg.season||'')};
 }
 async function yAdd(key){

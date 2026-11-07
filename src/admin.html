@@ -42,6 +42,7 @@ th{color:var(--muted);font-size:12px;font-weight:650;border-top:none}td.e{white-
 </style></head><body><main id="app"><p class="muted">Loading…</p></main>
 <script>
 (()=>{
+if(window.top!==window.self){document.body.innerHTML='<p style="padding:40px">Open this page in its own window.</p>';return;}
 const API='https://fair-catch-yahoo.amitibaum.workers.dev';
 const $=s=>document.querySelector(s), app=$('#app');
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
