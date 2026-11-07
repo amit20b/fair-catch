@@ -13,6 +13,7 @@ permissions:
   contents: write
   pages: write
   id-token: write
+  issues: write
 
 concurrency:
   group: refresh
@@ -47,7 +48,7 @@ jobs:
 
       - name: Check the new page
         run: |
-          python scripts/check.py work/out.html work/app.js
+          python scripts/check.py work/out.html work/app.js site/index.html
           node --check work/app.js
 
       - name: Save the new page
@@ -63,9 +64,19 @@ jobs:
             # someone else (a Yahoo, offer or expert update) saved the page first: redo the update on top of theirs
             git fetch origin main && git reset --hard origin/main
             python -I scripts/refresh.py site/index.html work work/out.html
-            python scripts/check.py work/out.html work/app.js && node --check work/app.js
+            python scripts/check.py work/out.html work/app.js site/index.html && node --check work/app.js
           done
           exit 1
+
+      - name: Tell the owner when a refresh is stopped
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          t="Fair Catch: a data refresh was stopped"
+          if [ -z "$(gh issue list --state open --search "$t in:title" --json number --jq '.[].number')" ]; then
+            gh issue create --title "$t" --body "A refresh at $(TZ=Asia/Jerusalem date '+%Y-%m-%d %H:%M') did not pass the checks, so the site kept its last good values. Details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          fi
 
   publish:
     needs: refresh

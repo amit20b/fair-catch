@@ -98,8 +98,17 @@ if os.path.exists(ecr_p):                     # expert rankings always; market p
         if nk in ros: ex1 = ros_curve(p["p"], ros[nk])
         elif p.get("e1") is not None: ex1 = p["e1"] * 0.97
         else: ex1 = f1
+        e1o = p.get("e1")
         p["e1"] = round(ex1)
         r1 = round(0.45 * f1 + 0.55 * ex1)
+        # guard 1: a value may only climb fast when a source climbed too (market price or expert rank); otherwise it is held
+        b0 = before.get(p["id"], 0)
+        if b0 > 300 and r1 > 1.35 * b0 and f1 <= 1.15 * max(f1o, 1) and not (nk in ros and e1o and ex1 > 1.15 * e1o):
+            report.append("guard: held %s at %d (wanted %d, sources did not move)" % (p["n"], round(1.1 * b0), r1)); r1 = round(1.1 * b0)
+        # guard 2: never far above both of its sources
+        cap = 1.6 * max(f1, ex1 if nk in ros else 0) + 300
+        if r1 > cap:
+            report.append("guard: capped %s at %d (wanted %d, market %d)" % (p["n"], cap, r1, f1)); r1 = round(cap)
         r2 = max(0, round(p.get("r2", 0) + 0.6 * (f2 - f2o)))
         if nk in sc["fc_dsf"] and nk in dsf:
             p["m"] = round(sc["fc_dsf"][nk]); p["x"] = round(dyn_curve(dsf[nk])); p["d2"] = round(0.55 * p["m"] + 0.45 * p["x"])
