@@ -36,6 +36,7 @@ th{color:var(--muted);font-size:12px;font-weight:650;border-top:none}td.e{white-
 .login{max-width:380px;margin:60px auto;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px}
 .login h2{margin:0 0 6px}.login label{display:block;font-size:13px;font-weight:650;color:var(--muted);margin:12px 0 6px}
 .login input{width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:var(--card2);color:var(--ink);font:inherit}
+.pw-wrap{position:relative;display:block}.pw-wrap input{padding-right:70px}.pw-eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:none;background:none;color:var(--muted);font:600 13px system-ui;cursor:pointer;padding:8px}
 .login .btn{width:100%;margin-top:14px;padding:12px}.err{color:var(--bad);font-weight:650;margin:10px 0 0}
 .muted{color:var(--muted)}.foot{color:var(--dim);font-size:12.5px;margin-top:14px}
 </style></head><body><main id="app"><p class="muted">Loading…</p></main>
@@ -53,8 +54,9 @@ const n=x=>Number(x||0).toLocaleString('en-US');
 function loginView(msg){
   app.innerHTML=`<form class="login" id="lf"><h2>Fair Catch admin</h2><p class="muted" style="margin:0">Sign in with the owner account.</p>
   <label for="em">Email</label><input id="em" type="email" autocomplete="email" required>
-  <label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password" required>
+  <label for="pw">Password</label><span class="pw-wrap"><input id="pw" type="password" autocomplete="current-password" required><button type="button" class="pw-eye" id="eye" aria-label="Show password" aria-pressed="false">Show</button></span>
   <button class="btn primary" type="submit">Sign in</button>${msg?`<p class="err">${esc(msg)}</p>`:''}</form>`;
+  $('#eye').onclick=()=>{const i=$('#pw'),s=i.type==='password';i.type=s?'text':'password';$('#eye').textContent=s?'Hide':'Show';$('#eye').setAttribute('aria-pressed',s);i.focus();};
   $('#lf').addEventListener('submit',async e=>{e.preventDefault();
     try{const r=await fetch(API+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:$('#em').value,password:$('#pw').value})});
       const j=await r.json();if(!r.ok)throw new Error(j.error||'Sign-in failed');ACC={tok:j.token,user:j.user};try{localStorage.setItem('faircatch-acc',JSON.stringify(ACC));}catch(e){}load();}
