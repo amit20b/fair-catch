@@ -92,7 +92,13 @@ if os.path.exists(ecr_p):                     # expert rankings always; market p
         if p["p"] not in ("QB", "RB", "WR", "TE") or p.get("out"): continue
         f1o, f2o = p.get("f1", 0), p.get("f2", 0)
         f1 = sc["fc_r1q"].get(nk, f1o); f2 = sc["fc_rsf"].get(nk, f2o) if sc["fc_rsf"] else f2o
-        ex1 = ros_curve(p["p"], ros[nk]) if nk in ros else max(0, (p.get("r1", 0) - 0.45 * f1o) / 0.55)
+        # expert part: from this run's rest-of-season rankings. A player missing from them keeps his last expert value,
+        # fading 3% a run, never one rebuilt from r1 (r1 is rescaled below every run, so rebuilding from it compounded:
+        # in Nov 2026 a WR outside the rankings crept from 1,400 to the #1 value of 10,000 over a week).
+        if nk in ros: ex1 = ros_curve(p["p"], ros[nk])
+        elif p.get("e1") is not None: ex1 = p["e1"] * 0.97
+        else: ex1 = f1
+        p["e1"] = round(ex1)
         r1 = round(0.45 * f1 + 0.55 * ex1)
         r2 = max(0, round(p.get("r2", 0) + 0.6 * (f2 - f2o)))
         if nk in sc["fc_dsf"] and nk in dsf:
