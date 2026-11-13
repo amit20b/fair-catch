@@ -2,7 +2,7 @@
 <html lang="en" class="boot">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-OPa5SlUdy+WX1PVeQoH/M3TN8Lj++e8QqUG8PoWYZPs=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-LdM40vSutmhXiqpX3peEgoEFj+Pd1KgIX8ZV8GSNQr0=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070B1A">
 <meta name="color-scheme" content="dark">
@@ -2374,7 +2374,7 @@ function ofDepth(ids,L){
   return out;
 }
 function solveOffer(){
-  const L=leagueData(); const P=parseOffer(OFS.text,L); if(!P) return {err:'Type or paste the offer first.'};
+  const L=leagueData(); const P=parseOffer(OFS.text,L); if(!P) return {err:'Type or paste the offer in the box first (the gray text is only an example), or tap Try an example.'};
   const give=P.give.filter(id=>!OFS.excl.has(id)), get=P.get.filter(id=>!OFS.excl.has(id));
   const owners={}; get.forEach(id=>{const o=ownerOf(id);if(o&&!o.me)owners[o.rid]=(owners[o.rid]||0)+1;});
   let rid=OFS.rid!=null?OFS.rid:+(Object.entries(owners).sort((a,b)=>b[1]-a[1])[0]||[null])[0];
@@ -2413,8 +2413,11 @@ function ofDepthLine(p,d0,d1,hole){
 }
 function offerHelperHtml(){
   if(!LEAGUE) return hBack+'<p class="muted">This needs a league: connect yours in My League.</p>';
-  const ex1="He gives Garrett Wilson for James Cook and Kenneth Walker. He said I can pick one more player from his team.";
-  const ex2="If he adds a starting RB I'll only have one good RB. Who should I ask for?";
+  // the example uses players from your own league, so "Try an example" really works
+  let ex1="He gives Garrett Wilson for James Cook and Kenneth Walker. He said I can pick one more player from his team.", ex2="If he adds a starting RB I'll only have one good RB. Who should I ask for?";
+  try{const L=leagueData(), top=(ids,p)=>ids.map(id=>byId[id]).filter(a=>a&&a.p===p&&!gone(a)).sort((x,y)=>val(y)-val(x));
+    const rb=top(L.myT.ids,'RB'), riv=L.teams.filter(t=>!t.me).map(t=>({t,w:top(t.ids,'WR')[0]})).filter(x=>x.w).sort((a,b)=>val(b.w)-val(a.w))[Math.min(2,L.teams.length-2)];
+    if(rb.length>=2&&riv){ex1=`He gives ${riv.w.n} for ${rb[0].n} and ${rb[1].n}. He said I can pick one more player from his team.`;}}catch(e){}
   let out='';
   if(OFS.run){
     if(!isPro()) out=proLock('Solve any offer','Pro reads the offer, checks your lineup after it, and tells you who to ask for.');
@@ -2442,9 +2445,9 @@ function offerHelperHtml(){
     }
   }
   return hBack+`<p class="muted" style="margin-top:0">Got an offer on WhatsApp, a text, anywhere? Paste or type it, tell us what bothers you, and we'll solve it with your league's rosters.</p>
-    <label class="ofl" for="ofText">The offer</label><textarea id="ofText" rows="3" placeholder="${esc(ex1)}">${esc(OFS.text)}</textarea>
-    <label class="ofl" for="ofQ">Your question <span class="muted">(optional)</span></label><textarea id="ofQ" rows="2" placeholder="${esc(ex2)}">${esc(OFS.q)}</textarea>
-    <div class="pp-acts"><button class="btn primary" type="button" data-ofgo>Solve it${isPro()?'':' · Pro'}</button></div><div id="ofOut">${out}</div>`;
+    <label class="ofl" for="ofText">The offer</label><textarea id="ofText" rows="3" placeholder="e.g. ${esc(ex1)}">${esc(OFS.text)}</textarea>
+    <label class="ofl" for="ofQ">Your question <span class="muted">(optional)</span></label><textarea id="ofQ" rows="2" placeholder="e.g. ${esc(ex2)}">${esc(OFS.q)}</textarea>
+    <div class="pp-acts"><button class="btn primary" type="button" data-ofgo>Solve it${isPro()?'':' · Pro'}</button>${OFS.text?'':`<button class="btn" type="button" data-ofex="${esc(ex1)}" data-ofexq="${esc(ex2)}">Try an example</button>`}</div><div id="ofOut">${out}</div>`;
 }
 function renderHelper(){
   const el=document.getElementById('hBody'), tt=document.getElementById('hTitle'), sub=document.getElementById('hSub');
@@ -3217,7 +3220,7 @@ function renderShot(){
       ${pickBtn('Choose screenshot','primary')}</div>
       <div class="o-or"><span>or type it</span></div>
       <div class="o-txt"><label class="field-lbl" for="otText">Paste or type the trade</label>
-        <textarea id="otText" rows="3" placeholder="Garrett Wilson and a 2027 2nd for James Cook">${esc(OTXT.text)}</textarea>
+        <textarea id="otText" rows="3" placeholder="e.g. Garrett Wilson and a 2027 2nd for James Cook">${esc(OTXT.text)}</textarea>
         ${LEAGUES.length?lgTeamPickers(OTXT.lg===undefined?LEAGUE:OTXT.lg,OTXT.rid,'otLg','otTm'):''}
         <div class="o-act"><button type="button" class="btn primary" id="otGo">Read the text</button></div></div>
       <ul class="o-tips"><li>Make sure both sides and the full player names are in the picture.</li><li>The picture is read on your device. It is never uploaded.</li><li>You check the players and sides before anything loads.</li></ul>`;
@@ -3330,6 +3333,7 @@ document.addEventListener('click',e=>{
   if(t.closest('[data-shgo]')){if(!isPro()){const f=freeUse('finder');if(!f.left){SH_RUN=false;const o=document.getElementById('shOut');if(o)o.innerHTML=proLock("You've used today's 3 free searches",'Pro finds unlimited fair trades with every team, all season.');return;}f.take();}SH_RUN=true;SH_LIMIT=4;renderShop();return;}
   if(t.closest('[data-shmore]')){SH_LIMIT+=4;renderShop();return;}
   const sl=t.closest('[data-shload]'); if(sl){const it=SH_SHOWN[+sl.dataset.shload];if(it) loadTrade(it);return;}
+  const ox=t.closest('[data-ofex]'); if(ox){OFS.text=ox.dataset.ofex;OFS.q=ox.dataset.ofexq;OFS.excl=new Set();OFS.rid=null;OFS.run=true;renderHelper();setTimeout(()=>{const o=document.getElementById('ofOut');if(o)o.scrollIntoView({block:'start',behavior:'smooth'});},50);return;}
   if(t.closest('[data-ofgo]')){const a=document.getElementById('ofText'),b=document.getElementById('ofQ');const nt=a?a.value:'';if(nt!==OFS.text){OFS.excl=new Set();OFS.rid=null;}OFS.text=nt;OFS.q=b?b.value:'';OFS.run=true;renderHelper();const o=document.getElementById('ofOut');if(o)o.scrollIntoView({block:'start',behavior:'smooth'});return;}
   const orm=t.closest('[data-ofrm]'); if(orm){OFS.excl.add(+orm.dataset.ofrm);renderHelper();return;}
   const ol=t.closest('[data-ofload]'); if(ol){const k=ol.dataset.ofload,it=k==='base'?OF_SHOWN.base:OF_SHOWN[+k];if(it){closeHelper();loadTrade(it);}return;}
@@ -3391,7 +3395,7 @@ document.getElementById('osheet').addEventListener('input',e=>{
 });
 document.getElementById('osheet').addEventListener('click',e=>{
   const t=e.target;
-  if(t.closest('#otGo')){const ta=document.getElementById('otText');OTXT.text=ta?ta.value:'';if(!OTXT.text.trim()){toast('Type or paste the trade first');return;}
+  if(t.closest('#otGo')){const ta=document.getElementById('otText');OTXT.text=ta?ta.value:'';if(!OTXT.text.trim()){toast('Type or paste the trade first: the gray text is only an example');return;}
     const ls=document.getElementById('otLg'),ts=document.getElementById('otTm');OTXT.lg=ls&&ls.value!==''?LEAGUES[+ls.value]:null;OTXT.rid=ts&&ts.value!==''?+ts.value:null;
     OCR=textTrade(OTXT.text,OTXT.lg,OTXT.rid);renderShot();return;}
   if(t.closest('#oBack')){OCR=null;renderShot();return;}
