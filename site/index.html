@@ -2,7 +2,7 @@
 <html lang="en" class="boot">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-Srrt9YNrEfVXHf8s8H3o+89vy8WXsq3uCwKXAaTBl9U=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-DAnialEVmq+3VaAfzVMpj9hrbKx4P2f4cPMY0cSpi2U=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070B1A">
 <meta name="color-scheme" content="dark">
@@ -594,6 +594,27 @@ footer{text-align:left!important;border-top:1px solid var(--line);padding-top:14
 #osheet textarea,#osheet select{width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--card-2);color:inherit;font:inherit;font-size:16px;box-sizing:border-box}
 #osheet textarea{resize:vertical}
 .o-pick{margin-top:8px}.o-pick select{margin-bottom:4px}
+.of-box textarea{min-height:104px}
+.of-tools{display:flex;gap:16px;justify-content:flex-end;margin-top:4px}
+.of-hint{font-size:12.5px;color:var(--muted);margin:4px 0 10px}
+.of-asks{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+.of-asks .h-chip{background:transparent;border-color:var(--line);color:var(--ink,#EEF2FF);font-weight:600}
+.of-asks .h-chip.on{background:var(--lime,#C6FF3D);border-color:var(--lime,#C6FF3D);color:#0A0F22}
+.of-read{border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:10px}
+.of-side{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:6px}
+.of-side .lbl{min-width:64px}
+.of-team{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted)}
+.of-team select{flex:1;padding:7px 9px;border-radius:10px;border:1px solid var(--line);background:var(--card-2);color:inherit;font:inherit;font-size:14px}
+.of-verdict{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:14px;background:var(--card-2);margin-bottom:10px}
+.of-verdict b{font-family:var(--display,inherit);font-size:20px;letter-spacing:.02em}
+.of-verdict span{font-size:13px;color:var(--muted)}
+.of-answer{font-size:15.5px;line-height:1.45;padding:12px 14px;border-radius:14px;border:1px solid var(--lime,#C6FF3D);margin-bottom:12px}
+.of-sec{border-top:1px solid var(--line);padding:10px 0}
+.of-sec summary{cursor:pointer;font-weight:700;font-size:14.5px;list-style:none}
+.of-sec summary::-webkit-details-marker{display:none}
+.of-sec summary::after{content:'›';float:right;transition:transform .2s;color:var(--muted)}
+.of-sec[open] summary::after{transform:rotate(90deg)}
+.of-wait{color:var(--muted);font-size:13.5px}
 .ofl{display:block;font-size:12.5px;font-weight:700;margin:10px 0 4px}
 .ofl select{display:block;width:100%;margin-top:4px;padding:9px 10px;border-radius:10px;border:1px solid var(--line);background:var(--card-2);color:inherit;font:inherit}
 #hsheet textarea{width:100%;padding:11px 12px;border-radius:12px;border:1px solid var(--line);background:var(--card-2);color:inherit;font:inherit;font-size:16px;resize:vertical;box-sizing:border-box}
@@ -1718,7 +1739,7 @@ function myOffersBox(){
   const R=myOffersRes(); MO_SHOWN=[];
   const ago=t=>{const d=Math.floor((Date.now()-t)/864e5);return d<=0?'today':d===1?'yesterday':d+' days ago';};
   const sg=v=>`${v>=0?'+':'−'}${fmt(Math.abs(v))}`;
-  if(!R.length) return `<div class="box" id="moBox"><div class="mo-h"><h3 style="margin:0">Based on your offers</h3><button type="button" class="linkbtn" data-ofopen>Got one on WhatsApp? Ask about it</button></div><p class="muted" style="margin:0">Build a trade with a team in the Trade builder, and we'll show better versions of it here: more for you, or easier for them to say yes to.</p></div>`;
+  if(!R.length) return `<div class="box" id="moBox"><div class="mo-h"><h3 style="margin:0">Based on your offers</h3><button type="button" class="linkbtn" data-ofopen>Got an offer? Paste it</button></div><p class="muted" style="margin:0">Build a trade with a team in the Trade builder, and we'll show better versions of it here: more for you, or easier for them to say yes to.</p></div>`;
   let n=0, free=1;
   const body=R.map(x=>{
     const b=x.base, ac=acceptLbl(b.acc), src=`<div class="mo-src"><div class="mo-h"><span>Your offer to <b>${esc(b.team.name)}</b> · ${ago(x.src.t)}${x.src.sent?' · copied':''}</span><button type="button" class="linkbtn" data-model="${esc(trK(x.src))}" aria-label="Remove this offer">Remove</button></div>
@@ -1733,7 +1754,7 @@ function myOffersBox(){
     return src+`<ul class="ideas mo-better">${cards}</ul>`;
   }).join('');
   const locked=!isPro()&&R.reduce((t,x)=>t+x.better.length,0)>1;
-  return `<div class="box" id="moBox"><div class="mo-h"><h3 style="margin:0">Based on your offers</h3><button type="button" class="linkbtn" data-ofopen>Got one on WhatsApp? Ask about it</button></div><p class="muted" style="margin:0 0 10px">Trades you built in the Trade builder for this league, and similar versions that do better: more for you, or easier for them to accept.</p>${body}${locked?proLock('More improved offers','Pro improves every trade you build.'):''}</div>`;
+  return `<div class="box" id="moBox"><div class="mo-h"><h3 style="margin:0">Based on your offers</h3><button type="button" class="linkbtn" data-ofopen>Got an offer? Paste it</button></div><p class="muted" style="margin:0 0 10px">Trades you built in the Trade builder for this league, and similar versions that do better: more for you, or easier for them to accept.</p>${body}${locked?proLock('More improved offers','Pro improves every trade you build.'):''}</div>`;
 }
 /* ---------- trade finder: type a player you want, get offers for him ---------- */
 let FT_Q='', FT_ID=null, FT_RES=null, FT_KEY='', FT_LIMIT=4, FT_SHOWN=[], FT_SORT='me';
@@ -2294,12 +2315,14 @@ function renderStartSit(el){
 /* ---------- "Help me decide": quick answers without AI ---------- */
 let HQ='home', HSEL=[], HPOS='ANY';
 function openHelper(q){HQ=q||'home';if(HQ==='start'&&!HSEL.length)HSEL=[];document.getElementById('hscrim').hidden=false;document.getElementById('hsheet').hidden=false;document.getElementById('helpFab').hidden=true;renderHelper();}
-document.addEventListener('change',e=>{if(e.target&&e.target.id==='ofTeam'){OFS.rid=e.target.value===''?null:+e.target.value;const a=document.getElementById('ofText'),b=document.getElementById('ofQ');if(a)OFS.text=a.value;if(b)OFS.q=b.value;renderHelper();}});
-document.addEventListener('input',e=>{if(e.target&&(e.target.id==='ofText'||e.target.id==='ofQ')){if(e.target.id==='ofText'&&e.target.value!==OFS.text){OFS.excl=new Set();OFS.rid=null;}OFS[e.target.id==='ofText'?'text':'q']=e.target.value;}});
+document.addEventListener('change',e=>{if(e.target&&e.target.id==='ofTeam'){OFS.rid=e.target.value===''?null:+e.target.value;ofRefresh();}});
+let OF_T=0;
+document.addEventListener('input',e=>{if(e.target&&e.target.id==='ofText'){if(e.target.value!==OFS.text){OFS.excl=new Set();OFS.rid=null;}OFS.text=e.target.value;clearTimeout(OF_T);OF_T=setTimeout(ofRefresh,350);}});
+function ofRefresh(){const o=document.getElementById('ofOut');if(o)o.innerHTML=offerResultHtml();const tl=document.querySelector('.of-tools');if(tl)tl.innerHTML='<button type="button" class="linkbtn" data-ofpaste>Paste from clipboard</button>'+(OFS.text?'<button type="button" class="linkbtn" data-ofclear>Clear</button>':'');}
 function closeHelper(){document.getElementById('hscrim').hidden=true;document.getElementById('hsheet').hidden=true;document.getElementById('helpFab').hidden=false;}
 const hBack='<button type="button" class="linkbtn h-back" data-hq="home">‹ All questions</button>';
 /* ---------- "Got an offer? Ask about it": paste an offer from WhatsApp (or anywhere), say what bothers you, get it solved ---------- */
-let OFS={text:'',q:'',excl:new Set(),rid:null,run:false}, OF_SHOWN=[];
+let OFS={text:'',q:'',excl:new Set(),rid:null,run:false,ask:null}, OF_SHOWN=[];
 const OALIAS={cmc:'Christian McCaffrey',jsn:'Jaxon Smith-Njigba',arsb:'Amon-Ra St. Brown',ajb:'A.J. Brown',btj:'Brian Thomas Jr.',mhj:'Marvin Harrison Jr.',tmac:'Terry McLaurin',dk:'DK Metcalf',jt:'Jonathan Taylor',kw3:'Kenneth Walker III',lamar:'Lamar Jackson',jj:'Justin Jefferson',cd:'CeeDee Lamb',ceedee:'CeeDee Lamb',jaxon:'Jaxon Smith-Njigba',bijan:'Bijan Robinson',saquon:'Saquon Barkley',puka:'Puka Nacua',gibbs:'Jahmyr Gibbs',chase:"Ja'Marr Chase",hurts:'Jalen Hurts',mahomes:'Patrick Mahomes',kittle:'George Kittle',bowers:'Brock Bowers',mccaffrey:'Christian McCaffrey',ekeler:'Austin Ekeler',ladd:'Ladd McConkey',nabers:'Malik Nabers',jeanty:'Ashton Jeanty'};
 const OSPLIT=/\b(for|in exchange for|in return for|for your|for my)\b|תמורת|בשביל|בתמורה/i;
 function ofTokens(t){return ' '+String(t||'').toLowerCase().replace(/[’']/g,'').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[.\-]/g,'').replace(/[^a-z0-9]+/g,' ').trim()+' ';}
@@ -2382,7 +2405,7 @@ function solveOffer(){
   const base={P,give,get,team,L};
   if(!give.length&&!get.length) return {...base,err:"We couldn't find player names in that. Use full names, like \"James Cook\" or \"Garrett Wilson\"."};
   if(!give.length||!get.length||!team) return {...base,err:!team?'Which team sent it? Pick the team below.':!give.length?"We couldn't find any of your players in the offer.":"We couldn't find the players you would get."};
-  const I=ofIntent(OFS.q,OFS.text);
+  const askQ=(OF_ASK.find(x=>x[0]===OFS.ask)||[])[2]||''; const I=ofIntent((askQ+' '+(OFS.q||'')).trim(),OFS.text);
   const myIds=L.myT.ids, after=ids=>[...myIds.filter(id=>!give.includes(id)),...ids];
   const myB=hprof(myIds).total, thB=hprof(team.ids).total;
   const mk=(gt,gv)=>{const r=evaluate(gt,gv);const o={team,give:gv,get:gt,r,mg:S.mode==='redraft'?marketGap(gt,gv):0,
@@ -2411,49 +2434,62 @@ function ofDepthLine(p,d0,d1,hole){
   const fmtS=st=>st.length?st.map(a=>`${esc(a.n)} <span class="muted">(${p}${POSRANK[a.id]||'–'})</span>`).join(', '):'nobody good';
   return `<li><b>${p}</b>: now ${fmtS(d0[p].st)} → after ${fmtS(d1[p].st)}${hole?' <span class="tag lose">thin</span>':''}</li>`;
 }
+// the four things people usually want to know; tapping one puts that answer first
+const OF_ASK=[['add','Who should he add?','who should i ask him to add'],['keep','Which of mine to keep?','remove keep one of mine'],['thin','Will I be thin anywhere?','risk thin left with starter'],['fair','Is it fair?','is it fair']];
+function offerResultHtml(){
+  if(!OFS.text.trim()) return '';
+  let R; try{R=solveOffer();}catch(e){R={err:'Something went wrong reading that.'};}
+  const L=R.L||leagueData();
+  const chip=id=>`<button type="button" class="h-chip on" data-ofrm="${id}" aria-label="Remove ${esc(byId[id].n)}">${esc(byId[id].n)} ✕</button>`;
+  const read=R.P?`<div class="of-read"><div class="of-side"><span class="lbl give">You give</span>${(R.give||[]).map(chip).join('')||'<span class="muted">nobody yet</span>'}</div><div class="of-side"><span class="lbl get">You get</span>${(R.get||[]).map(chip).join('')||'<span class="muted">nobody yet</span>'}</div>
+    <label class="of-team">From <select id="ofTeam"><option value="">${R.team?'':'Choose the team'}</option>${L.teams.filter(t=>!t.me).map(t=>`<option value="${t.rid}" ${R.team&&R.team.rid===t.rid?'selected':''}>${esc(t.name)}</option>`).join('')}</select></label></div>`:'';
+  if(R.err) return read+`<p class="of-wait">${esc(R.err.replace(/^Type or paste[^.]*\.( \(the gray text is only an example\))?(, or tap Try an example)?\.?$/,'Paste the offer above.'))}</p>`;
+  const svT=T; T={A:R.get,B:R.give,example:false}; const g=grade(R.o0.r); T=svT;
+  const sg=v=>`${v>=0?'+':'−'}${fmt(Math.abs(v))}`, pct=o=>o.r.pct<=.05?'fair':o.r.diff>0?`${Math.round(o.r.pct*100)}% in your favor`:`${Math.round(o.r.pct*100)}% in his favor`;
+  const verdict=`<div class="of-verdict ${g.k}"><b>${esc(g.status)}</b><span>Your lineup ${sg(R.o0.myGain)} · ${acceptLbl(R.o0.acc)[1]}</span></div>`;
+  if(!isPro()) return read+verdict+proLock('See how to fix it','Pro tells you who to ask him to add, which of yours to keep, and where you would be thin.');
+  OF_SHOWN=[]; OF_SHOWN.base=R.o0;
+  // an add he would plausibly accept comes first; one that tips it far your way is shown but marked
+  const real=x=>!(x.o.r.diff>0&&x.o.r.pct>.12);
+  R.adds=[...R.adds].sort((a,b)=>real(b)-real(a));
+  const best=R.adds.find(real)||(R.I.add?R.adds[0]:null), trim=R.trims.find(x=>!(x.o.r.diff>0&&x.o.r.pct>.12)), hole=R.holes[0];
+  const fixTxt=x=>`ask him to add <b>${esc(x.a.n)}</b>${x.fixed.length?` (fixes your ${x.fixed.join(' and ')})`:''}: your lineup ${sg(x.o.myGain)}, ${pct(x.o)}`;
+  const keepTxt=x=>`keep <b>${esc(x.a.n)}</b> out of it: your lineup ${sg(x.o.myGain)}, ${pct(x.o)}`;
+  const mode=R.I.trim?'keep':OFS.ask==='fair'?'fair':(R.I.depth&&!R.I.add)?'thin':R.I.add?'add':'auto';
+  const cap=t=>t.charAt(0).toUpperCase()+t.slice(1);
+  let ans;
+  if(mode==='keep') ans=trim?cap(keepTxt(trim))+'.':R.trims.length?`Taking one of yours out tips it too far your way (${pct(R.trims[0].o)}), so he would likely say no.`:`Taking one of yours out doesn't make this better.${best?' Instead, '+fixTxt(best)+'.':''}`;
+  else if(mode==='thin') ans=hole?`Yes: you'd be thin at <b>${R.holes.join(' and ')}</b> after this.${best&&best.fixed.length?' Fix: '+fixTxt(best)+'.':R.fa.length?` Fix: pick up <b>${esc(R.fa[0].n)}</b> from waivers.`:''}`:`No: your lineup holds up at every position after this trade.`;
+  else if(mode==='fair') ans=`<b>${esc(g.status.replace(/!$/,''))}.</b> ${esc(g.line)}.${R.o0.r.pct>.05&&R.o0.r.diff<0?(best?' To make it fair, '+fixTxt(best)+'.':trim?' To make it fair, '+keepTxt(trim)+'.':''):''}`;
+  else if(best&&(mode==='add'||best.fixed.length||R.o0.myGain<0)) ans=cap(fixTxt(best))+'.';
+  else if(trim&&R.o0.myGain<0) ans=cap(keepTxt(trim))+'.';
+  else if(R.o0.myGain>=0&&!R.holes.length) ans=`This one helps you: your lineup ${sg(R.o0.myGain)} and you're not thin anywhere after it.`;
+  else ans=hole?`You'd be thin at ${hole} after this, and nobody on his team fixes it cleanly.${R.fa.length?` Pick up <b>${esc(R.fa[0].n)}</b> from waivers.`:''}`:`Not much to fix here.`;
+  if(mode!=='keep'&&trim&&best&&ans.includes(esc(best.a.n))&&best.o.myGain<0&&trim.o.myGain>best.o.myGain+150) ans+=` Even better: ${keepTxt(trim)}.`;
+  const open=i=>`<button type="button" class="btn sm" data-ofload="${i}">Try it</button>`;
+  const row=(name,why,o)=>{const i=OF_SHOWN.push(o)-1;return `<li class="of-add"><div><b>${name}</b><div class="of-why">${why}</div></div>${open(i)}</li>`;};
+  const sec={
+    add:R.adds.length?`<details class="of-sec" ${R.I.add||!R.I.trim?'open':''}><summary>Who he could add</summary><ul class="of-list">${R.adds.map(x=>row(`${esc(x.a.n)} <span class="muted">${x.a.p==='PICK'?'pick':x.a.p+(POSRANK[x.a.id]||'')}</span>`,[x.fixed.length?`fixes your ${x.fixed.join('/')}`:x.starts?'starts for you':'',`lineup ${sg(x.o.myGain)}`,pct(x.o),real(x)?'':'he will likely say no'].filter(Boolean).join(' · '),x.o)).join('')}</ul></details>`:'',
+    keep:R.trims.length?`<details class="of-sec" ${R.I.trim?'open':''}><summary>Which of yours to keep</summary><ul class="of-list">${R.trims.map(x=>row(`Keep ${esc(x.a.n)}`,`lineup ${sg(x.o.myGain)} · ${pct(x.o)}`,x.o)).join('')}</ul></details>`:'',
+    thin:`<details class="of-sec" ${R.holes.length&&R.I.depth?'open':''}><summary>${R.holes.length?`You'd be thin at ${R.holes.join(' and ')}`:'Your lineup after the trade'}</summary><ul class="of-depth">${SLOT_POS.filter(p=>R.d0[p].st.length||R.d1[p].st.length).map(p=>ofDepthLine(p,R.d0,R.d1,R.holes.includes(p))).join('')}</ul>${R.fa.length?`<p class="of-why" style="margin:6px 0 0">Free in your league: ${R.fa.map(a=>`<b>${esc(a.n)}</b> (${a.p}${POSRANK[a.id]||''})`).join(', ')}</p>`:''}</details>`,
+    counter:R.better.length?`<details class="of-sec"><summary>A better counter</summary><ul class="ideas">${R.better.map(o=>{const i=OF_SHOWN.push(o)-1;return finderCard(o,i).replace('data-ftload=','data-ofload=');}).join('')}</ul></details>`:''
+  };
+  const order=R.I.trim?['keep','add','thin','counter']:R.I.depth&&!R.I.add?['thin','add','keep','counter']:['add','keep','thin','counter'];
+  return read+verdict+`<div class="of-answer">${ans}</div>`+order.map(k=>sec[k]).join('')+`<div class="pp-acts"><button class="btn" type="button" data-ofload="base">Open it in Trade builder</button></div>`;
+}
 function offerHelperHtml(){
-  if(!LEAGUE) return hBack+'<p class="muted">This needs a league: connect yours in My League.</p>';
-  // the example uses players from your own league, so "Try an example" really works
-  let ex1="He gives Garrett Wilson for James Cook and Kenneth Walker. He said I can pick one more player from his team.", ex2="If he adds a starting RB I'll only have one good RB. Who should I ask for?";
-  try{const L=leagueData(), top=(ids,p)=>ids.map(id=>byId[id]).filter(a=>a&&a.p===p&&!gone(a)).sort((x,y)=>val(y)-val(x));
-    const rb=top(L.myT.ids,'RB'), riv=L.teams.filter(t=>!t.me).map(t=>({t,w:top(t.ids,'WR')[0]})).filter(x=>x.w).sort((a,b)=>val(b.w)-val(a.w))[Math.min(2,L.teams.length-2)];
-    if(rb.length>=2&&riv){ex1=`He gives ${riv.w.n} for ${rb[0].n} and ${rb[1].n}. He said I can pick one more player from his team.`;}}catch(e){}
-  let out='';
-  if(OFS.run){
-    if(!isPro()) out=proLock('Solve any offer','Pro reads the offer, checks your lineup after it, and tells you who to ask for.');
-    else{ let R; try{R=solveOffer();}catch(e){R={err:'Something went wrong reading that offer.'};}
-      const L=R.L||leagueData();
-      const chips=(ids,lbl,cls)=>ids.length?`<div class="h-tradeline"><span class="lbl ${cls}">${lbl}</span>${ids.map(id=>`<button type="button" class="h-chip on" data-ofrm="${id}" aria-label="Remove ${esc(byId[id].n)}">${esc(byId[id].n)} ✕</button>`).join('')}</div>`:'';
-      const teamSel=`<label class="ofl">Offer from<select id="ofTeam"><option value="">Choose a team</option>${L.teams.filter(t=>!t.me).map(t=>`<option value="${t.rid}" ${R.team&&R.team.rid===t.rid?'selected':''}>${esc(t.name)}</option>`).join('')}</select></label>`;
-      const parsed=R.P?`<div class="h-card"><p class="muted" style="margin:0 0 6px">What we read (tap ✕ to remove a wrong one)</p>${chips(R.give||[],'You give','give')}${chips(R.get||[],'You get','get')}${R.P.loose.length?`<p class="note" style="text-align:left;margin:4px 0 0">Not on a roster in your league: ${R.P.loose.map(id=>esc(byId[id].n)).join(', ')}</p>`:''}${teamSel}</div>`:'';
-      if(R.err) out=parsed+`<p class="h-err">${esc(R.err)}</p>`;
-      else{
-        const svT=T; T={A:R.get,B:R.give,example:false}; const g=grade(R.o0.r); T=svT; const sg=v=>`${v>=0?'+':'−'}${fmt(Math.abs(v))}`; OF_SHOWN=[];
-        const card=(x,why)=>{const i=OF_SHOWN.push(x.o)-1;return `<li class="of-add"><div><b>${esc(x.a.n)}</b> <span class="muted">${x.a.p==='PICK'?'pick':x.a.p+(POSRANK[x.a.id]||'')}</span><div class="of-why">${why}</div></div><button type="button" class="btn sm" data-ofload="${i}">Open</button></li>`;};
-        const addWhy=x=>{const w=[];if(x.fixed.length)w.push(`fixes your ${x.fixed.join('/')} after the trade`);else if(x.starts)w.push('starts for you right away');w.push(`your lineup ${sg(x.o.myGain)}`);w.push(x.o.r.pct<=.05?'trade stays fair':x.o.r.diff>0?`now ${Math.round(x.o.r.pct*100)}% in your favor, he may push back`:`still ${Math.round(x.o.r.pct*100)}% in his favor`);return w.join(' · ');};
-        const holeTxt=R.holes.length?`<p class="h-warn">⚠ After this trade you're thin at <b>${R.holes.join(' and ')}</b>: ${R.holes.map(p=>R.d1[p].good<=0?`no ${p} you'd want to start`:`only ${R.d1[p].good} ${p}${R.d1[p].good===1?'':'s'} you'd want to start, and you start ${R.d1[p].req}`).join('; ')}.</p>`:`<p class="h-ok">Your lineup holds up at every position after this trade.</p>`;
-        const addsHtml=R.adds.length?`<h4 class="of-h">${R.I.add?'Who to ask him to add':'If he adds one more'}</h4><ul class="of-list">${R.adds.map(x=>card(x,addWhy(x))).join('')}${R.easy?card(R.easy,'easiest yes: '+addWhy(R.easy)):''}</ul>`:(R.I.add?`<h4 class="of-h">Who to ask him to add</h4><p class="muted">Nobody on his roster makes this clearly better for you.</p>`:'');
-        const trimHtml=R.trims.length?`<h4 class="of-h">Or take one of yours out</h4><ul class="of-list">${R.trims.map(x=>card({o:x.o,a:x.a},`your lineup ${sg(x.o.myGain)} · ${x.o.r.pct<=.05?'still fair':x.o.r.diff>0?`${Math.round(x.o.r.pct*100)}% in your favor`:`${Math.round(x.o.r.pct*100)}% in his favor`}`).replace('<b>','<b>Keep ')).join('')}</ul>`:'';
-        const faHtml=R.fa.length?`<p class="note" style="text-align:left">Or cover it on waivers: ${R.fa.map(a=>`<b>${esc(a.n)}</b> (${a.p}${POSRANK[a.id]||''})`).join(', ')} ${R.fa.length>1?'are':'is'} free in your league.</p>`:'';
-        const betHtml=R.better.length?`<h4 class="of-h">Or counter with</h4><ul class="ideas">${R.better.map((o,j)=>{const i=OF_SHOWN.push(o)-1;return finderCard(o,i).replace('data-ftload=','data-ofload=');}).join('')}</ul>`:'';
-        const order=R.I.trim?[trimHtml,addsHtml]:[addsHtml,trimHtml];
-        out=parsed+`<div class="h-card"><div class="h-verdict ${g.k}">${esc(g.status)}</div><p style="margin:4px 0 6px">${esc(g.line)}. Your lineup ${sg(R.o0.myGain)} · ${acceptLbl(R.o0.acc)[1]}</p>
-          ${holeTxt}<ul class="of-depth">${SLOT_POS.filter(p=>R.d0[p].st.length||R.d1[p].st.length).filter(p=>R.holes.includes(p)||R.focus.includes(p)||R.d0[p].st.map(a=>a.id).join()!==R.d1[p].st.map(a=>a.id).join()).map(p=>ofDepthLine(p,R.d0,R.d1,R.holes.includes(p))).join('')}</ul></div>
-          ${order.join('')}${faHtml}${betHtml}<div class="pp-acts"><button class="btn" type="button" data-ofload="base">Open this offer in Trade builder</button></div>`;
-        OF_SHOWN.base=R.o0;
-      }
-    }
-  }
-  return hBack+`<p class="muted" style="margin-top:0">Got an offer on WhatsApp, a text, anywhere? Paste or type it, tell us what bothers you, and we'll solve it with your league's rosters.</p>
-    <label class="ofl" for="ofText">The offer</label><textarea id="ofText" rows="3" placeholder="e.g. ${esc(ex1)}">${esc(OFS.text)}</textarea>
-    <label class="ofl" for="ofQ">Your question <span class="muted">(optional)</span></label><textarea id="ofQ" rows="2" placeholder="e.g. ${esc(ex2)}">${esc(OFS.q)}</textarea>
-    <div class="pp-acts"><button class="btn primary" type="button" data-ofgo>Solve it${isPro()?'':' · Pro'}</button>${OFS.text?'':`<button class="btn" type="button" data-ofex="${esc(ex1)}" data-ofexq="${esc(ex2)}">Try an example</button>`}</div><div id="ofOut">${out}</div>`;
+  if(!LEAGUE) return hBack+'<p class="muted">Connect your league in My League first, so we know both rosters.</p>';
+  return hBack+`<div class="of-box"><textarea id="ofText" rows="4" placeholder="Paste the offer here">${esc(OFS.text)}</textarea>
+      <div class="of-tools"><button type="button" class="linkbtn" data-ofpaste>Paste from clipboard</button>${OFS.text?'<button type="button" class="linkbtn" data-ofclear>Clear</button>':''}</div>
+      <p class="of-hint">Copy the message from WhatsApp and paste it as is. Like: “Ja'Marr Chase for my Walker and Cook, you can pick one more”</p></div>
+    <div class="of-asks">${OF_ASK.map(([k,l])=>`<button type="button" class="h-chip ${OFS.ask===k?'on':''}" data-ofask="${k}">${l}</button>`).join('')}</div>
+    <div id="ofOut" aria-live="polite">${offerResultHtml()}</div>`;
 }
 function renderHelper(){
   const el=document.getElementById('hBody'), tt=document.getElementById('hTitle'), sub=document.getElementById('hSub');
   if(HQ==='home'){
     tt.textContent='Help me decide'; sub.textContent="Quick answers from the app's own numbers";
-    const qs=[['offer','Got an offer? Ask about it','Paste it from WhatsApp, say what bothers you, we solve it'],['start','Who should I start?','Compare 2 or 3 players for this week'],['pickup','Who should I pick up?','Best free agents in your league'],['trade','Is this trade good for me?','A verdict on the trade you are building'],['find','I want a player: what do I offer?','Fair offers for any player in your league']];
+    const qs=[['offer','Got an offer?','Paste it from WhatsApp and see how to make it better'],['start','Who should I start?','Compare 2 or 3 players for this week'],['pickup','Who should I pick up?','Best free agents in your league'],['trade','Is this trade good for me?','A verdict on the trade you are building'],['find','I want a player: what do I offer?','Fair offers for any player in your league']];
     el.innerHTML=`<ul class="h-qs">${qs.map(([k,a,b])=>`<li><button type="button" data-hq="${k}"><b>${a}</b><span>${b}</span></button></li>`).join('')}</ul>${!LEAGUE?'<p class="note">Connect a league for answers about your own team.</p>':''}`;
     return;
   }
@@ -2472,7 +2508,7 @@ function renderHelper(){
     el.innerHTML=hBack+`<div class="h-card"><div class="h-tradeline"><span class="lbl give">You give</span>${T.B.map(nameChip).join('')}</div><div class="h-tradeline"><span class="lbl get">You get</span>${T.A.map(nameChip).join('')}</div>
       <div class="h-verdict ${g.k}">${esc(g.status)}</div><p style="margin:4px 0 0">${esc(g.line)}. ${esc(g.recTxt||'')}</p></div>${fit||(LEAGUE?'<p class="note" style="text-align:left">For how it changes your lineup, build it in My League → Trade builder.</p>':'')}`;
     return;}
-  if(HQ==='offer'){tt.textContent='Got an offer? Ask about it';sub.textContent=LEAGUE?esc(LEAGUE.name):'';el.innerHTML=offerHelperHtml();return;}
+  if(HQ==='offer'){tt.textContent='Got an offer?';sub.textContent=LEAGUE?'Paste it and we check it against '+LEAGUE.name:'';el.innerHTML=offerHelperHtml();return;}
   if(HQ==='find'){tt.textContent='I want a player';sub.textContent='';
     if(!LEAGUE){el.innerHTML=hBack+'<p class="muted">This needs a league.</p>';return;}
     el.innerHTML=hBack+'<p>Type his name in the trade finder: it shows who has him and fair offers from your roster.</p><div class="pp-acts"><button class="btn primary" type="button" data-hgo="find">Open the trade finder</button></div>';return;}
@@ -3333,9 +3369,10 @@ document.addEventListener('click',e=>{
   if(t.closest('[data-shgo]')){if(!isPro()){const f=freeUse('finder');if(!f.left){SH_RUN=false;const o=document.getElementById('shOut');if(o)o.innerHTML=proLock("You've used today's 3 free searches",'Pro finds unlimited fair trades with every team, all season.');return;}f.take();}SH_RUN=true;SH_LIMIT=4;renderShop();return;}
   if(t.closest('[data-shmore]')){SH_LIMIT+=4;renderShop();return;}
   const sl=t.closest('[data-shload]'); if(sl){const it=SH_SHOWN[+sl.dataset.shload];if(it) loadTrade(it);return;}
-  const ox=t.closest('[data-ofex]'); if(ox){OFS.text=ox.dataset.ofex;OFS.q=ox.dataset.ofexq;OFS.excl=new Set();OFS.rid=null;OFS.run=true;renderHelper();setTimeout(()=>{const o=document.getElementById('ofOut');if(o)o.scrollIntoView({block:'start',behavior:'smooth'});},50);return;}
-  if(t.closest('[data-ofgo]')){const a=document.getElementById('ofText'),b=document.getElementById('ofQ');const nt=a?a.value:'';if(nt!==OFS.text){OFS.excl=new Set();OFS.rid=null;}OFS.text=nt;OFS.q=b?b.value:'';OFS.run=true;renderHelper();const o=document.getElementById('ofOut');if(o)o.scrollIntoView({block:'start',behavior:'smooth'});return;}
-  const orm=t.closest('[data-ofrm]'); if(orm){OFS.excl.add(+orm.dataset.ofrm);renderHelper();return;}
+  const ok2=t.closest('[data-ofask]'); if(ok2){OFS.ask=OFS.ask===ok2.dataset.ofask?null:ok2.dataset.ofask;document.querySelectorAll('[data-ofask]').forEach(b=>b.classList.toggle('on',b.dataset.ofask===OFS.ask));ofRefresh();return;}
+  if(t.closest('[data-ofpaste]')){(navigator.clipboard&&navigator.clipboard.readText?navigator.clipboard.readText():Promise.reject()).then(x=>{if(!x){toast('Nothing copied yet');return;}OFS.text=x;OFS.excl=new Set();OFS.rid=null;const a=document.getElementById('ofText');if(a)a.value=x;ofRefresh();}).catch(()=>{const a=document.getElementById('ofText');if(a)a.focus();toast('Long-press the box and tap Paste');});return;}
+  if(t.closest('[data-ofclear]')){OFS.text='';OFS.excl=new Set();OFS.rid=null;const a=document.getElementById('ofText');if(a){a.value='';a.focus();}ofRefresh();return;}
+  const orm=t.closest('[data-ofrm]'); if(orm){OFS.excl.add(+orm.dataset.ofrm);ofRefresh();return;}
   const ol=t.closest('[data-ofload]'); if(ol){const k=ol.dataset.ofload,it=k==='base'?OF_SHOWN.base:OF_SHOWN[+k];if(it){closeHelper();loadTrade(it);}return;}
   if(t.closest('[data-ofopen]')){openHelper('offer');return;}
   const ml=t.closest('[data-moload]'); if(ml){const it=MO_SHOWN[+ml.dataset.moload];if(it) loadTrade(it);return;}
