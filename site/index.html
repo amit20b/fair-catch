@@ -2,7 +2,7 @@
 <html lang="en" class="boot">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-DAnialEVmq+3VaAfzVMpj9hrbKx4P2f4cPMY0cSpi2U=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-lexbJKJRPbNcliWjsKxK5Mf1vppJ/tUybDb0TGdW+mk=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070B1A">
 <meta name="color-scheme" content="dark">
@@ -4227,9 +4227,8 @@ if('serviceWorker' in navigator&&location.protocol==='https:'&&!OWNER_BUILD&&FC_
   navigator.serviceWorker.addEventListener('message',e=>{
     if(!e.data||e.data.type!=='fc-updated'||UPD) return; UPD=true;
     if(document.hidden||quiet()) return apply();
-    let b=document.getElementById('updPill');
-    if(!b){document.body.insertAdjacentHTML('beforeend','<button type="button" class="upd-pill" id="updPill">New values are in · Tap to refresh</button>');b=document.getElementById('updPill');b.onclick=apply;}
-    b.hidden=false; const iv=setInterval(()=>{if(quiet()){clearInterval(iv);apply();}},1500);
+    // no button to tap: it just waits until you pause, then refreshes and puts you back where you were
+    const iv=setInterval(()=>{if(quiet()){clearInterval(iv);apply();}},1000);
   });
   // coming back to the app after a while: check for a newer version right away
   document.addEventListener('visibilitychange',()=>{
