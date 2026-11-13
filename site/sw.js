@@ -29,3 +29,16 @@ self.addEventListener('fetch', (e) => {
     return (await fresh) || new Response('You are offline. Open Fair Catch again when you are back online.', { status: 503, headers: { 'Content-Type': 'text/plain' } });
   })());
 });
+
+// the app asks this when it comes back to the screen: compare the page with the stored one and say if it changed
+self.addEventListener('message', (e) => {
+  if (!e.data || e.data.type !== 'fc-check') return;
+  e.waitUntil((async () => {
+    const key = new URL('./', self.registration.scope).href;
+    const cache = await caches.open(CACHE), hit = await cache.match(key, { ignoreSearch: true });
+    const res = await fetch(key, { cache: 'no-cache' }).catch(() => null);
+    if (!res || !res.ok || res.type !== 'basic') return;
+    await cache.put(key, res.clone());
+    if (hit && stamp(hit) && stamp(res) !== stamp(hit)) for (const c of await self.clients.matchAll({ type: 'window' })) c.postMessage({ type: 'fc-updated' });
+  })());
+});

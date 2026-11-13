@@ -2,7 +2,7 @@
 <html lang="en" class="boot">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-LdM40vSutmhXiqpX3peEgoEFj+Pd1KgIX8ZV8GSNQr0=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-Srrt9YNrEfVXHf8s8H3o+89vy8WXsq3uCwKXAaTBl9U=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070B1A">
 <meta name="color-scheme" content="dark">
@@ -4182,13 +4182,33 @@ accConfig();
 // open instantly next time: the app is kept on the device and refreshed in the background
 if('serviceWorker' in navigator&&location.protocol==='https:'&&!OWNER_BUILD&&FC_SITE){
   navigator.serviceWorker.register('sw.js').catch(()=>{});
+  // a newer version arrived: refresh by itself at a quiet moment (no sheet open, not typing, no touch for a few seconds) and come back to the same place
+  let UPD=false, LAST_TOUCH=Date.now(), HID_AT=0;
+  ['pointerdown','keydown','touchstart','wheel'].forEach(ev=>addEventListener(ev,()=>{LAST_TOUCH=Date.now();},{passive:true}));
+  const quiet=()=>{if(document.documentElement.classList.contains('sheet-lock'))return false;const a=document.activeElement;if(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))return false;return Date.now()-LAST_TOUCH>3500;};
+  const apply=()=>{try{const lg=inLeagueCtx(),cT=lg?TF:T,lT=lg?T:TL;sessionStorage.setItem('faircatch-resume',JSON.stringify({t:Date.now(),m:mtab,ls:LSUB,lg:LEAGUE?LEAGUE.id:null,p:PARTNER,y:window.scrollY,F:cT&&!cT.example?{A:names(cT.A),B:names(cT.B)}:null,L:lT?{A:names(lT.A),B:names(lT.B)}:null}));}catch(e){} location.reload();};
   navigator.serviceWorker.addEventListener('message',e=>{
-    if(!e.data||e.data.type!=='fc-updated') return;
+    if(!e.data||e.data.type!=='fc-updated'||UPD) return; UPD=true;
+    if(document.hidden||quiet()) return apply();
     let b=document.getElementById('updPill');
-    if(!b){document.body.insertAdjacentHTML('beforeend','<button type="button" class="upd-pill" id="updPill">New values are in · Tap to refresh</button>');b=document.getElementById('updPill');b.onclick=()=>location.reload();}
-    b.hidden=false;
+    if(!b){document.body.insertAdjacentHTML('beforeend','<button type="button" class="upd-pill" id="updPill">New values are in · Tap to refresh</button>');b=document.getElementById('updPill');b.onclick=apply;}
+    b.hidden=false; const iv=setInterval(()=>{if(quiet()){clearInterval(iv);apply();}},1500);
+  });
+  // coming back to the app after a while: check for a newer version right away
+  document.addEventListener('visibilitychange',()=>{
+    if(document.hidden){HID_AT=Date.now(); if(UPD) apply(); return;}
+    if(HID_AT&&Date.now()-HID_AT>60000&&navigator.serviceWorker.controller) navigator.serviceWorker.controller.postMessage({type:'fc-check'});
   });
 }
+// back from an automatic refresh: same tab, same trade, same spot
+try{const r=JSON.parse(sessionStorage.getItem('faircatch-resume')||'null');sessionStorage.removeItem('faircatch-resume');
+  if(r&&!Y_BACK&&Date.now()-r.t<120000){
+    if(r.lg&&LEAGUE&&LEAGUE.id!==r.lg){const i=LEAGUES.findIndex(l=>l.id===r.lg);if(i>=0)switchLeague(i);}
+    if(r.F&&(r.F.A.length||r.F.B.length)) T={A:ids(r.F.A),B:ids(r.F.B),example:false};
+    if(r.L) TL={A:ids(r.L.A),B:ids(r.L.B),example:false};
+    if(r.p!=null) PARTNER=r.p; if(r.ls) LSUB=r.ls; setMain(r.m||'calc');
+    const go=()=>window.scrollTo(0,r.y||0); requestAnimationFrame(go); setTimeout(go,150); setTimeout(go,600); setTimeout(()=>toast('Updated to the latest values'),300);
+  }}catch(e){}
 if(Y_BACK){setMain('league');yFind();}else if(CN.yerr){setMain('league');}
 proValidate();
 (async()=>{
