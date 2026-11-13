@@ -2,7 +2,7 @@
 <html lang="en" class="boot">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-zK9DbDDCMD1xhSip+UAazksBxVYE4jfaLg207g9EIMo=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-OPa5SlUdy+WX1PVeQoH/M3TN8Lj++e8QqUG8PoWYZPs=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070B1A">
 <meta name="color-scheme" content="dark">
@@ -2304,38 +2304,58 @@ const OALIAS={cmc:'Christian McCaffrey',jsn:'Jaxon Smith-Njigba',arsb:'Amon-Ra S
 const OSPLIT=/\b(for|in exchange for|in return for|for your|for my)\b|תמורת|בשביל|בתמורה/i;
 function ofTokens(t){return ' '+String(t||'').toLowerCase().replace(/[’']/g,'').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[.\-]/g,'').replace(/[^a-z0-9]+/g,' ').trim()+' ';}
 const ofKey=n=>ofTokens(n).replace(/ (jr|sr|ii|iii|iv|v) /g,' ').trim();
+// Hebrew trade words -> English ones, so one reader handles both
+const OHEB=[[/לא זמין|לא מוכן|לא מוכר|לא נותן|לא אתן|לא מוותר|לא בטרייד/g,' not available '],[/אני נותן|אני אתן|נותן|אתן|אשלח|אני שולח/g,' i give '],[/אני מקבל|אקבל|מקבל|יתן לי|נותן לי|הציעו לי|הציע לי/g,' i get '],[/תמורת|בשביל|בתמורה ל|בתמורה/g,' for '],[/שלי/g,' mine '],[/שלו/g,' his ']];
+const OCOMMON=new Set('london love worthy chase hill young white brown black green hunt best will cook bell king price rice banks mills wells swift hall ford west page power ward little long good may stone wood fox lamb flowers pierce moody cross chance bates burns case gray golden rich strong sweet hope bush field fields house love star sun knight mason miles waddle hurts allen jackson brooks lane rivers page wise worth wright lock love'.split(' '));
+const ONEG=/\b(not (trading|giving|moving|selling|including|offering)|wont (trade|give|move|sell)|wouldnt (trade|give)|untouchable|keeping|keep him|hes staying|not available)\b|לא (מוכר|נותן|אתן|מוותר|זמין)|לא מוכן/;
 function parseOffer(text,L){
   const raw=String(text||''); if(!raw.trim()) return null;
-  let flat=ofTokens(raw); const found=[];// [id, index]
+  // sentence breaks survive as a marker (dots in "St. Brown" or "A.J." do not break)
+  let pre=raw; OHEB.forEach(([r,w])=>{pre=pre.replace(r,w);});
+  pre=pre.replace(/(?<!\b(?:st|jr|sr|mr|vs|[a-z]))\.(?=\s+[A-Z0-9\u0590-\u05FF])|[!?\n;]+|\s(but|btw|although|though|אבל|אגב)\s/gi,' zzbrk ');
+  let flat=ofTokens(pre); const found=[];// [id, index]
   const rost=new Set(L.teams.flatMap(t=>t.ids));
   const cands=ALL.filter(a=>a.p!=='PICK'&&(rost.has(a.id)||(RANK[a.id]||9999)<=350));
   const take=(id,key)=>{const i=flat.indexOf(' '+key+' ');if(i<0)return false;found.push([id,i]);flat=flat.slice(0,i)+' '+'#'.repeat(key.length)+' '+flat.slice(i+key.length+2);return true;};
-  // full names first, longest first
+  // a lone common word ("love", "chase", "cook") counts as a name only when written with a capital, mid-sentence
+  const capOK=k=>{if(!OCOMMON.has(k))return true;const C=k[0].toUpperCase()+k.slice(1);const r=new RegExp('(^|[^A-Za-z])'+C+'(?![A-Za-z])','g');let m;while((m=r.exec(raw))){const before=raw.slice(0,m.index+m[1].length).trimEnd();if(before&&(!/[.!?\n:"]$/.test(before)||/\b(st|jr|mr)\.$/i.test(before)))return true;}return false;};
   cands.map(a=>[a.id,ofKey(a.n)]).sort((x,y)=>y[1].length-x[1].length).forEach(([id,k])=>{while(k&&take(id,k));});
-  // nicknames
-  Object.entries(OALIAS).forEach(([k,n])=>{const id=matchName(n);if(id&&!found.some(f=>f[0]===id))take(id,k);});
-  // last names (then first names) that point to one player on a roster in your league
-  ['last','first'].forEach(w=>{const m={};cands.filter(a=>rost.has(a.id)).forEach(a=>{const parts=ofKey(a.n).split(' ');const k=w==='last'?parts[parts.length-1]:parts[0];if(k&&k.length>=4)(m[k]=m[k]||[]).push(a.id);});
-    Object.entries(m).forEach(([k,ids])=>{if(ids.length===1&&!found.some(f=>f[0]===ids[0]))take(ids[0],k);});});
+  Object.entries(OALIAS).forEach(([k,n])=>{const id=matchName(n);if(id&&!found.some(f=>f[0]===id)&&capOK(k))take(id,k);});
+  const ownerOfId=id=>{const t=L.teams.find(t=>t.ids.includes(id));return t?t.rid:null;};
+  const shortNames=(w,pool)=>{const m={};pool.forEach(a=>{const parts=ofKey(a.n).split(' ');let k=w==='last'?parts[parts.length-1]:parts[0];const ks=[k];if(w==='last'&&parts.length>=3&&parts[parts.length-2]==='st')ks.unshift('st '+k);ks.forEach(k=>{if(k&&k.replace(' ','').length>=4)(m[k]=m[k]||[]).push(a.id);});});return m;};
+  const ambig={};
+  ['last','first'].forEach(w=>{const m=shortNames(w,cands.filter(a=>rost.has(a.id)));
+    Object.entries(m).forEach(([k,ids])=>{if(w==='last'&&ids.length>1&&flat.includes(' '+k+' ')&&capOK(k.split(' ').pop()))ambig[k]=ids;});
+    Object.entries(m).forEach(([k,ids])=>{if(ids.length===1&&!found.some(f=>f[0]===ids[0])&&capOK(k.split(' ').pop()))take(ids[0],k);});});
+  // a short name two players share: take the one on your roster or on the team already in the trade
+  const inTeams=new Set(found.map(f=>ownerOfId(f[0])).filter(r=>r!=null)); if(L.myT&&L.myT.rid!=null)inTeams.add(L.myT.rid);
+  if(inTeams.size){const pool=cands.filter(a=>inTeams.has(ownerOfId(a.id)));['last','first'].forEach(w=>{const m=shortNames(w,pool);
+    Object.entries(m).forEach(([k,ids])=>{if(ids.length===1&&!found.some(f=>f[0]===ids[0])&&capOK(k.split(' ').pop()))take(ids[0],k);});});}
+  Object.keys(ambig).forEach(k=>{if(!flat.includes(' '+k+' ')||ambig[k].some(id=>found.some(f=>f[0]===id)))delete ambig[k];});
   // picks: "2027 1st", "a late 2nd", "my 2028 first"
   const ord={first:'1st',second:'2nd',third:'3rd',fourth:'4th','1st':'1st','2nd':'2nd','3rd':'3rd','4th':'4th'};
-  const picks=[]; const rx=/(my |your |his |their )?(20\d\d )?(early |mid |late )?(1st|2nd|3rd|4th|first|second|third|fourth)( round| rounder| pick)?/g; let mm;
+  const picks=[]; const rx=/(20\d\d )?(early |mid |late )?(1st|2nd|3rd|4th|first|second|third|fourth)( round| rounder| pick| rd)?(?= )/g; let mm;
   const yr0=Math.min(...ALL.filter(a=>a.p==='PICK').map(a=>+a.n.slice(0,4)).filter(Boolean));
-  while((mm=rx.exec(flat))){const y=(mm[2]||'').trim()||String(yr0),tier=(mm[3]||'').trim(),o=ord[mm[4]];
+  while((mm=rx.exec(flat))){const y=(mm[1]||'').trim()||String(yr0),tier=(mm[2]||'').trim(),o=ord[mm[3]];
     const nm=y+' '+(tier?tier[0].toUpperCase()+tier.slice(1)+' ':'')+o; const pk=ALL.find(a=>a.p==='PICK'&&a.n===nm)||ALL.find(a=>a.p==='PICK'&&a.n===y+' '+o);
-    if(pk) picks.push({id:pk.id,i:mm.index,mine:/^(my |your )/.test(mm[0])&&false,own:(mm[1]||'').trim()});}
-  // sides: your roster = you give, other rosters = you get
+    if(pk&&!picks.some(x=>x.id===pk.id)) picks.push({id:pk.id,i:mm.index});}
+  // a player named in a sentence that says he is not part of it ("I'm not trading him") is left out
+  const brk=[];{let k=flat.indexOf(' zzbrk ');while(k>=0){brk.push(k);k=flat.indexOf(' zzbrk ',k+1);}}
+  const sentOf=i=>{let a=0,b=flat.length;brk.forEach(k=>{if(k<i)a=k;else if(k>i&&b===flat.length)b=k;});return flat.slice(a,b);};
+  const ignored=[]; const keepF=found.filter(([id,i])=>{if(ONEG.test(sentOf(i))){ignored.push(id);return false;}return true;});
+  // who gives what without rosters: walk the words ("I give", "I get", "my", "his", and "for" flips the side)
+  const MK=[[/ (give you|gives you|ill give you|i give you|you get|youll get|you receive) /g,'A'],[/ (i give|i send|im giving|im sending|ill give|ill send|i trade|giving|sending)(?= (?!you ))/g,'B'],[/ (my|mine|your|yours) /g,'B'],[/ (i get|i receive|im getting|ill get|getting|receiving|he gives|she gives|they give|gives me|offered me|offers me|his|their|her) /g,'A'],[/ (for|in exchange for|in return for) /g,'F']];
+  const marks=[];MK.forEach(([r,sd])=>{let m;r.lastIndex=0;while((m=r.exec(flat))){marks.push([m.index,sd]);r.lastIndex=m.index+1;}});marks.sort((a,b)=>a[0]-b[0]);
+  const scanSide=i=>{let sd='A';for(const [k,v] of marks){if(k>=i)break;sd=v==='F'?(sd==='A'?'B':'A'):v;}return sd;};
   const mine=new Set(L.myT.ids); const give=[], get=[], loose=[];
-  found.forEach(([id])=>{ if(mine.has(id)) give.push(id); else if(rost.has(id)) get.push(id); else loose.push(id); });
-  // picks: by the word before them, else by which half of the sentence they sit in
-  const sp=flat.search(OSPLIT); const gi=found.filter(f=>mine.has(f[0])).map(f=>f[1]);
+  keepF.forEach(([id])=>{ if(mine.has(id)) give.push(id); else if(rost.has(id)) get.push(id); else loose.push(id); });
+  // with rosters: the half of the sentence that holds your players is yours
+  const sp=flat.search(OSPLIT); const gi=keepF.filter(f=>mine.has(f[0])).map(f=>f[1]);
   const myHalfLeft=sp>0&&gi.length?gi.every(i=>i<sp)?true:gi.every(i=>i>sp)?false:null:null;
-  const myHalf=myHalfLeft!=null?myHalfLeft:sp>0?/ (i give|i send|im giving|i trade|ill give) /.test(flat.slice(0,sp))||/אני נותן|אתן/.test(raw.slice(0,Math.max(0,raw.search(OSPLIT)))):null; // "X for Y": you get X, you give Y
-  picks.forEach(pk=>{let side;
-    if(pk.own==='my') side='give'; else if(pk.own==='his'||pk.own==='their') side='get'; else if(pk.own==='your') side='get';
-    else if(myHalf!=null&&sp>0) side=(pk.i<sp)===myHalf?'give':'get'; else side='get';
-    (side==='give'?give:get).push(pk.id);});
-  return {give:[...new Set(give)],get:[...new Set(get)],loose:[...new Set(loose)]};
+  const sideAt=i=>myHalfLeft!=null&&!marks.some(([k,v])=>v!=='F'&&Math.abs(k-i)<30)?((i<sp)===myHalfLeft?'B':'A'):scanSide(i);
+  picks.forEach(pk=>{(sideAt(pk.i)==='B'?give:get).push(pk.id);});
+  const looseSide={}; keepF.filter(f=>loose.includes(f[0])).forEach(([id,i])=>{looseSide[id]=sideAt(i);});
+  return {give:[...new Set(give)],get:[...new Set(get)],loose:[...new Set(loose)],looseSide,ignored,ambig:Object.values(ambig),guessSides:!gi.length||!keepF.some(f=>rost.has(f[0])&&!mine.has(f[0]))};
 }
 function ofIntent(q,text){
   const s=(q||'')+' '+(q?'':text||''), all=(q||'')+' '+(text||'');
@@ -3148,17 +3168,11 @@ function textTrade(text,lg,rid){
   const P=parseOffer(text,L); if(!P) return null;
   const items=[...P.give.map(id=>({id,side:'B',how:'roster'})),...P.get.map(id=>({id,side:'A',how:'roster'}))];
   let guessed=false;
-  if(P.loose.length){ // not on a roster we know: use the words around them ("X for Y": you get X, you give Y)
-    const flat=ofTokens(text), sp=flat.search(OSPLIT), iGive=/\b(i give|i send|im giving|i trade|my)\b|אני נותן|נותן|שלי/i.test(sp>0?String(text).slice(0,Math.max(0,String(text).search(OSPLIT))):'');
-    P.loose.forEach(id=>{const i=flat.indexOf(' '+ofKey(byId[id].n)+' ');let side='A';
-      if(sp>0&&i>=0) side=(i<sp)!==iGive?'A':'B';
-      const near=items.find(x=>x.how==='roster'); if(sp<0&&near) side=near.side;
-      items.push({id,side,how:'text'}); guessed=true;});
-  }
+  if(P.loose.length){ P.loose.forEach(id=>items.push({id,side:P.looseSide[id]||'A',how:'text'})); guessed=true; }
   // whose offer: the team that owns most of what you would get
   let partner=rid!=null?rid:null;
   if(partner==null&&lg){const cnt={};P.get.forEach(id=>{const t=L.teams.find(x=>!x.me&&x.ids.includes(id));if(t)cnt[t.rid]=(cnt[t.rid]||0)+1;});const k=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])[0];partner=k!=null?+k:null;}
-  return {state:'done',img:null,items,lg:lg||null,partner,guessed,src:'text',text};
+  return {state:'done',img:null,items,lg:lg||null,partner,guessed,src:'text',text,ignored:P.ignored||[],ambig:P.ambig||[]};
 }
 // after the league or team changes: your roster gives, the other rosters get, the rest stays where it is
 function ocrReside(){
@@ -3233,6 +3247,8 @@ function renderShot(){
   const col=(s,t,c)=>`<div class="o-col"><span class="lbl ${c}">${t}</span><ul>${it.map((x,i)=>x.side===s?row(x,i):'').join('')||'<li class="muted o-none">Nobody yet</li>'}</ul></div>`;
   el.innerHTML=`<div class="o-top">${OCR.img?`<img class="o-img sm" src="${OCR.img}" alt="Your screenshot">`:''}<p class="o-where">${where}</p></div>
     ${LEAGUES.length?lgTeamPickers(OCR.lg,OCR.partner,'oLg','oTm'):''}
+    ${OCR.ambig&&OCR.ambig.length?`<p class="o-warn">Not sure who you meant: ${OCR.ambig.map(ids=>ids.map(id=>esc(byId[id].n)).join(' or ')).join('; ')}. Add the right one below.</p>`:''}
+    ${OCR.ignored&&OCR.ignored.length?`<p class="note" style="text-align:left">Left out (the text says he's not part of it): ${OCR.ignored.map(id=>esc(byId[id].n)).join(', ')}. Missed? Add him below.</p>`:''}
     ${OCR.guessed?'<p class="o-warn">Check the sides: we guessed which side is yours. Tap the arrows to move a player, or swap both sides.</p>':''}
     <div class="o-cols">${col('B','You give','give')}${col('A','You get','get')}</div>
     <div class="o-add"><label class="field-lbl" for="oAdd">Missed a player? Add him</label><input id="oAdd" type="search" placeholder="Type a name" autocomplete="off"><ul id="oAddList" class="o-addl"></ul></div>
