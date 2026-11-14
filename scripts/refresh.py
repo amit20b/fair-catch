@@ -198,6 +198,14 @@ if os.path.exists(gp):
         for tm, v in per.items(): dvp.setdefault(tm, {})[pos] = round(v / avg, 3) if avg else 1
     stats["sched"] = dict(week=W, games=rows)
     stats["dvp"] = dvp
+    # the rest of the season for every team (for the fantasy playoff schedule): team -> {week: opponent, "@" in front when away}
+    rest = {}
+    for r in games:
+        wk = int(r["week"])
+        if W is None or wk < W: continue
+        rest.setdefault(r["home_team"], {})[str(wk)] = r["away_team"]
+        rest.setdefault(r["away_team"], {})[str(wk)] = "@" + r["home_team"]
+    stats["rest"] = rest
     report.append("schedule: week %s, %d games, %d done" % (W, len(rows), sum(r[3] for r in rows)))
     # current team and roster status from nflverse weekly rosters
     rwp = os.path.join(wd, "rw2026.csv")

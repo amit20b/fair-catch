@@ -164,6 +164,45 @@ async function createUser(D, env, email, fields) {
 /* ---------- brakes that hold across all servers (kept in the database) ----------
    per account: 8 wrong passwords in 15 minutes locks sign-in for that account for 15 minutes
    per address: 5 new accounts a day */
+
+// ---------- ESPN: public leagues only, read-only. No ESPN login and no ESPN cookies are ever asked for or sent. ----------
+const EPOS = { 1: 'QB', 2: 'RB', 3: 'WR', 4: 'TE', 5: 'K', 16: 'DST' };
+const ETEAM = { 1: 'ATL', 2: 'BUF', 3: 'CHI', 4: 'CIN', 5: 'CLE', 6: 'DAL', 7: 'DEN', 8: 'DET', 9: 'GB', 10: 'TEN', 11: 'IND', 12: 'KC', 13: 'LV', 14: 'LA', 15: 'MIA', 16: 'MIN', 17: 'NE', 18: 'NO', 19: 'NYG', 20: 'NYJ', 21: 'PHI', 22: 'ARI', 23: 'PIT', 24: 'LAC', 25: 'SF', 26: 'SEA', 27: 'TB', 28: 'WAS', 29: 'CAR', 30: 'JAX', 33: 'BAL', 34: 'HOU' };
+function trimEspn(d) {
+  const st = d.settings || {}, rs = st.rosterSettings || {}, ss = st.scoringSettings || {}, sch = st.scheduleSettings || {};
+  const rec = ((ss.scoringItems || []).find((x) => x.statId === 53) || {}).points || 0;
+  const teams = (d.teams || []).map((t) => {
+    const o = (t.record || {}).overall || {};
+    return { rid: t.id, name: String(t.name || [t.location, t.nickname].filter(Boolean).join(' ') || 'Team ' + t.id).slice(0, 60),
+      rec: [o.wins || 0, o.losses || 0, o.ties || 0], pf: +o.pointsFor || 0,
+      p: ((t.roster || {}).entries || []).map((e) => { const pl = (e.playerPoolEntry || {}).player || {}; return [String(pl.fullName || '').slice(0, 60), EPOS[pl.defaultPositionId] || '', ETEAM[pl.proTeamId] || '', e.lineupSlotId]; }).filter((x) => x[0]) };
+  });
+  const sched = {};
+  (d.schedule || []).forEach((m) => { if (!m.home || !m.away) return; (sched[m.matchupPeriodId] = sched[m.matchupPeriodId] || []).push([m.away.teamId, m.home.teamId, +(m.away.totalPoints || 0), +(m.home.totalPoints || 0)]); });
+  return { id: String(d.id), name: String(st.name || 'ESPN league').slice(0, 80), season: String(d.seasonId || ''), week: (d.status || {}).currentMatchupPeriod || d.scoringPeriodId || 1,
+    slots: rs.lineupSlotCounts || {}, rec, pteams: sch.playoffTeamCount || 6, regWeeks: sch.matchupPeriodCount || 14, teams, sched: Object.entries(sched).map(([w, ms]) => [+w, ms]) };
+}
+async function espnRoute(req, env, url) {
+  if (req.method !== 'GET') return json(req, { error: 'not allowed' }, 405);
+  const id = (url.searchParams.get('id') || '').replace(/\D/g, '').slice(0, 12);
+  const season = ((url.searchParams.get('season') || '').replace(/\D/g, '').slice(0, 4)) || String(new Date().getUTCFullYear());
+  if (!id) return json(req, { error: 'Enter your ESPN league ID.' }, 400);
+  const ck = new Request('https://cache.fair-catch.invalid/espn/' + season + '/' + id);
+  const cache = caches.default;
+  let hit = await cache.match(ck);
+  if (!hit) {
+    const api = `https://lm-api-reads.fantasy.espn.com/apps/fantasy/ffl/seasons/${season}/segments/0/leagues/${id}?view=mTeam&view=mRoster&view=mSettings&view=mMatchupScore&view=mStatus`;
+    const r = await fetch(api, { headers: { Accept: 'application/json', 'User-Agent': 'FairCatch/1.0' } });
+    if (r.status === 401 || r.status === 403) return json(req, { error: 'PRIVATE' }, 403);
+    if (r.status === 404) return json(req, { error: 'NOTFOUND' }, 404);
+    if (!r.ok) return json(req, { error: 'ESPN answered ' + r.status }, 502);
+    const out = trimEspn(await r.json());
+    hit = new Response(JSON.stringify(out), { headers: { 'Content-Type': 'application/json', 'Cache-Control': 'max-age=600' } });
+    await cache.put(ck, hit.clone());
+  }
+  return json(req, await hit.json());
+}
+
 async function hit(D, k, windowMs) {
   const now = Date.now();
   await D.prepare('INSERT INTO limits (k, n, first) VALUES (?1, 1, ?2) ON CONFLICT(k) DO UPDATE SET n = CASE WHEN first < ?3 THEN 1 ELSE n + 1 END, first = CASE WHEN first < ?3 THEN ?2 ELSE first END').bind(k, now, now - windowMs).run();
@@ -433,10 +472,14 @@ export default {
       } catch (e) { return Response.redirect(back + '#fc_err=' + encodeURIComponent('Could not confirm right now. Try the link again.'), 302); }
     }
 
-    if ((url.pathname === '/refresh' || url.pathname.startsWith('/api/') || url.pathname.startsWith('/auth/') || url.pathname.startsWith('/stats/') || url.pathname.startsWith('/admin/')) && !fromApp(req)) { console.warn('blocked: origin not allowed', req.headers.get('Origin') || 'none'); return json(req, { error: 'not allowed' }, 403); }
+    if ((url.pathname === '/refresh' || url.pathname.startsWith('/api/') || url.pathname.startsWith('/auth/') || url.pathname.startsWith('/stats/') || url.pathname.startsWith('/admin/') || url.pathname.startsWith('/espn/')) && !fromApp(req)) { console.warn('blocked: origin not allowed', req.headers.get('Origin') || 'none'); return json(req, { error: 'not allowed' }, 403); }
     if (await tooMany(req, env)) { console.warn('rate limited'); return json(req, { error: 'too many requests, try again in a minute' }, 429); }
 
 
+    if (url.pathname === '/espn/league') {
+      try { return await espnRoute(req, env, url); }
+      catch (e) { console.warn('espn error', e && e.message); return json(req, { error: 'Could not reach ESPN right now.' }, 502); }
+    }
     if (url.pathname.startsWith('/stats/') || url.pathname.startsWith('/admin/')) {
       try { return await statsRoute(req, env, url); }
       catch (e) { console.warn('stats error', e && e.message); return json(req, { error: e.status ? e.message : 'Something went wrong.' }, e.status || 500); }
