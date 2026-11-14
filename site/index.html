@@ -2,7 +2,7 @@
 <html lang="en" class="boot">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-lexbJKJRPbNcliWjsKxK5Mf1vppJ/tUybDb0TGdW+mk=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-uBzuWtkqJOvpR/XNuBHhuRCf8gVeUxEqbetCWkJxZXk=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070B1A">
 <meta name="color-scheme" content="dark">
@@ -631,6 +631,19 @@ footer{text-align:left!important;border-top:1px solid var(--line);padding-top:14
 .mo-m{display:flex;gap:10px;align-items:center;font-size:12.5px;margin-top:6px;flex-wrap:wrap}
 .mo-better{margin:0 0 16px 14px;padding-left:10px;border-left:2px solid var(--line,#26304f)}
 .mo-up{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12.5px;margin:4px 0 8px}
+.shared-note{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;justify-content:center;font-size:13px;color:var(--muted);margin:10px 0 0;padding:8px 10px;border:1px dashed var(--line);border-radius:12px}
+.hist{color:var(--accent)}.hist-top,.hist-bot{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.hist-top b{font-size:14px}.hist-top b.up{color:var(--win)}.hist-top b.down{color:var(--lose)}
+.hist-svg{display:block;width:100%;height:92px;margin:4px 0}
+.movers{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin:0 0 14px}
+.movers>div{min-width:0}
+.movers>div{border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.movers h4{margin:0 0 6px;font-size:13px;color:var(--muted)}
+.movers ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;font-size:13px}
+.movers li{display:flex;gap:6px;align-items:baseline}.movers li b{margin-left:auto}.movers b.up{color:var(--win)}.movers b.down{color:var(--lose)}
+.movers .linkbtn{text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1 1 auto}
+.movers li .muted{flex:none;font-size:11px}
+.imp-say{font-size:15px;line-height:1.45;margin:4px 0 12px}
 .bwhy{font-size:12px;font-weight:700;color:var(--green);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bres{font-size:11.5px;font-weight:700;color:var(--muted);white-space:nowrap;flex:none}
 .bres.ok{color:var(--win)}
@@ -857,6 +870,18 @@ html.sheet-lock body{position:fixed;left:0;right:0;width:100%}
 .plist .rk{width:30px;color:var(--muted);font-weight:600;font-size:12.5px;flex:none}
 .plist .rv{font-weight:700;font-variant-numeric:tabular-nums}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:999px;font-size:13px;font-weight:600;z-index:60}
+
+/* phone: the trade builder comes first, the header takes one short block */
+@media (max-width:640px){
+  .brand p{display:none}
+  header.top{padding-top:8px;gap:6px}
+  header.top .fresh{font-size:11.5px;flex-direction:row;flex-wrap:wrap;align-items:center;gap:6px 10px}
+  .fr-mkt,#poolInfo{display:none}
+  #proSlot,#proSlot:has(.pro-btn){margin:0;order:2}
+  #proSlot .pro-btn{padding:6px 12px;font-size:12px;min-height:0}
+  .chipbar{margin-top:6px}
+  .chipbar button,.chipbar .chip{padding:7px 12px;font-size:13px}
+}
 </style>
 
 <div class="wrap">
@@ -867,7 +892,7 @@ html.sheet-lock body{position:fixed;left:0;right:0;width:100%}
     </div>
     <div class="fresh">
       <span id="accSlot"></span><span id="proSlot"></span>
-      <span><span class="nw">Expert values <b id="dExp"></b></span> · <span class="nw">Trade market <b id="dMkt"></b></span> · <span class="nw">Stats <b id="dSt"></b></span></span>
+      <span class="fr-line"><span class="nw">Expert values <b id="dExp"></b></span><span class="fr-mkt"> · <span class="nw">Trade market <b id="dMkt"></b></span></span> · <span class="nw">Stats <b id="dSt"></b></span></span>
       <span id="poolInfo"></span>
     </div>
   </header>
@@ -901,8 +926,10 @@ html.sheet-lock body{position:fixed;left:0;right:0;width:100%}
     <div class="tool-row">
       <button class="btn" type="button" id="clear">Clear</button>
       <button class="btn" type="button" id="shotBtn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="vertical-align:-2px;margin-right:5px"><rect x="3" y="6" width="18" height="14" rx="3" stroke="currentColor" stroke-width="2"/><path d="M8.5 6l1.5-2.5h4L15.5 6" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.5" stroke="currentColor" stroke-width="2"/></svg>Screenshot or text</button>
+      <button class="btn" type="button" id="shareTrade"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="vertical-align:-2px;margin-right:5px"><path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Share</button>
       <button class="btn primary" type="button" id="copy">Copy trade</button>
     </div>
+    <div class="shared-note" id="sharedNote" hidden><span>A shared trade, shown from the sender's side.</span><button type="button" class="linkbtn" id="sharedSwap">I'm the other team: swap</button><button type="button" class="linkbtn" id="sharedX" aria-label="Close">✕</button></div>
   </section>
 
   <nav class="tabs" role="tablist">
@@ -914,6 +941,7 @@ html.sheet-lock body{position:fixed;left:0;right:0;width:100%}
   </div>
 
   <section id="chart" class="chartsec" hidden>
+    <div id="moversBox"></div>
     <div class="chart-tools">
       <label class="sr" for="chartSearch">Filter players</label>
       <input id="chartSearch" type="search" placeholder="Filter by name or team" autocomplete="off">
@@ -1370,7 +1398,7 @@ function similar(target,exclude){
   return POOL.filter(x=>!exclude.has(x.a.id)).map(x=>({...x,d:Math.abs(x.v-target)})).sort((p,q)=>p.d-q.d).slice(0,4).sort((p,q)=>q.v-p.v);
 }
 
-const ROWS=[['Class','cls','var(--slate)'],['League Rank','overall','var(--slate)'],['QB Rank','QB','var(--qb)'],['RB Rank','RB','var(--rb)'],['WR Rank','WR','var(--wr)'],['TE Rank','TE','var(--te)'],['PK Rank','PK','var(--pkr)']];
+const ROWS=[['Team status','cls','var(--slate)'],['League Rank','overall','var(--slate)'],['QB Rank','QB','var(--qb)'],['RB Rank','RB','var(--rb)'],['WR Rank','WR','var(--wr)'],['TE Rank','TE','var(--te)'],['PK Rank','PK','var(--pkr)']];
 function renderPanel(r,g){
   const el=document.getElementById('panel'), both=T.A.length&&T.B.length;
   document.querySelectorAll('.tabs button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===tab)));
@@ -1385,9 +1413,17 @@ function renderPanel(r,g){
     const delta=(k)=>{if(!cur||!aft||k==='cls')return '';const d=cur[k]-aft[k];return d>0?`<span class="chg up">▲${d}</span>`:d<0?`<span class="chg down">▼${-d}</span>`:'';};
     const clsChange=cur&&aft&&cur.cls!==aft.cls;
     const notOnRoster=ROSTER.length&&T.B.filter(id=>!ROSTER.includes(id)).length;
-    el.innerHTML=`<table class="impact"><thead><tr><th>Value</th><th>Current</th><th></th><th>After Trade</th></tr></thead><tbody>
-      ${rows.map(([lbl,k,c])=>`<tr><td><span class="rlbl" style="background:${c}">${lbl}</span></td><td>${cell(cur,k)}</td><td><span class="arr">→</span></td><td class="${k==='cls'&&clsChange?'hl':''}">${cell(aft,k)} ${delta(k)}</td></tr>`).join('')}
-    </tbody></table>
+    // with a trade: show only the rows that move, and say it in one line
+    const moved=cur&&aft?rows.filter(([,k])=>k==='cls'?clsChange:cur[k]!==aft[k]):null;
+    const ordN=n=>n+(['th','st','nd','rd'][(n%100-20)%10]||['th','st','nd','rd'][n%100]||'th');
+    const parts=moved?moved.filter(([,k])=>k!=='cls').slice(0,3).map(([l,k])=>k==='overall'?`you from ${ordN(cur[k])} to ${ordN(aft[k])} overall`:`your ${l.replace(' Rank','')}s from ${ordN(cur[k])} to ${ordN(aft[k])}`):[];
+    if(clsChange) parts.push(`makes you a ${aft.cls.toLowerCase()}`);
+    const joinA=a=>a.length<2?a.join(''):a.slice(0,-1).join(', ')+' and '+a[a.length-1];
+    const say=moved?(moved.length?`This trade ${parts[0]&&parts[0].startsWith('makes')?'':'moves '}${joinA(parts)} in the league.`.replace('moves makes','makes'):'This trade does not change where you rank in the league.'):'';
+    const showRows=moved&&moved.length?moved:rows;
+    el.innerHTML=`${say?`<p class="imp-say">${esc(say)}</p>`:''}${moved&&!moved.length?'':`<table class="impact"><thead><tr><th></th><th>Now</th><th></th><th>After</th></tr></thead><tbody>
+      ${showRows.map(([lbl,k,c])=>`<tr><td><span class="rlbl" style="background:${c}">${lbl}</span></td><td>${cell(cur,k)}</td><td><span class="arr">→</span></td><td class="${k==='cls'&&clsChange?'hl':''}">${cell(aft,k)} ${delta(k)}</td></tr>`).join('')}
+    </tbody></table>`}
     <p class="note">${ROSTER.length?`${notOnRoster?`${notOnRoster} player${notOnRoster>1?'s':''} you give ${notOnRoster>1?'are':'is'} not on your saved roster. `:''}Your ${ROSTER.length}-player roster vs. ${LEAGUE?`the other ${LEAGUE.teams.length-1} teams in ${esc(LEAGUE.name)}`:`a simulated ${S.teams}-team league`}. <button class="linkbtn" type="button" data-act="roster">Edit my roster</button>`:`Add your roster to see how this trade changes your team. <button class="linkbtn" type="button" data-act="roster">Add my roster</button>`}</p>`;
   } else if(tab==='similar'){
     if(!both){el.innerHTML='<p class="note">Add players on both sides to see similar trades.</p>';return;}
@@ -1465,6 +1501,7 @@ function renderSettings(){
 
 /* ---------- value chart tab ---------- */
 function renderChart(){
+  {const mv=document.getElementById('moversBox'); if(mv){ if(HIST) mv.innerHTML=moversHtml(); else loadHist().then(()=>{const m=document.getElementById('moversBox');if(m)m.innerHTML=moversHtml();}); }}
   const opts=S.mode==='redraft'?['ALL','QB','RB','WR','TE','K','DST']:['ALL','QB','RB','WR','TE','PICK'];
   if(!opts.includes(chartPos)) chartPos='ALL';
   document.getElementById('posFilter').innerHTML=opts.map(o=>`<button type="button" data-cpos="${o}" aria-pressed="${o===chartPos}">${o==='PICK'?'Picks':o==='ALL'?'All':o==='DST'?'D/ST':o}</button>`).join('');
@@ -2110,6 +2147,40 @@ function rangeBar(a,o){
 let PP=null;
 function openPlayer(id){const a=byId[+id];if(!a)return;PP=a.id;renderPlayer();document.getElementById('pscrim').hidden=false;document.getElementById('psheet').hidden=false;document.getElementById('psBody').scrollTop=0;}
 function closePlayer(){PP=null;document.getElementById('pscrim').hidden=true;document.getElementById('psheet').hidden=true;}
+/* ---------- value history: day-by-day values kept by the hourly refresh (history.json next to the page) ---------- */
+let HIST=null, HIST_P=null;
+function loadHist(){ if(HIST_P) return HIST_P;
+  HIST_P=(location.protocol==='file:'&&!window.__histTest?Promise.resolve(null):fetch('history.json').then(r=>r.ok?r.json():null)).then(h=>{HIST=h&&h.v===1?h:null;return HIST;}).catch(()=>null); return HIST_P; }
+// the series for this player in your format, scaled so today's point equals his value in your settings
+function histSeries(a){
+  if(!HIST||!a) return null; const row=HIST.p[a.n]; if(!row) return null;
+  const k=S.mode==='redraft'?(S.qb==='sf'?1:0):(S.qb==='sf'?3:2);
+  const pts=HIST.dates.map((d,i)=>[d,row[i]?row[i][k]:0]).filter(x=>x[1]>0); if(pts.length<2) return null;
+  const now=val(a), last=pts[pts.length-1][1], f=last>0?now/last:1;
+  return pts.map(([d,v])=>[d,Math.round(v*f)]);
+}
+function histChange(a,days){const ser=histSeries(a);if(!ser)return null;const cut=new Date(Date.now()-days*864e5).toISOString().slice(0,10);
+  const base=ser.find(x=>x[0]>=cut)||ser[0], last=ser[ser.length-1]; if(base===last||!base[1]) return null; return {from:base[1],to:last[1],pct:(last[1]-base[1])/base[1],days:Math.round((new Date(last[0])-new Date(base[0]))/864e5)};}
+function histHtml(a){
+  const ser=histSeries(a); if(!ser) return `<p class="pp-note">His value history starts building now: check back in a few days.</p>`;
+  const W=320,H=92,P=6, vs=ser.map(x=>x[1]), mn=Math.min(...vs), mx=Math.max(...vs), rg=Math.max(1,mx-mn);
+  const flat=mx-mn<Math.max(20,mx*.01), X=i=>P+i*(W-2*P)/(ser.length-1), Y=v=>flat?H/2:H-P-(v-mn)/rg*(H-2*P);
+  const path=ser.map((x,i)=>`${i?'L':'M'}${X(i).toFixed(1)},${Y(x[1]).toFixed(1)}`).join('');
+  const ch=(vs[vs.length-1]-vs[0])/Math.max(1,vs[0]), up=ch>=0, cls=Math.abs(ch)<.03?'':up?'up':'down';
+  const dd=s=>new Date(s+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  return `<div class="hist"><div class="hist-top"><span>${dd(ser[0][0])} – today</span><b class="${cls}">${Math.abs(ch)<.03?'Steady':`${up?'▲':'▼'} ${Math.round(Math.abs(ch)*100)}%`}</b></div>
+    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" class="hist-svg" role="img" aria-label="Value from ${fmt(vs[0])} to ${fmt(vs[vs.length-1])}"><path d="${path}" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/><circle cx="${X(ser.length-1)}" cy="${Y(vs[vs.length-1])}" r="4" fill="currentColor"/></svg>
+    <div class="hist-bot"><span>${fmt(vs[0])}</span><span>high ${fmt(mx)} · low ${fmt(mn)}</span><span>${fmt(vs[vs.length-1])}</span></div></div>`;
+}
+// biggest moves this week, for the Value chart tab
+function moversHtml(){
+  if(!HIST) return '';
+  const lst=POOL.slice(0,160).filter(x=>x.a.p!=='PICK').map(x=>({a:x.a,c:histChange(x.a,7)})).filter(x=>x.c&&x.c.days>=3&&Math.abs(x.c.pct)>=.05);
+  if(lst.length<3) return '';
+  const up=lst.filter(x=>x.c.pct>0).sort((a,b)=>b.c.pct-a.c.pct).slice(0,5), dn=lst.filter(x=>x.c.pct<0).sort((a,b)=>a.c.pct-b.c.pct).slice(0,5);
+  const li=x=>`<li><button type="button" class="linkbtn" data-pp="${x.a.id}" title="${esc(x.a.n)}">${esc(x.a.n.replace(/^(\S)\S*\s+/,'$1. '))}</button> <span class="muted">${x.a.p}</span><b class="${x.c.pct>0?'up':'down'}">${x.c.pct>0?'▲':'▼'}${Math.round(Math.abs(x.c.pct)*100)}%</b></li>`;
+  return `<div class="movers"><div><h4>Rising this week</h4><ul>${up.map(li).join('')||'<li class="muted">Nobody yet</li>'}</ul></div><div><h4>Falling this week</h4><ul>${dn.map(li).join('')||'<li class="muted">Nobody yet</li>'}</ul></div></div>`;
+}
 function renderPlayer(){
   const a=byId[PP]; if(!a) return;
   document.getElementById('psName').textContent=a.n;
@@ -2126,6 +2197,8 @@ function renderPlayer(){
   const trend=l3==null||ppg==null?'':l3>=ppg*1.2?'<small class="up">Heating up</small>':l3<=ppg*.8?'<small class="down">Cooling off</small>':'<small>Steady</small>';
   h+=`<div class="pp-kpis"><div><span>Trade value</span><b>${fmt(val(a))}</b><small>#${RANK[a.id]||'–'} overall</small></div>`+
      (BOOM[a.p]?`<div><span>Points / game</span><b>${ppg!=null?f1(ppg):'–'}</b><small>${rk?a.p+rk+' this season':g.length?'':'No games yet'}</small></div><div><span>Last 3 games</span><b>${l3!=null?f1(l3):'–'}</b>${trend}</div>`:'')+`</div>`;
+  h+=`<h3 class="pp-h">Trade value over time</h3><div id="ppHist">${HIST?histHtml(a):'<p class="pp-note">Loading…</p>'}</div>`;
+  if(!HIST) loadHist().then(()=>{const el=document.getElementById('ppHist');if(el&&PP===a.id)el.innerHTML=HIST?histHtml(a):'<p class="pp-note">Value history is not available here.</p>';});
   if(!BOOM[a.p]){h+=`<p class="muted">Rookie picks have no game stats.</p>`;}
   else if(!st||(!st.g&&!st.h)){h+=`<p class="muted">No NFL game stats for ${a.p==='DST'?'this defense':'him'} in 2025 or 2026 yet.</p>`;}
   else{
@@ -3408,6 +3481,64 @@ document.getElementById('copy').onclick=()=>{
   const fb=()=>{const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('Trade copied');}catch(err){toast('Copy not available here');}ta.remove();};
   if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(()=>toast('Trade copied'),fb); else fb();
 };
+
+/* ---------- share a trade: a link that opens the same trade, and a picture for the group chat ---------- */
+function tradeLink(){
+  const d={a:names(T.A),b:names(T.B),s:{mode:S.mode,qb:S.qb,teams:S.teams,scoring:S.scoring,tep:S.tep}};
+  const b64=btoa(unescape(encodeURIComponent(JSON.stringify(d)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  return location.origin+location.pathname+'#t='+b64;
+}
+function readTradeLink(){
+  const m=/[#&]t=([A-Za-z0-9_-]+)/.exec(location.hash); if(!m) return null;
+  try{const j=JSON.parse(decodeURIComponent(escape(atob(m[1].replace(/-/g,'+').replace(/_/g,'/')))));return j&&Array.isArray(j.a)&&Array.isArray(j.b)?j:null;}catch(e){return null;}
+}
+function settingsLine(){const sc={ppr:'PPR',half:'Half PPR',std:'Standard'}[S.scoring]||'';return [{dynasty:'Dynasty',contender:'Dynasty · contend',rebuild:'Dynasty · rebuild',redraft:'Redraft'}[S.mode],S.qb==='sf'?'Superflex':'1QB',S.teams+' teams',sc,+S.tep?'TE +'+S.tep:''].filter(Boolean).join(' · ');}
+async function tradeCard(){
+  const r=evaluate(T.A,T.B), g=grade(r), n=Math.min(6,Math.max(T.A.length,T.B.length)), cardH=110+94*n+(Math.max(T.A.length,T.B.length)>6?40:0), W=1080, H=Math.max(1080,580+cardH+140), c=document.createElement('canvas'); c.width=W; c.height=H;
+  const x=c.getContext('2d'), cs=getComputedStyle(document.documentElement), v=k=>cs.getPropertyValue(k).trim()||'#888';
+  const disp=v('--f-display'), body=getComputedStyle(document.body).fontFamily;
+  try{await document.fonts.ready;}catch(e){}
+  x.fillStyle=v('--bg'); x.fillRect(0,0,W,H);
+  x.fillStyle=v('--card'); const rr=(X,Y,w,h,rad)=>{x.beginPath();x.roundRect?x.roundRect(X,Y,w,h,rad):x.rect(X,Y,w,h);x.fill();};
+  x.textBaseline='alphabetic';
+  // the real logo from the page header, drawn as a picture; plain text if that fails
+  let drew=false; try{const svg=document.querySelector('.brand h1 svg');if(svg){const cl=svg.cloneNode(true);cl.setAttribute('xmlns','http://www.w3.org/2000/svg');const vb=(svg.getAttribute('viewBox')||'0 0 346 80').split(/\s+/).map(Number);const h=96,w=h*vb[2]/vb[3];cl.setAttribute('width',w);cl.setAttribute('height',h);
+    const img=new Image();img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(new XMLSerializer().serializeToString(cl));await img.decode();x.drawImage(img,64,40,w,h);drew=true;}}catch(e){}
+  if(!drew){x.fillStyle=v('--ink'); x.font=`900 64px ${disp}`; x.fillText('FAIR CATCH',72,124);}
+  x.fillStyle=v('--muted'); x.font=`500 30px ${body}`; x.fillText('Trade check · '+settingsLine(),72,172);
+  const col=g.k==='win'?v('--win')||'#32C787':g.k==='lose'?v('--lose')||'#FF6B6B':v('--accent');
+  x.fillStyle=col; x.font=`400 118px ${disp}`; let st=g.status.toUpperCase(); while(x.measureText(st).width>W-144&&x.font.match(/(\d+)px/)[1]>60) x.font=`400 ${+x.font.match(/(\d+)px/)[1]-6}px ${disp}`; x.fillText(st,72,330);
+  x.fillStyle=v('--muted'); x.font=`500 36px ${body}`; x.fillText(g.line,72,388);
+  // fairness bar: they win on the left, you win on the right
+  const bx=72,by=440,bw=W-144,bh=26; x.fillStyle=v('--card-2'); rr(bx,by,bw,bh,13);
+  const pos=Math.max(0,Math.min(1,.5+(r.diff>0?1:-1)*Math.min(.5,r.pct*1.6))); x.fillStyle=col; rr(bx+Math.min(bw/2,bw*pos)-2,by,Math.abs(bw*pos-bw/2)+4,bh,13);
+  x.fillStyle=v('--ink'); x.fillRect(bx+bw/2-2,by-8,4,bh+16);
+  x.fillStyle=v('--dim'); x.font=`500 26px ${body}`; x.fillText('They win',bx,by+70); const fw=x.measureText('Fair').width; x.fillText('Fair',bx+bw/2-fw/2,by+70); const yw=x.measureText('You win').width; x.fillText('You win',bx+bw-yw,by+70);
+  // the two sides
+  const side=(title,list,X)=>{x.fillStyle=v('--card');rr(X,580,456,cardH,28);x.fillStyle=v('--muted');x.font=`700 26px ${body}`;x.fillText(title,X+32,636);
+    let y=700; list.slice(0,6).forEach(id=>{const a=byId[id];if(!a)return;x.fillStyle=v('--ink');x.font=`700 34px ${body}`;let n=a.n;while(x.measureText(n).width>392&&n.length>4)n=n.slice(0,-2);if(n!==a.n)n=n.trim()+'…';x.fillText(n,X+32,y);
+      x.fillStyle=v('--dim');x.font=`500 26px ${body}`;x.fillText(`${a.p==='PICK'?'Pick':a.p+(a.t?' · '+a.t:'')} · ${fmt(val(a))}`,X+32,y+36);y+=94;});
+    if(list.length>6){x.fillStyle=v('--dim');x.font=`500 26px ${body}`;x.fillText(`+${list.length-6} more`,X+32,y);}};
+  side('I GET',T.A,72); side('THEY GET',T.B,W-72-456);
+  x.fillStyle=v('--dim'); x.font=`500 28px ${body}`; x.fillText('Check yours: '+location.host+location.pathname.replace(/\/$/,'').replace(/\/index\.html$/,''),72,H-70);
+  return await new Promise(res=>c.toBlob(b=>res(b),'image/png'));
+}
+document.getElementById('shareTrade').onclick=async()=>{
+  if(!T.A.length||!T.B.length){toast('Add players on both sides first');return;}
+  const url=tradeLink(), r=evaluate(T.A,T.B), g=grade(r);
+  const text=`${g.status} ${g.line}. I get ${names(T.A).join(', ')}, they get ${names(T.B).join(', ')}.`;
+  let blob=null; try{blob=await tradeCard();}catch(e){}
+  const file=blob?new File([blob],'fair-catch-trade.png',{type:'image/png'}):null;
+  try{
+    if(file&&navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],text:text+'\n'+url});return;}
+    if(navigator.share){await navigator.share({title:'Fair Catch trade',text,url});return;}
+  }catch(e){if(e&&e.name==='AbortError')return;}
+  const fb=()=>{const ta=document.createElement('textarea');ta.value=url;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');}catch(err){}ta.remove();};
+  if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(()=>toast('Link copied'),()=>{fb();toast('Link copied');}); else {fb();toast('Link copied');}
+  if(blob){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='fair-catch-trade.png';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},2000);}
+};
+document.getElementById('sharedSwap').onclick=()=>{const a=T.A;T.A=T.B;T.B=a;document.getElementById('sharedNote').hidden=true;render();toast('Swapped: now it is from your side');};
+document.getElementById('sharedX').onclick=()=>{document.getElementById('sharedNote').hidden=true;};
 const d=s=>new Date(s+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
 document.getElementById('dExp').textContent=d(DATA.expertsScraped);
 document.getElementById('dMkt').textContent=d(DATA.updated);
@@ -4236,6 +4367,10 @@ if('serviceWorker' in navigator&&location.protocol==='https:'&&!OWNER_BUILD&&FC_
     if(HID_AT&&Date.now()-HID_AT>60000&&navigator.serviceWorker.controller) navigator.serviceWorker.controller.postMessage({type:'fc-check'});
   });
 }
+// opened from a shared trade link
+try{const sh=readTradeLink(); if(sh){ const ok=['mode','qb','teams','scoring','tep'];ok.forEach(k=>{if(sh.s&&sh.s[k]!=null)S[k]=String(sh.s[k]);});
+  if(inLeagueCtx())setMain('calc'); T={A:ids(sh.a),B:ids(sh.b),example:false}; SIM=null; setMain('calc'); fullRender();
+  document.getElementById('sharedNote').hidden=false; history.replaceState(null,'',location.pathname+location.search); setTimeout(()=>toast('Shared trade loaded'),300);}}catch(e){}
 // back from an automatic refresh: same tab, same trade, same spot
 try{const r=JSON.parse(sessionStorage.getItem('faircatch-resume')||'null');sessionStorage.removeItem('faircatch-resume');
   if(r&&!Y_BACK&&Date.now()-r.t<120000){
