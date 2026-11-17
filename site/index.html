@@ -2,7 +2,7 @@
 <html lang="en" class="boot">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-NuDkVhEkYxB9Bbrnvda1F3PoazA8FjT1kReEaQIvr0k=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-rME41zI5S0CFyd2NPYT0AgzIpwXxRlZ/7Pjr18JTPvU=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070B1A">
 <meta name="color-scheme" content="dark">
@@ -891,6 +891,11 @@ html.sheet-lock body{position:fixed;left:0;right:0;width:100%}
   .chipbar{margin-top:6px}
   .chipbar button,.chipbar .chip{padding:7px 12px;font-size:13px}
 }
+.ak-pick{display:grid;grid-template-columns:1fr 1fr;gap:10px}.ak-pick label{display:flex;flex-direction:column;gap:4px;min-width:0}.ak-pick select{width:100%}
+.ak-sum{margin:14px 0 4px;font-size:15px}
+.ak-col{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}.ak-col h4{margin:0;font-size:16px}.ak-col>p.muted{margin:2px 0 8px;font-size:12.5px}
+.ak-col.need h4{color:var(--accent)}.ak-col.yes h4{color:var(--win,#34D399)}
+@media (max-width:520px){.ak-pick{grid-template-columns:1fr}}
 </style>
 
 <div class="wrap">
@@ -1853,6 +1858,74 @@ function finderCard(o,i){
     ${whyHtml(o)}
     <div class="idea-f"><span>Your lineup ${sg(o.myGain)} · Their lineup ${sg(o.thGain)}${o.thGain>=0?' <em>they gain too</em>':''}</span><button class="btn" type="button" data-ftload="${i}">Open in Trade builder</button></div></li>`;
 }
+/* ---------- someone wants your player: what to ask for back, three ways ---------- */
+let AK={id:null,rid:null,res:null,key:'',shown:[]};
+function askOffers(give,rid){
+  const L=leagueData(), myT=L.myT, out=[];
+  const ok=id=>{const a=byId[id];return a&&(SLOT_POS.includes(a.p)||(a.p==='PICK'&&S.mode!=='redraft'))&&val(a)>=60&&!hurtNow(a);};
+  const teams=L.teams.filter(t=>!t.me&&(rid==null||t.rid===rid)), myBase=hprof(myT.ids);
+  for(const t of teams){
+    const thBase=hprof(t.ids), pool=t.ids.filter(ok).sort((a,b)=>val(byId[b])-val(byId[a])).slice(0,rid==null?10:16), gets=[];
+    for(let i=0;i<pool.length;i++){gets.push([pool[i]]);
+      for(let j=i+1;j<pool.length;j++){gets.push([pool[i],pool[j]]);
+        if(rid!=null&&j<12) for(let k=j+1;k<Math.min(pool.length,12);k++) gets.push([pool[i],pool[j],pool[k]]);}}
+    for(const get of gets){
+      const r=evaluate(get,give); if(r.pct>.2) continue;
+      const o={team:t,give:give.slice(),get,r,mg:S.mode==='redraft'?marketGap(get,give):0,
+        myGain:hprof([...myT.ids.filter(id=>!give.includes(id)),...get]).total-myBase.total,
+        thGain:hprof([...t.ids.filter(id=>!get.includes(id)),...give]).total-thBase.total};
+      o.acc=acceptScore(o); out.push(o);
+    }
+  }
+  const used=new Set(), key=o=>o.team.rid+'|'+[...o.get].sort().join(',');
+  const main=o=>o.get.slice().sort((x,y)=>val(byId[y])-val(byId[x]))[0];
+  // each list: no repeats across lists, and a different main player in every card
+  const sane=out.filter(o=>o.mg<=.3), extra=o=>o.get.length-1;
+  const myFit=o=>o.fit?o.fit.my:0, edge=o=>o.r.diff>0?o.r.diff:0;
+  const L3={
+    // what you need: fills your weak spots and helps your lineup, close to fair so he can say yes
+    need:sane.filter(o=>o.myGain>0&&o.r.pct<=.1&&o.acc>=40).sort((a,b)=>(myFit(b)*900+b.myGain-250*extra(b))-(myFit(a)*900+a.myGain-250*extra(a))),
+    // what you want: the most you can ask for that is still a real offer (up to 15% your way)
+    want:sane.filter(o=>o.myGain>-100&&(o.r.diff>=0||o.r.pct<=.04)&&o.r.pct<=.15&&o.acc>=30).sort((a,b)=>(b.myGain+edge(b)*.4-200*extra(b))-(a.myGain+edge(a)*.4-200*extra(a))),
+    // what he will probably say yes to: the best chance, still fair for you
+    yes:sane.filter(o=>o.myGain>=-50&&o.r.pct<=.1&&o.acc>=35).sort((a,b)=>((b.acc-4*extra(b))-(a.acc-4*extra(a)))||(b.myGain-a.myGain))};
+  // share the options out fairly: one card per list at a time, no repeats, a different main player first
+  const res={need:[],want:[],yes:[]};
+  for(const pass of [1,2]) for(let round=0;round<3;round++) for(const k of ['need','want','yes']){
+    if(res[k].length>round) continue;
+    const o=L3[k].find(o=>!used.has(key(o))&&(pass===2||!res[k].some(x=>main(x)===main(o))));
+    if(o){used.add(key(o));res[k].push(o);}
+  }
+  const {need,want,yes}=res;
+  return {need,want,yes,n:out.length};
+}
+function askResult(){
+  if(AK.id==null||!byId[AK.id]||!LCACHE) return '';
+  const k=LKEY+'|'+AK.id+'|'+AK.rid;
+  if(AK.key!==k){AK.res=askOffers([AK.id],AK.rid);AK.key=k;}
+  const R=AK.res, a=byId[AK.id], tm=AK.rid!=null?LCACHE.teams.find(t=>t.rid===AK.rid):null; AK.shown=[];
+  let free=isPro()?99:1, locked=0;
+  const col=(cls,title,sub,list)=>`<div class="ak-col ${cls}"><h4>${title}</h4><p class="muted">${sub}</p>${list.length?`<ul class="ideas">${list.map(o=>{if(free<=0){locked++;return '';}free--;const i=AK.shown.push(o)-1;return finderCard(o,i).replace('data-ftload=','data-akload=');}).join('')}</ul>`:'<p class="muted ak-none">Nothing that works here.</p>'}</div>`;
+  const who=tm?esc(tm.name):'any team';
+  const html=`<p class="ak-sum">What to ask ${who} for <b>${esc(a.n)}</b>:</p>`+
+    col('need','What you need','Fills your weakest spots and makes your lineup better.',R.need)+
+    col('want','What you want','The most you can ask for that is still a real offer.',R.want)+
+    col('yes','What he will likely say yes to','The best chance of a yes, still fair for you.',R.yes);
+  const few=tm&&(R.need.length+R.want.length+R.yes.length)<=4?`<p class="note" style="text-align:left">${esc(tm.name)} has only a few players who fit. Pick <b>Any team</b> to compare with the rest of your league.</p>`:'';
+  return html+few+(locked?proLock('See every option','Pro shows all three lists for any player and any team.'):'');
+}
+function askBox(){
+  if(!LEAGUE||!LCACHE) return '';
+  const mine=LCACHE.myT.ids.filter(id=>byId[id]&&(SLOT_POS.includes(byId[id].p)||byId[id].p==='PICK')).sort((a,b)=>val(byId[b])-val(byId[a]));
+  if(AK.id!=null&&!mine.includes(AK.id)) AK.id=null;
+  const others=LCACHE.teams.filter(t=>!t.me); if(AK.rid!=null&&!others.some(t=>t.rid===AK.rid)) AK.rid=null;
+  return `<div class="box" id="askBox"><h3>Someone wants your player?</h3>
+    <p class="muted" style="margin:0 0 10px">They asked what you want for him. Pick him and the team that asked, and we show what to ask for: what you need, what you want, and what he will likely say yes to.</p>
+    <div class="ak-pick"><label><span class="field-lbl">Your player</span><select id="akP" class="sh-sel"><option value="">Choose your player</option>${mine.map(id=>{const p=byId[id];return `<option value="${id}"${id===AK.id?' selected':''}>${esc(p.n)} · ${p.p==='PICK'?'pick':p.p+(POSRANK[id]||'')}</option>`;}).join('')}</select></label>
+      <label><span class="field-lbl">Who asked</span><select id="akT" class="sh-sel"><option value="">Any team</option>${others.map(t=>`<option value="${t.rid}"${t.rid===AK.rid?' selected':''}>${esc(t.name)}</option>`).join('')}</select></label></div>
+    <div id="akOut" aria-live="polite">${askResult()}</div></div>`;
+}
+function askRefresh(){const o=document.getElementById('akOut');if(!o)return;o.innerHTML='<p class="muted" style="margin:10px 0 0">Building offers…</p>';setTimeout(()=>{const x=document.getElementById('akOut');if(x)x.innerHTML=askResult();},30);}
 /* shop your players: pick one or more of yours, find what each team would give back */
 let SH_JOB=0, SH_WANT=new Set(), SH_TEAM=null, SH_SEL=new Set(), SH_RES=null, SH_KEY='', SH_LIMIT=4, SH_SHOWN=[], SH_RUN=false;
 async function shopOffers(give,prog){
@@ -2066,6 +2139,7 @@ function renderLeague(){
     ${UNTOUCH.size?`<p class="note" style="text-align:left;margin:6px 0 0">Not offering your untouchables: ${[...UNTOUCH].filter(id=>byId[id]).map(id=>esc(byId[id].n)).join(', ')}. <button type="button" class="linkbtn" data-lsub="roster">Change</button></p>`:''}
     <div id="ftOut"></div>
   </div>
+  ${askBox()}
   ${myOffersBox()}
   ${shopBox()}
   <div class="box"><h3>Trade ideas</h3>
@@ -2539,6 +2613,7 @@ function renderStartSit(el){
 /* ---------- "Help me decide": quick answers without AI ---------- */
 let HQ='home', HSEL=[], HPOS='ANY';
 function openHelper(q){HQ=q||'home';if(HQ==='start'&&!HSEL.length)HSEL=[];document.getElementById('hscrim').hidden=false;document.getElementById('hsheet').hidden=false;document.getElementById('helpFab').hidden=true;renderHelper();}
+document.addEventListener('change',e=>{if(e.target&&(e.target.id==='akP'||e.target.id==='akT')){const v=e.target.value;if(e.target.id==='akP')AK.id=v===''?null:+v;else AK.rid=v===''?null:+v;askRefresh();}});
 document.addEventListener('change',e=>{if(e.target&&e.target.id==='ofTeam'){OFS.rid=e.target.value===''?null:+e.target.value;ofRefresh();}});
 let OF_T=0;
 document.addEventListener('input',e=>{if(e.target&&e.target.id==='ofText'){if(e.target.value!==OFS.text){OFS.excl=new Set();OFS.rid=null;}OFS.text=e.target.value;clearTimeout(OF_T);OF_T=setTimeout(ofRefresh,350);}});
@@ -3594,6 +3669,7 @@ document.addEventListener('click',e=>{
   if(t.closest('[data-shclear]')){SH_SEL.clear();SH_WANT.clear();SH_RUN=false;const b=document.getElementById('shopBox');if(b)b.outerHTML=shopBox();return;}
   if(t.closest('[data-shgo]')){if(!isPro()){const f=freeUse('finder');if(!f.left){SH_RUN=false;const o=document.getElementById('shOut');if(o)o.innerHTML=proLock("You've used today's 3 free searches",'Pro finds unlimited fair trades with every team, all season.');return;}f.take();}SH_RUN=true;SH_LIMIT=4;renderShop();return;}
   if(t.closest('[data-shmore]')){SH_LIMIT+=4;renderShop();return;}
+  const akl=t.closest('[data-akload]'); if(akl){const it=AK.shown[+akl.dataset.akload];if(it) loadTrade(it);return;}
   const sl=t.closest('[data-shload]'); if(sl){const it=SH_SHOWN[+sl.dataset.shload];if(it) loadTrade(it);return;}
   const ok2=t.closest('[data-ofask]'); if(ok2){OFS.ask=OFS.ask===ok2.dataset.ofask?null:ok2.dataset.ofask;document.querySelectorAll('[data-ofask]').forEach(b=>b.classList.toggle('on',b.dataset.ofask===OFS.ask));ofRefresh();return;}
   if(t.closest('[data-ofpaste]')){(navigator.clipboard&&navigator.clipboard.readText?navigator.clipboard.readText():Promise.reject()).then(x=>{if(!x){toast('Nothing copied yet');return;}OFS.text=x;OFS.excl=new Set();OFS.rid=null;const a=document.getElementById('ofText');if(a)a.value=x;ofRefresh();}).catch(()=>{const a=document.getElementById('ofText');if(a)a.focus();toast('Long-press the box and tap Paste');});return;}
