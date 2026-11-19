@@ -899,6 +899,32 @@ html.sheet-lock body{position:fixed;left:0;right:0;width:100%}
 .acc-pair{display:inline-flex;align-items:center;gap:4px}
 .acc-in.ghost{border-color:transparent;background:none;color:var(--muted);padding-inline:10px}
 .acc-in.ghost:hover{color:var(--ink)}
+/* header: Sign in is a real button, Sign up stands out in lime; on tablet and desktop Go Pro sits under the logo and the account buttons are bigger on the right */
+.acc-in.ghost{border-color:var(--line);background:var(--card-2);color:var(--ink);padding-inline:13px}
+.acc-in.ghost:hover{border-color:var(--muted)}
+.acc-pair .acc-in:not(.ghost){background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.acc-pair .acc-in:not(.ghost):hover{filter:brightness(1.06)}
+.acc-pair{gap:8px}
+@media (max-width:480px){
+  .acc-in{font-size:13px;padding:0 13px;min-height:36px}
+  .acc-in.ghost{padding-inline:12px}
+  .acc-pair{gap:6px}
+  .brand h1 svg{height:38px}
+  #accSlot{top:14px}
+}
+@media (min-width:700px){
+  .acc-in{font-size:16px;padding:0 26px;min-height:50px}
+  .acc-in.ghost{padding-inline:24px}
+  .acc-pair{gap:10px}
+  .acc-av{width:48px;height:48px;font-size:20px}
+  header.top{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:14px 20px}
+  header.top .brand{grid-column:1;grid-row:1}
+  header.top .fresh{display:contents}
+  #accSlot{grid-column:2;grid-row:1;justify-self:end;margin:6px 0 0}
+  #proSlot,#proSlot:has(.pro-cta),#proSlot:has(.pro-btn){grid-column:1;grid-row:2/4;width:100%;max-width:460px;margin:0}
+  header.top .fr-line{grid-column:2;grid-row:2;align-self:end;justify-self:end;text-align:right}
+  #poolInfo{grid-column:2;grid-row:3;justify-self:end;text-align:right}
+}
 </style>
 
 <div class="wrap">
