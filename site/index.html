@@ -2,7 +2,7 @@
 <html lang="en" class="boot">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-5MpbS7G2eeLWbFJ+SiNCIBgNCE5DrWbZszk9r/Z0y4Q=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-P+yg8XcMmVFUGzpCCtZuYaZams1yPNDvOCploQkAh8M=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070B1A">
 <meta name="color-scheme" content="dark">
@@ -2206,6 +2206,8 @@ const BOOM={QB:24,RB:20,WR:20,TE:15,K:12,DST:12}, BUST={QB:12,RB:7,WR:7,TE:5,K:5
 const SCORE_LBL=()=>({ppr:'PPR',half:'Half PPR',std:'Standard'}[S.scoring]||'PPR')+(S.tep!=='0'?', TE +'+S.tep:'');
 function recPts(a){return (S.scoring==='ppr'?1:S.scoring==='half'?.5:0)+(a.p==='TE'?parseFloat(S.tep)||0:0);}
 function statOf(id){return STATS?STATS.p[id]||null:null;}
+// the weekly NFL rosters know about real trades before the value sources do (Josh Downs to KC): show the current team everywhere
+if(STATS) ALL.forEach(a=>{ const s=STATS.p[a.id]; if(s&&s.tm&&a.p!=='PICK'&&a.p!=='DST') a.t=s.tm; });
 function quant(arr,q){const s=[...arr].sort((x,y)=>x-y);if(!s.length)return 0;const i=(s.length-1)*q,lo=Math.floor(i),hi=Math.ceil(i);return s[lo]+(s[hi]-s[lo])*(i-lo);}
 const f1=v=>(Math.round(v*10)/10).toFixed(1);
 // his last ~14 games (this season first, filled from 2025), scored in your league's scoring
@@ -3368,6 +3370,9 @@ function ocrFind(lines){
         if(e.first[0]!==w[0]||e.t.length<2) continue; const v=simil(w.slice(1).join(' '),e.last); if(v>=.88) add(e,.8+.1*v,i,i+len); }
       if(sC.length>=7&&len<=3) for(const e of X.byFirst[sC[0]]||[]){ // words run together: "JOSHDOWNS"
         if(Math.abs(e.fullC.length-sC.length)>2) continue; const v=simil(sC,e.fullC); if(v>=.86) add(e,v-.01,i,i+len); }
+      if(len<=3&&sC.length>=9) for(const e of X.byFirst[sC[0]]||[]){ // a badge or icon read as letters stuck on the end: "CARNELLTATERIE", "CARNELL TATEQ"
+        const n=e.fullC.length, extra=sC.length-n; if(n<7||extra<1||extra>4) continue;
+        const v=simil(sC.slice(0,n),e.fullC); if(v>=.9) add(e,.8+.06*v,i,i+len); }
       if(len>=2&&lastT.length>=2) for(const e of X.byFirst[w[0][0]]||[]){ // a name cut off: "JACORY CROS..."
         if(e.t.length<len) continue; const head=e.t.slice(0,len-1).join(' '), rest=e.t.slice(len-1).join('');
         const hv=simil(w.slice(0,-1).join(' '),head);

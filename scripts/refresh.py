@@ -219,8 +219,10 @@ if os.path.exists(gp):
             if not i: continue
             jn = (r.get("jersey_number") or "").strip()
             if jn.isdigit(): P.setdefault(str(i), {})["no"] = int(jn)        # jersey number from the player's latest week on any roster (a bye week has no row), shown on the avatar
+            # team: the player's latest week on a roster (a team on its bye has no row in the newest week)
+            if int(r["week"]) >= mw - 2: P.setdefault(str(i), {})["tm"] = r["team"]
             if int(r["week"]) != mw: continue
-            e = P.setdefault(str(i), {}); e["tm"] = r["team"]
+            e = P.setdefault(str(i), {})
             if r["status"] not in ("ACT", ""): e["st"] = r["status"]       # RES = injured reserve, EXE/RET/CUT/SUS/DEV = not playing
     # jersey numbers for the player avatar: the latest row we have for each player (teams on a bye are missing from the newest week; last season fills in the rest)
     prevp = os.path.join(wd, "rw2025.csv")
