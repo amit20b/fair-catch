@@ -2,7 +2,7 @@
 <html lang="en" class="boot">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-P+yg8XcMmVFUGzpCCtZuYaZams1yPNDvOCploQkAh8M=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-agWkewYYg9Tnjq0Ny1+CIs6a+5H+FOhaPYLwOtGVDaQ=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070B1A">
 <meta name="color-scheme" content="dark">
@@ -2671,7 +2671,10 @@ function parseOffer(text,L){
   const cands=ALL.filter(a=>a.p!=='PICK'&&(rost.has(a.id)||(RANK[a.id]||9999)<=350));
   const take=(id,key)=>{const i=flat.indexOf(' '+key+' ');if(i<0)return false;found.push([id,i]);flat=flat.slice(0,i)+' '+'#'.repeat(key.length)+' '+flat.slice(i+key.length+2);return true;};
   // a lone common word ("love", "chase", "cook") counts as a name only when written with a capital, mid-sentence
-  const capOK=k=>{if(!OCOMMON.has(k))return true;const C=k[0].toUpperCase()+k.slice(1);const r=new RegExp('(^|[^A-Za-z])'+C+'(?![A-Za-z])','g');let m;while((m=r.exec(raw))){const before=raw.slice(0,m.index+m[1].length).trimEnd();if(before&&(!/[.!?\n:"]$/.test(before)||/\b(st|jr|mr)\.$/i.test(before)))return true;}return false;};
+  // ...or when it sits in a list of names, lowercase too: "javonte and golden for chase", "cook, hill + a 2nd"
+  const T0=ofTokens(pre.replace(/[,+&\/]/g,' and ')).trim().split(' '), SLOTP=new Set('and for plus or with put get want trade zzbrk'.split(' ')), SLOTN=new Set('and for plus or zzbrk'.split(' '));
+  const slotOK=k=>T0.some((w,i)=>w===k&&(i===0||SLOTP.has(T0[i-1]))&&(i===T0.length-1||SLOTN.has(T0[i+1])));
+  const capOK=k=>{if(!OCOMMON.has(k)||slotOK(k))return true;const C=k[0].toUpperCase()+k.slice(1);const r=new RegExp('(^|[^A-Za-z])'+C+'(?![A-Za-z])','g');let m;while((m=r.exec(raw))){const before=raw.slice(0,m.index+m[1].length).trimEnd();if(before&&(!/[.!?\n:"]$/.test(before)||/\b(st|jr|mr)\.$/i.test(before)))return true;}return false;};
   cands.map(a=>[a.id,ofKey(a.n)]).sort((x,y)=>y[1].length-x[1].length).forEach(([id,k])=>{while(k&&take(id,k));});
   Object.entries(OALIAS).forEach(([k,n])=>{const id=matchName(n);if(id&&!found.some(f=>f[0]===id)&&capOK(k))take(id,k);});
   const ownerOfId=id=>{const t=L.teams.find(t=>t.ids.includes(id));return t?t.rid:null;};
@@ -2684,6 +2687,9 @@ function parseOffer(text,L){
   const inTeams=new Set(found.map(f=>ownerOfId(f[0])).filter(r=>r!=null)); if(L.myT&&L.myT.rid!=null)inTeams.add(L.myT.rid);
   if(inTeams.size){const pool=cands.filter(a=>inTeams.has(ownerOfId(a.id)));['last','first'].forEach(w=>{const m=shortNames(w,pool);
     Object.entries(m).forEach(([k,ids])=>{if(ids.length===1&&!found.some(f=>f[0]===ids[0])&&capOK(k.split(' ').pop()))take(ids[0],k);});});}
+  // last try, any valued player by one name, rostered or not ("javonte and golden for chase"): only a name that fits exactly one player; first names need 5+ letters
+  {const m={};cands.forEach(a=>{const parts=ofKey(a.n).split(' ');[[parts[parts.length-1],4],[parts[0],5]].forEach(([k,n])=>{if(k&&k.length>=n)(m[k]=m[k]||new Set()).add(a.id);});});
+   Object.entries(m).forEach(([k,s])=>{if(s.size!==1)return;const id=[...s][0];if(!found.some(f=>f[0]===id)&&capOK(k))take(id,k);});}
   Object.keys(ambig).forEach(k=>{if(!flat.includes(' '+k+' ')||ambig[k].some(id=>found.some(f=>f[0]===id)))delete ambig[k];});
   // picks: "2027 1st", "a late 2nd", "my 2028 first"
   const ord={first:'1st',second:'2nd',third:'3rd',fourth:'4th','1st':'1st','2nd':'2nd','3rd':'3rd','4th':'4th'};
@@ -2733,7 +2739,7 @@ function solveOffer(){
   let rid=OFS.rid!=null?OFS.rid:+(Object.entries(owners).sort((a,b)=>b[1]-a[1])[0]||[null])[0];
   const team=L.teams.find(t=>!t.me&&t.rid===rid)||null;
   const base={P,give,get,team,L};
-  if(!give.length&&!get.length) return {...base,err:"We couldn't find player names in that. Use full names, like \"James Cook\" or \"Garrett Wilson\"."};
+  if(!give.length&&!get.length) return {...base,err:"We couldn't find player names in that. Write them like in a chat, for example \"Bijan for Chase and Golden\"."};
   if(!give.length||!get.length||!team) return {...base,err:!team?'Which team sent it? Pick the team below.':!give.length?"We couldn't find any of your players in the offer.":"We couldn't find the players you would get."};
   const askQ=(OF_ASK.find(x=>x[0]===OFS.ask)||[])[2]||''; const I=ofIntent((askQ+' '+(OFS.q||'')).trim(),OFS.text);
   const myIds=L.myT.ids, after=ids=>[...myIds.filter(id=>!give.includes(id)),...ids];
@@ -3607,7 +3613,7 @@ function renderShot(){
     return;
   }
   const it=OCR.items;
-  if(!it.length&&OCR.src==='text'){sub.textContent='No players found';el.innerHTML=`<p>We could not find player names in that text. Use full names, like "James Cook" or "Garrett Wilson".</p><div class="o-act"><button type="button" class="btn primary" id="oBack">Edit text</button></div>`;return;}
+  if(!it.length&&OCR.src==='text'){sub.textContent='No players found';el.innerHTML=`<p>We could not find player names in that text. Write them like in a chat, for example "Bijan for Chase and Golden" or "James Cook and a 2nd for Garrett Wilson".</p><div class="o-act"><button type="button" class="btn primary" id="oBack">Edit text</button></div>`;return;}
   if(!it.length){
     sub.textContent='No players found';
     el.innerHTML=`<div class="o-read"><img class="o-img" src="${OCR.img}" alt="Your screenshot"><p>We could not find player names in this picture. Use a sharper screenshot that shows the full names, or crop it to just the trade.</p></div><div class="o-act">${pickBtn('Try another screenshot','primary')}</div>`;
