@@ -6,12 +6,14 @@ a folder R in your scratchpad. The page is R/site/index.html; the scripts are in
 Goal: refresh the app's "Buy/Sell" tab with this week's expert calls (buy low, buy high, sell high, sell low, hold).
 
 1. Work folder W (empty, in your scratchpad). cp R/site/index.html $W/page.html. The script is R/scripts/claude/market.py.
-2. Work out the current NFL week (the upcoming week's games). Use WebSearch (send several searches in one turn) for
-   this week's articles, for example: "fantasy football buy low sell high week N 2026", "fantasy football trade
-   advice buy sell hold week N 2026", "sell high candidates week N 2026 fantasy". Prefer, in this order: FantasyPros,
-   Footballguys, PFF, Sports Illustrated (Michael Fabiano), 4for4, ESPN, CBS Sports, Yahoo, The Athletic, RotoBaller,
-   FanDuel Research, Fantasy Footballers, JHEN Fantasy, TWSN, Fantasy Six Pack. Only articles published in the last
-   8 days. Skip pages that are paywalled or don't load.
+2. Work out the current NFL week (the upcoming week's games). Search results are full of LAST season's articles
+   (the same titles every year), so: put the season year in every query, use WebSearch mode "extended", send several
+   searches in one turn, and only keep URLs or pages that show this season's date. Queries that worked (Nov 2026):
+   "fantasy football trade advice buy sell hold week N <year> fantasypros", "fantasy football buy low sell high week N
+   <year>", "<year> week N buy low sell high profootballnetwork", "si.com fantasy week N buy low sell high". Good free
+   sources: FantasyPros "Players to Buy, Sell or Hold" (Jim Moorman) and "Beyond the Waiver Wire" (Andrew Erickson),
+   Sports Illustrated (Michael Fabiano), Pro Football Network, Last Word on Sports, Footballguys, 4for4 (mostly paywalled).
+   Only articles published in the last 8 days; skip paywalled pages and pages from an earlier season.
 3. WebFetch 6 to 12 of them with a prompt like: "List every player in this article with the category (buy low, buy
    high, sell high, sell low, buy, sell, hold) and a one-sentence reason in your own words. Format:
    Player | category | reason | expert. Also give the publish date and author."
@@ -28,5 +30,6 @@ Goal: refresh the app's "Buy/Sell" tab with this week's expert calls (buy low, b
    user.email="noreply@anthropic.com" commit -m "Expert buy/sell update week N"; git -C R push origin HEAD:main. The site redeploys by itself.
    If the push is rejected (the 6-hourly refresh pushed first): git -C R fetch origin main; git -C R reset --hard origin/main;
    copy R/site/index.html to $W/page.html, run steps 5 and 6 again with the same market.json, copy, commit and push again (once).
-8. Summary in two lines: number of sources and players, and the 3 strongest consensus calls.
+8. If anything stopped you (fewer than 4 fresh sources, a failed check, a rejected push), your final message must start
+   with "NOT UPDATED:" and the reason. Otherwise the summary in two lines: number of sources and players, and the 3 strongest consensus calls.
 Never edit code, styles or values by hand; never create, change or delete scheduled tasks.
