@@ -2,7 +2,7 @@
 <html lang="en" class="boot">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-agWkewYYg9Tnjq0Ny1+CIs6a+5H+FOhaPYLwOtGVDaQ=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-1WNVp/8lKt1D7pLYZL/lebkqVJybkN1lVSB5/Cg3qao=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070B1A">
 <meta name="color-scheme" content="dark">
@@ -925,6 +925,34 @@ html.sheet-lock body{position:fixed;left:0;right:0;width:100%}
   header.top .fr-line{grid-column:2;grid-row:2;align-self:end;justify-self:end;text-align:right}
   #poolInfo{grid-column:2;grid-row:3;justify-self:end;text-align:right}
 }
+
+/* scouting */
+.sc-dot{display:inline-grid;place-items:center;min-width:17px;height:17px;padding:0 4px;margin-left:5px;border-radius:9px;background:var(--accent);color:var(--on-accent);font-style:normal;font-size:11px;font-weight:800;vertical-align:1px}
+.sc-ideas{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:12px}.sc-ideas .mk-lbl{width:100%}
+.sc-list{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-direction:column;gap:12px}
+.sc-card{position:relative;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.sc-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-right:44px;min-height:36px}.sc-top .lp{flex:1 1 auto;min-width:0}
+.sc-x{position:absolute;top:10px;right:10px;width:36px;height:36px;display:grid;place-items:center;border:1px solid var(--line);border-radius:10px;background:transparent;color:var(--muted);cursor:pointer}.sc-x:hover{color:inherit;border-color:var(--muted)}
+.sc-v{border-radius:10px;padding:9px 11px;background:var(--card-2);border-left:4px solid var(--line);display:flex;flex-direction:column;gap:2px}
+.sc-v b{font-size:15px}.sc-v span{font-size:13px;color:var(--muted)}
+.sc-v.up{border-left-color:var(--win)}.sc-v.up b{color:var(--win)}.sc-v.ok{border-left-color:var(--even)}.sc-v.ok b{color:var(--even)}
+.sc-v.down,.sc-v.hurt{border-left-color:var(--lose)}.sc-v.down b,.sc-v.hurt b{color:var(--lose)}
+.sc-new{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12.5px}.sc-new b{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);width:100%}
+.sc-new span{border:1px solid var(--line);border-radius:999px;padding:3px 9px}.sc-new span.up{color:var(--win)}.sc-new span.down{color:var(--lose)}
+.sc-rows{margin:0;display:flex;flex-direction:column;gap:7px}.sc-rows>div{display:grid;grid-template-columns:78px 1fr;gap:8px;font-size:13px;line-height:1.45}
+.sc-rows dt{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding-top:2px}.sc-rows dd{margin:0;min-width:0}
+.sc-rows .up{color:var(--win)}.sc-rows .down{color:var(--lose)}
+.sc-opps{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px}
+.sc-opp{display:inline-flex;flex-direction:column;align-items:center;min-width:42px;padding:3px 5px;border-radius:8px;border:1px solid var(--line);font-size:12px;font-weight:700}
+.sc-opp small{font-size:9.5px;font-weight:600;color:var(--muted)}.sc-opp.e{border-color:var(--win);color:var(--win)}.sc-opp.h{border-color:var(--lose);color:var(--lose)}
+.sc-opp.bye{color:var(--muted);border-style:dashed}.sc-opp.po{box-shadow:inset 0 -3px 0 var(--accent)}
+.inj.q{background:transparent;border:1px solid var(--even);color:var(--even)}
+.sc-why{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px}.sc-why>div{border-radius:10px;padding:8px 10px;background:var(--card-2)}
+.sc-why b{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}.sc-why .up b{color:var(--win)}.sc-why .down b{color:var(--lose)}
+.sc-why ul{margin:4px 0 0;padding-left:16px;font-size:12.5px;line-height:1.45;display:flex;flex-direction:column;gap:3px}
+.sc-acts{display:flex;flex-wrap:wrap;gap:8px}.sc-acts .btn{flex:1 1 150px}
+.btn.on{border-color:var(--accent);color:var(--accent)}
+@media(max-width:420px){.sc-rows>div{grid-template-columns:1fr;gap:2px}}
 </style>
 
 <div class="wrap">
@@ -2118,11 +2146,12 @@ function renderLeague(){
   if(LSUB==='overview'&&ALERTS&&ALERTS.items.length) setTimeout(()=>{markSeen();alertBadge();},2500);
   const el=document.getElementById('lgBody'), top=document.getElementById('lgTop');
   const sw0=LEAGUE?`<div class="lg-switch" role="group" aria-label="Choose league">${LEAGUES.map((l,i)=>`<button type="button" data-lg="${i}" aria-pressed="${l===LEAGUE&&!CN.open}"><small>${esc(l.platform||'')}${l.live?'':CONN.length?' · demo':''}</small>${esc(l.name)}</button>`).join('')}<button type="button" class="lg-add" data-lgadd="1" aria-pressed="${CN.open}"><small>Sleeper · ESPN · Yahoo</small>+ Add your league</button></div>`:'';
-  top.innerHTML=LEAGUE?sw0+`<nav class="tabs lg-sub" role="tablist"><button role="tab" type="button" data-lsub="overview" aria-selected="${LSUB==='overview'}">Overview</button><button role="tab" type="button" data-lsub="trades" aria-selected="${LSUB==='trades'}">Find trades</button><button role="tab" type="button" data-lsub="builder" aria-selected="${LSUB==='builder'}">Trade builder</button><button role="tab" type="button" data-lsub="roster" aria-selected="${LSUB==='roster'}">Roster</button><button role="tab" type="button" data-lsub="startsit" aria-selected="${LSUB==='startsit'}">Start/Sit</button><button role="tab" type="button" data-lsub="market" aria-selected="${LSUB==='market'}">Buy/Sell</button></nav>`+(LSUB==='builder'?`<div class="partner-row"><label for="partnerSel">Trading with</label><select id="partnerSel"><option value="">Choose a team…</option>${LEAGUE.teams.filter(x=>x.rid!==LEAGUE.me).map(x=>`<option value="${x.rid}" ${x.rid===PARTNER?'selected':''}>${esc(x.name)}${x.rec?` (${esc(x.rec)})`:''}</option>`).join('')}</select></div><p class="muted" style="margin:0">Pick a team, or just add a player you want and we find his team. You can only add players from your roster and theirs.</p>`:''):'';
+  top.innerHTML=LEAGUE?sw0+`<nav class="tabs lg-sub" role="tablist"><button role="tab" type="button" data-lsub="overview" aria-selected="${LSUB==='overview'}">Overview</button><button role="tab" type="button" data-lsub="trades" aria-selected="${LSUB==='trades'}">Find trades</button><button role="tab" type="button" data-lsub="builder" aria-selected="${LSUB==='builder'}">Trade builder</button><button role="tab" type="button" data-lsub="roster" aria-selected="${LSUB==='roster'}">Roster</button><button role="tab" type="button" data-lsub="startsit" aria-selected="${LSUB==='startsit'}">Start/Sit</button><button role="tab" type="button" data-lsub="market" aria-selected="${LSUB==='market'}">Buy/Sell</button><button role="tab" type="button" data-lsub="scout" aria-selected="${LSUB==='scout'}">Scouting${(()=>{const n=scoutNewCount();return n?`<i class="sc-dot" aria-label="${n} with news">${n}</i>`:'';})()}</button></nav>`+(LSUB==='builder'?`<div class="partner-row"><label for="partnerSel">Trading with</label><select id="partnerSel"><option value="">Choose a team…</option>${LEAGUE.teams.filter(x=>x.rid!==LEAGUE.me).map(x=>`<option value="${x.rid}" ${x.rid===PARTNER?'selected':''}>${esc(x.name)}${x.rec?` (${esc(x.rec)})`:''}</option>`).join('')}</select></div><p class="muted" style="margin:0">Pick a team, or just add a player you want and we find his team. You can only add players from your roster and theirs.</p>`:''):'';
   if(CN.open||!LEAGUE){el.innerHTML=connectBox();return;}
   if(LEAGUE&&LSUB==='builder') return;
   if(LSUB==='startsit'){renderStartSit(el);return;}
   if(LSUB==='market'){renderMarket(el);return;}
+  if(LSUB==='scout'){renderScout(el);return;}
   const key=lkey();
   if(!(LCACHE&&LKEY===key)){
     el.innerHTML=`<div class="box">${fcLoader('Crunching your league…','Lining up every roster in '+(LEAGUE.name||'your league'),null,'league')}</div>`;
@@ -2474,6 +2503,7 @@ function renderPlayer(){
     if(!inLeagueCtx()||own) acts.push(`<button class="btn" type="button" data-ppadd="A:${a.id}">I get him</button>`);
     if(!inLeagueCtx()||mine) acts.push(`<button class="btn" type="button" data-ppadd="B:${a.id}">I give him</button>`);
   }
+  if(LEAGUE&&!mine&&SLOT_POS.includes(a.p)) acts.push(`<button class="btn${isScouted(a.id)?' on':''}" type="button" data-scout="${a.id}" aria-pressed="${isScouted(a.id)}">${isScouted(a.id)?'★ Scouting':'☆ Scout him'}${isPro()?'':' (Pro)'}</button>`);
   if(acts.length) h+=`<div class="pp-acts">${acts.join('')}</div>`;
   if(STATS) h+=`<p class="note">Stats: nflverse, through Week ${STATS.week} of the ${STATS.season} season.</p>`;
   document.getElementById('psBody').innerHTML=h;
@@ -3017,6 +3047,151 @@ function renderMarket(el){
     ${L.length>MKT_LIMIT?`<div style="text-align:center;margin-top:10px"><button class="btn" type="button" data-mkmore="1">Show more (${L.length-MKT_LIMIT} more)</button></div>`:''}</div>`;
   h+=`<div class="box"><h3>Sources</h3><ul class="mk-srcs">${MARKET.sources.map(s=>`<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.site)}: ${esc(s.title)}</a> <span class="muted">${esc(s.author)}, ${esc(s.date)}</span></li>`).join('')}</ul>
     <p class="note" style="text-align:left">Reasons are short summaries in our own words. Posts on X can't be read from here, so each analyst's view comes from their published articles.</p></div>`;
+  el.innerHTML=h;
+}
+
+/* ---------- scouting (Pro): the players you want, with a weekly report on each ---------- */
+// the list is saved on this device by name (ids can change between data refreshes), with a snapshot per player so the
+// report can say what changed since last week
+const SCKEY='faircatch-scout', SCSNAP='faircatch-scout-snap';
+let SCOUT=[], SC_Q='', SC_SNAP={};
+function loadScout(){
+  try{const a=JSON.parse(localStorage.getItem(SCKEY)||'[]');SCOUT=Array.isArray(a)?a.filter(n=>typeof n==='string'&&byName[n]!=null):[];}catch(e){SCOUT=[];}
+  try{const s=JSON.parse(localStorage.getItem(SCSNAP)||'{}');SC_SNAP=s&&typeof s==='object'?s:{};}catch(e){SC_SNAP={};}
+}
+function saveScout(){try{localStorage.setItem(SCKEY,JSON.stringify(SCOUT));localStorage.setItem(SCSNAP,JSON.stringify(SC_SNAP));}catch(e){}}
+loadScout();
+const isScouted=id=>!!byId[id]&&SCOUT.includes(byId[id].n);
+function toggleScout(id){
+  const a=byId[id]; if(!a) return false;
+  if(isScouted(id)){SCOUT=SCOUT.filter(n=>n!==a.n);delete SC_SNAP[a.n];saveScout();return false;}
+  SCOUT.unshift(a.n); if(SCOUT.length>30) SCOUT.length=30; saveScout(); return true;
+}
+// where the experts' rankings put him at his position, next to where the trade market (real trades) puts him
+let SCRK=null, SCRK_K='';
+function xmRank(a){
+  if(!SLOT_POS.includes(a.p)) return null;
+  const k=S.mode==='redraft'?['e1','f1']:['x','m'];
+  if(SCRK_K!==k.join()){SCRK={};SCRK_K=k.join();
+    SLOT_POS.forEach(p=>{const L=ALL.filter(b=>b.p===p&&b[k[0]]>0&&b[k[1]]>0);
+      L.slice().sort((x,y)=>y[k[0]]-x[k[0]]).forEach((b,i)=>{(SCRK[b.id]=SCRK[b.id]||{}).e=i+1;});
+      L.slice().sort((x,y)=>y[k[1]]-x[k[1]]).forEach((b,i)=>{(SCRK[b.id]=SCRK[b.id]||{}).m=i+1;});});}
+  const r=SCRK[a.id]; return r&&r.e&&r.m?r:null;
+}
+// his games from this week to the end of the fantasy playoffs, with how much each defense gives up to his position
+function rosSched(a){
+  if(!STATS||!STATS.rest||!SLOT_POS.includes(a.p)) return null;
+  const r=STATS.rest[teamOf(a)]; if(!r) return null;
+  const dvp=STATS.dvp||{}, gm=gameOf(a), w0=(SCHED?SCHED.week:STATS.week+1)+(gm&&gm.done?1:0), last=poWeeks().slice(-1)[0]||17, po=new Set(poWeeks());
+  const g=[]; for(let w=w0;w<=last;w++){const o=r[String(w)];
+    if(!o){g.push({w,bye:true,po:po.has(w)});continue;}
+    const away=o[0]==='@', opp=away?o.slice(1):o; g.push({w,opp,away,m:(dvp[opp]||{})[a.p]||1,po:po.has(w)});}
+  const pl=g.filter(x=>!x.bye); if(!pl.length) return null;
+  const avg=pl.reduce((t,x)=>t+x.m,0)/pl.length;
+  return {g,avg,lbl:avg>=1.06?'Easy':avg<=.94?'Hard':'Average',cls:avg>=1.06?'up':avg<=.94?'down':''};
+}
+function scoutReport(id){
+  const a=byId[id]; if(!a) return null;
+  const own=mktOwner(id), hurt=hurtNow(a), st=statOf(id), inj=st&&st.inj&&st.inj[0]?st.inj:null;
+  const mx=mktItems().find(x=>x.a.id===id)||null, xm=xmRank(a), P=a.p;
+  const o=BOOM[P]?outcomes(a):null, g=o?o.g:[], ppg=g.length?g.reduce((t,v)=>t+v,0)/g.length:null, l3=g.length>=4?g.slice(-3).reduce((t,v)=>t+v,0)/3:null;
+  const prk=ppg!=null&&STATS&&g.length>=2?ppgRank(a):null, vrk=POSRANK[id]||null;
+  const c7=histChange(a,7), c30=histChange(a,30), rs=rosSched(a), ps=poSched(a), wk=SCHED?weekProj(a):null;
+  // the verdict, for someone who wants to get him: is now a good time to make an offer?
+  let score=0; const why=[];
+  const add=(v,t)=>{score+=v;if(t)why.push([Math.abs(v),v>0?'up':v<0?'down':'',t]);};
+  if(mx){
+    if(mx.cat==='bl') add(2,'Experts call him a buy-low: his price should be at its lowest.');
+    else if(mx.cat==='bh') add(1.2,'Experts say buy him even at full price.');
+    else if(mx.cat==='sh'||mx.cat==='sl') add(-1.6,'Experts are selling him: they think his price is too high.');
+    else if(mx.cat==='hold') add(-.4,'Experts would hold him, so his manager may not sell cheap.');
+  }
+  if(xm&&Math.min(xm.e,xm.m)<=60){const d=xm.m-xm.e, rel=d/Math.max(xm.e,xm.m);
+    if(d>=5&&rel>=.2) add(1.5,`Experts rank him ${P}${xm.e}, the trade market only ${P}${xm.m}: he costs less than experts think he is worth.`);
+    else if(-d>=5&&-rel>=.2) add(-1.5,`The trade market prices him as ${P}${xm.m}, but experts rank him only ${P}${xm.e}: you would overpay.`);}
+  if(c7&&c7.days>=3){
+    if(c7.pct<=-.05) add(1,`His price dropped ${Math.round(-c7.pct*100)}% this week: a cheaper moment to ask.`);
+    else if(c7.pct>=.05) add(-.6,`His price rose ${Math.round(c7.pct*100)}% this week. If you want him, move before it climbs more.`);}
+  if(l3!=null&&ppg>0){
+    if(l3>=ppg*1.2) add(-.4,`Heating up (${f1(l3)} points a game over his last 3): his manager will want more for him soon.`);
+    else if(l3<=ppg*.8) add(.6,`Cooling off (${f1(l3)} over his last 3, ${f1(ppg)} for the season): his manager may sell cheaper now.`);}
+  if(prk&&vrk){ if(prk<vrk*.75) add(.8,`He scores like ${P}${prk} while priced as ${P}${vrk}: more points than his price.`); else if(prk>vrk*1.4) add(-.8,`He scores like ${P}${prk} but is priced as ${P}${vrk}: you pay for his name.`);}
+  if(rs){ if(rs.cls==='up') add(.8,'Easy schedule for the rest of the season.'); else if(rs.cls==='down') add(-.8,'Hard schedule for the rest of the season.');}
+  if(ps&&S.mode==='redraft'){ if(ps.cls==='up') add(.7,'Easy matchups in your playoff weeks.'); else if(ps.cls==='down') add(-.7,'Hard matchups in your playoff weeks.');}
+  let v;
+  if(own.k==='mine') v={k:'mine',t:'On your team',s:'You already have him. Remove him from Scouting, or keep him here to follow his weekly report.'};
+  else if(hurt) v={k:'hurt',t:'Injured: wait for news',s:S.mode==='redraft'?`${hurt.t}. Do not trade for him until you know how long he is out.`:`${hurt.t}. In dynasty an injury can be a buy-low, but check how long he is out first.`};
+  else if(own.k==='fa') v={k:'up',t:'Free agent: just add him',s:'No trade needed: pick him up from waivers in your league app.'};
+  else if(score>=2) v={k:'up',t:'Good time to buy',s:'Most signs point the same way: make an offer now.'};
+  else if(score>=.6) v={k:'ok',t:'Worth an offer',s:'More reasons for than against.'};
+  else if(score<=-1.5) v={k:'down',t:'Wait: price is too high',s:'More reasons against: wait for his price to come down.'};
+  else v={k:'',t:'Keep watching',s:why.length?'Reasons for and against are about even.':'Nothing stands out this week: no expert calls, steady price and form.'};
+  why.sort((x,y)=>y[0]-x[0]);
+  // what changed since you last looked a week ago
+  const today=new Date().toISOString().slice(0,10), now={d:today,v:Math.round(val(a)),c:mx?mx.cat:'',r:prk||0,o:own.k==='other'?own.team.name:own.k,h:hurt?hurt.t:''};
+  let sn=SC_SNAP[a.n]; if(!sn||!sn.cur){sn=SC_SNAP[a.n]={cur:now};}
+  else if((new Date(today)-new Date(sn.cur.d))/864e5>=6){sn.prev=sn.cur;sn.cur=now;}
+  const pv=sn.prev, news=[];
+  if(pv){
+    if(pv.v&&Math.abs(now.v-pv.v)/pv.v>=.04) news.push([now.v>pv.v?'up':'down',`Value ${now.v>pv.v?'up':'down'} ${Math.round(Math.abs(now.v-pv.v)/pv.v*100)}% (${fmt(pv.v)} to ${fmt(now.v)})`]);
+    if(pv.c!==now.c&&now.c) news.push([now.c==='bl'||now.c==='bh'?'up':now.c==='sh'||now.c==='sl'?'down':'',`Experts now say: ${MCAT[now.c][0]}`]);
+    if(pv.r&&now.r&&pv.r!==now.r) news.push([now.r<pv.r?'up':'down',`Now ${P}${now.r} in points a game (was ${P}${pv.r})`]);
+    if(pv.o!==now.o) news.push(['',now.o==='fa'?'Now a free agent':now.o==='mine'?'Now on your team':`Now on ${now.o}`]);
+    if(pv.h!==now.h) news.push([now.h?'down':'up',now.h?now.h:'Back from injury']);
+  }
+  return {a,own,hurt,inj,mx,xm,ppg,l3,prk,vrk,c7,c30,rs,ps,wk,st,score,why,v,news,since:pv?pv.d:null};
+}
+function scoutCard(r){
+  const a=r.a, P=a.p, row=(k,v)=>v?`<div><dt>${k}</dt><dd>${v}</dd></div>`:'';
+  const ownTxt=r.own.k==='other'?`<span class="owner">${esc(r.own.team.name)}</span>`:r.own.k==='fa'?'<span class="mk-own fa">Free agent</span>':r.own.k==='mine'?'<span class="mk-own mine">Your team</span>':'';
+  let ex='';
+  if(r.mx){const old=MARKET&&MARKET.updated&&(Date.now()-new Date(MARKET.updated+'T12:00:00'))/864e5>10;
+    ex=`<b class="mk-t ${r.mx.cat}">${MCAT[r.mx.cat][0]}</b> <span class="muted">${[r.mx.buy?r.mx.buy+' buy':'',r.mx.sell?r.mx.sell+' sell':'',r.mx.hold?r.mx.hold+' hold':''].filter(Boolean).join(', ')}${old?` · Week ${MARKET.week} articles`:''}</span><br>${esc(r.mx.why)}`;}
+  if(r.xm) ex+=`${ex?'<br>':''}Expert ranking <b>${P}${r.xm.e}</b> · trade market <b>${P}${r.xm.m}</b>`;
+  const pc=c=>c?`<b class="${c.pct>=.03?'up':c.pct<=-.03?'down':''}">${Math.abs(c.pct)<.03?'steady':(c.pct>0?'▲':'▼')+Math.round(Math.abs(c.pct)*100)+'%'}</b>`:'';
+  const price=`<b>${fmt(val(a))}</b> <span class="muted">(#${RANK[a.id]||'–'} overall)</span>${r.c7?` · ${pc(r.c7)} this week`:''}${r.c30&&r.c30.days>=10?` · ${pc(r.c30)} in ${r.c30.days} days`:''}`;
+  const form=r.ppg!=null?`<b>${f1(r.ppg)}</b> pts a game${r.prk?` (${P}${r.prk})`:''}${r.l3!=null?` · last 3: <b class="${r.l3>=r.ppg*1.2?'up':r.l3<=r.ppg*.8?'down':''}">${f1(r.l3)}</b>`:''}${r.st&&r.st.ts?` · ${Math.round(r.st.ts*100)}% target share`:''}`:BOOM[P]?'<span class="muted">No games this season yet</span>':'';
+  let wk='';
+  if(r.wk&&SCHED){const gm=r.wk.game;
+    wk=gm?`${gm.home?'vs':'@'} <b>${esc(gm.opp)}</b> ${gm.done?'· Final '+esc(gm.score):gm.started?'· Playing now':'· '+kickTxt(gm)}${r.wk.status==='ok'||r.wk.status==='live'?` · projected <b>${f1(r.wk.pts)}</b> pts`:r.wk.status==='played'?` · scored <b>${f1(r.wk.pts)}</b>`:''}${gm.imp?` · his team expected to score ${Math.round(gm.imp)}`:''}`:'<b>Bye</b>';
+    wk=`<span class="muted">Week ${SCHED.week}:</span> ${wk}`;}
+  const sch=r.rs?`<div class="sc-opps">${r.rs.g.slice(0,8).map(x=>x.bye?`<span class="sc-opp bye${x.po?' po':''}"><small>W${x.w}</small>BYE</span>`:`<span class="sc-opp ${x.m>=1.1?'e':x.m<=.9?'h':''}${x.po?' po':''}" title="Week ${x.w}${x.po?' (your playoffs)':''}: ${x.m>=1.1?'easy':x.m<=.9?'hard':'average'} matchup"><small>W${x.w}</small>${x.away?'@':''}${esc(x.opp)}</span>`).join('')}</div>
+    <span class="po-l ${r.rs.cls}">${r.rs.lbl} rest of season</span>${r.ps&&S.mode==='redraft'?` · playoffs: <span class="po-l ${r.ps.cls}">${r.ps.lbl}</span>`:''}<br><small class="muted">Green = easy matchup, red = hard, underlined = your playoff weeks.</small>`:'';
+  const health=r.hurt?`<span class="inj">${esc(r.hurt.t)}</span>`:r.inj?`<span class="inj q">${esc(r.inj[0])}${r.inj[1]?' ('+esc(r.inj[1])+')':''}</span>`:'';
+  const acts=[];
+  if(r.own.k==='other') acts.push(`<button class="btn primary" type="button" data-ppfind="${a.id}">Find a trade for him</button>`);
+  acts.push(`<button class="btn" type="button" data-pp="${a.id}">Full profile</button>`);
+  const pro=r.why.filter(x=>x[1]==='up').slice(0,3), con=r.why.filter(x=>x[1]==='down').slice(0,3);
+  return `<li class="sc-card"><div class="sc-top">${nameChip(a.id)}${ownTxt}<button type="button" class="sc-x" data-scdel="${a.id}" aria-label="Stop scouting ${esc(a.n)}">${closeIcon}</button></div>
+    <div class="sc-v ${r.v.k}"><b>${r.v.t}</b><span>${esc(r.v.s)}</span></div>
+    ${r.news.length?`<div class="sc-new"><b>New since ${esc(r.since.slice(5).replace('-','/'))}</b>${r.news.map(([c,t])=>`<span class="${c}">${esc(t)}</span>`).join('')}</div>`:''}
+    <dl class="sc-rows">${row('Experts',ex)}${row('Price',price)}${row('Form',form)}${row('This week',wk)}${row('Schedule',sch)}${row('Health',health)}</dl>
+    ${pro.length||con.length?`<div class="sc-why">${pro.length?`<div class="up"><b>For</b><ul>${pro.map(x=>`<li>${esc(x[2])}</li>`).join('')}</ul></div>`:''}${con.length?`<div class="down"><b>Against</b><ul>${con.map(x=>`<li>${esc(x[2])}</li>`).join('')}</ul></div>`:''}</div>`:''}
+    <div class="sc-acts">${acts.join('')}</div></li>`;
+}
+function scoutSug(){
+  const term=normalize(SC_Q.trim()); if(term.length<2) return '';
+  const hits=POOL.filter(x=>SLOT_POS.includes(x.a.p)&&!isScouted(x.a.id)&&normalize(x.a.n).includes(term)).slice(0,6);
+  return hits.length?`<ul class="ft-sug">${hits.map(x=>{const o=mktOwner(x.a.id);return `<li><button type="button" data-scadd="${x.a.id}">${nameChip(x.a.id)}<span class="${o.k==='other'?'owner':'ft-tagm'}">${esc(o.k==='other'?o.team.name:o.k==='mine'?'Your team':o.k==='fa'?'Free agent':'')} ＋</span></button></li>`;}).join('')}</ul>`:`<p class="muted" style="margin:8px 0 0">No player matches "${esc(SC_Q.trim())}".</p>`;
+}
+function scoutNewCount(){ if(!isPro()||!SCOUT.length) return 0; let n=0; SCOUT.forEach(nm=>{const r=scoutReport(byName[nm]);if(r&&r.news.length)n++;}); return n; }
+function renderScout(el){
+  if(!isPro()){el.innerHTML=`<div class="box"><h3>Scouting</h3><p class="muted" style="margin:0 0 10px">Pick the players you want to trade for. Every week you get a report on each one: what the experts say, his price, his form, his schedule, and whether now is a good time to make an offer.</p>${proLock('Scouting is Pro','A weekly report on every player you want, and the right moment to trade for him.')}</div>`;return;}
+  if(!HIST) loadHist().then(()=>{if(LSUB==='scout'&&mtab==='league'){const b=document.getElementById('lgBody');if(b)renderScout(b);}});
+  const reps=SCOUT.map(n=>scoutReport(byName[n])).filter(Boolean);
+  saveScout();
+  const ord={up:0,ok:1,'':2,hurt:3,down:4,mine:5};
+  reps.sort((x,y)=>(ord[x.v.k]-ord[y.v.k])||(y.score-x.score));
+  // ideas: players the experts call buys, on other teams or free agents, that you are not scouting yet
+  const ideas=mktItems().filter(x=>(x.cat==='bl'||x.cat==='bh')&&!x.hurt&&!isScouted(x.a.id)&&mktOwner(x.a.id).k!=='mine').sort((x,y)=>(y.buy-x.buy)||(val(y.a)-val(x.a))).slice(0,6);
+  let h=`<div class="box"><h3>Scouting</h3>
+    <p class="muted" style="margin:0 0 10px">The players you want. Every week we check what the experts say, his price, his form and his schedule, and tell you when it is a good time to make an offer.</p>
+    <label class="sr" for="scSearch">Add a player</label><input id="scSearch" class="ft-in" type="search" placeholder="Add a player, e.g. Puka Nacua" autocomplete="off" value="${esc(SC_Q)}">
+    <div id="scSug">${scoutSug()}</div>
+    ${ideas.length?`<div class="sc-ideas"><span class="mk-lbl">Experts like</span>${ideas.map(x=>`<button type="button" class="sh-chip" data-scadd="${x.a.id}">${posChip(x.a)}<b>${esc(x.a.n)}</b> ＋</button>`).join('')}</div>`:''}</div>`;
+  if(!reps.length) h+=`<div class="box sc-empty"><p style="margin:0"><b>No players yet.</b></p><p class="muted" style="margin:6px 0 0">Search above, tap a name in "Experts like", or open any player and tap <b>Scout him</b>.</p></div>`;
+  else h+=`<ul class="sc-list">${reps.map(scoutCard).join('')}</ul>
+    <p class="note" style="text-align:left">Values and stats update every hour, expert calls every week. "New since" compares with what you saw a week ago. Your list is saved on this device.</p>`;
   el.innerHTML=h;
 }
 
@@ -3668,7 +3843,10 @@ document.addEventListener('click',e=>{
   const hs=t.closest('[data-hsel]'); if(hs){const id=+hs.dataset.hsel;HSEL=HSEL.includes(id)?HSEL.filter(x=>x!==id):[...HSEL,id].slice(0,3);renderHelper();return;}
   const hp=t.closest('[data-hpos]'); if(hp){HPOS=hp.dataset.hpos;renderHelper();return;}
   const hg=t.closest('[data-hgo]'); if(hg){const g=hg.dataset.hgo;closeHelper();if(g==='calc')setMain('calc');else if(g==='builder')setLeagueSub('builder');else{FT_ID=null;FT_Q='';LSUB='trades';setMain('league');setTimeout(()=>{const s=document.getElementById('ftSearch');if(s){s.scrollIntoView({block:'start',behavior:'smooth'});s.focus();}},350);}return;}
-  const ppl=t.closest('[data-pp]'); if(ppl&&!t.closest('[data-ftpick],[data-pick],[data-hsel]')){openPlayer(ppl.dataset.pp);return;}
+  const sca=t.closest('[data-scadd]'); if(sca){if(!isPro()){openPro();return;}const id=+sca.dataset.scadd;if(!isScouted(id))toggleScout(id);SC_Q='';toast('Scouting '+byId[id].n);renderLeague();return;}
+  const scd=t.closest('[data-scdel]'); if(scd){const id=+scd.dataset.scdel;if(isScouted(id))toggleScout(id);toast('Removed '+byId[id].n);renderLeague();return;}
+  const sct=t.closest('[data-scout]'); if(sct){if(!isPro()){closePlayer();openPro();return;}const id=+sct.dataset.scout,on=toggleScout(id);toast(on?'Scouting '+byId[id].n+': see the Scouting tab':'Removed '+byId[id].n+' from Scouting');renderPlayer();if(mtab==='league'&&LSUB==='scout')renderLeague();return;}
+  const ppl=t.closest('[data-pp]'); if(ppl&&!t.closest('[data-ftpick],[data-pick],[data-hsel],[data-scadd]')){openPlayer(ppl.dataset.pp);return;}
   const ppf=t.closest('[data-ppfind]'); if(ppf){const id=+ppf.dataset.ppfind;closePlayer();FT_ID=id;FT_Q='';FT_LIMIT=4;LSUB='trades';setMain('league');setTimeout(()=>{const s=document.getElementById('ftSearch');if(s)s.scrollIntoView({block:'start',behavior:'smooth'});},350);return;}
   const ppa=t.closest('[data-ppadd]'); if(ppa){const [s,id]=ppa.dataset.ppadd.split(':');closePlayer();addAsset(s,id);toast(s==='A'?'Added to what you get':'Added to what you give');return;}
   const op=t.closest('[data-open]'); if(op){openPicker(op.dataset.open);return;}
@@ -3736,7 +3914,7 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('change',e=>{if(e.target.matches&&e.target.matches('[data-cndemo]')){setDemo(e.target.checked);return;}if(e.target.id==='shTeam'){SH_TEAM=+e.target.value;const b=document.getElementById('shopBox');if(b)b.outerHTML=shopBox();return;}if(e.target.id==='ideaTeam'){IDEA_TEAM=e.target.value;IDEA_LIMIT=4;renderLeague();}if(e.target.id==='partnerSel'){const v=e.target.value;PARTNER=v?+v:null;if(PARTNER!=null){const ok=sidePool('A');T.A=T.A.filter(id=>ok.has(id));}render();toast(PARTNER!=null?'Trading with '+theirName():'No team picked');}});
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target&&e.target.id==='cnUser'){e.preventDefault();cnFind();}if(e.key==='Enter'&&e.target&&e.target.id==='proKey'){e.preventDefault();proActivate(e.target.value);}if(e.key==='Escape')closePro();});
-document.addEventListener('input',e=>{if(e.target.id==='cnUser')CN.q=e.target.value;if(e.target.id==='pickSearch') renderPickList();if(e.target.id==='ftSearch'){FT_Q=e.target.value;FT_ID=null;renderFinder();}if(e.target.id==='hSearch') renderHelperList();if(e.target.id==='chartSearch'){chartLimit=120;renderChart();}});
+document.addEventListener('input',e=>{if(e.target.id==='cnUser')CN.q=e.target.value;if(e.target.id==='pickSearch') renderPickList();if(e.target.id==='ftSearch'){FT_Q=e.target.value;FT_ID=null;renderFinder();}if(e.target.id==='scSearch'){SC_Q=e.target.value;const s=document.getElementById('scSug');if(s)s.innerHTML=scoutSug();}if(e.target.id==='hSearch') renderHelperList();if(e.target.id==='chartSearch'){chartLimit=120;renderChart();}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&PP!=null){closePlayer();return;}if(e.key==='Escape'&&!document.getElementById('hsheet').hidden){closeHelper();return;}if(e.key==='Escape'&&pickSide) closePicker();});
 document.getElementById('psClose').onclick=closePlayer;document.getElementById('helpFab').onclick=()=>openHelper('home');document.getElementById('hClose').onclick=closeHelper;document.getElementById('hscrim').onclick=closeHelper;document.getElementById('pscrim').onclick=closePlayer;
 document.getElementById('scrim').onclick=closePicker;
