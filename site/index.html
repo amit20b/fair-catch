@@ -2,7 +2,7 @@
 <html lang="en" class="boot">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-1WNVp/8lKt1D7pLYZL/lebkqVJybkN1lVSB5/Cg3qao=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-kTIIXEPAre4goM9kwpvxm2a2Sq23np5ZC/m70Mx9DKM=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070B1A">
 <meta name="color-scheme" content="dark">
@@ -3191,7 +3191,7 @@ function renderScout(el){
     ${ideas.length?`<div class="sc-ideas"><span class="mk-lbl">Experts like</span>${ideas.map(x=>`<button type="button" class="sh-chip" data-scadd="${x.a.id}">${posChip(x.a)}<b>${esc(x.a.n)}</b> ＋</button>`).join('')}</div>`:''}</div>`;
   if(!reps.length) h+=`<div class="box sc-empty"><p style="margin:0"><b>No players yet.</b></p><p class="muted" style="margin:6px 0 0">Search above, tap a name in "Experts like", or open any player and tap <b>Scout him</b>.</p></div>`;
   else h+=`<ul class="sc-list">${reps.map(scoutCard).join('')}</ul>
-    <p class="note" style="text-align:left">Values and stats update every hour, expert calls every week. "New since" compares with what you saw a week ago. Your list is saved on this device.</p>`;
+    <p class="note" style="text-align:left">Values and stats update every hour, expert calls every week. "New since" compares with what you saw a week ago. Your list is saved on this device, and follows your account when you are signed in.</p>`;
   el.innerHTML=h;
 }
 
@@ -4313,8 +4313,8 @@ document.addEventListener('submit',e=>{
   else if(e.target.id==='accResetForm'){e.preventDefault();accReset();}
 });
 /* ---------- account sync: leagues, settings and trades follow the account to any device ----------
-   Kept on the device only, never sent: the session, Yahoo sign-in tokens, a Pro license key, the visit id, the free-use counter. */
-const SYNC_RX=/^faircatch-(v4|connected|league|showdemo|slpuser|untouch-.*|moves-seen-.*|mytrades-.*|lg-.*)$/;
+   Synced too: the Scouting list and its weekly snapshots. Kept on the device only, never sent: the session, Yahoo sign-in tokens, a Pro license key, the visit id, the free-use counter. */
+const SYNC_RX=/^faircatch-(v4|connected|league|showdemo|slpuser|scout|scout-snap|untouch-.*|moves-seen-.*|mytrades-.*|lg-.*)$/;
 const SY={at:(()=>{try{return +localStorage.getItem('faircatch-syncat')||0;}catch(e){return 0;}})(),last:(()=>{try{return localStorage.getItem('faircatch-synch')||'';}catch(e){return '';}})(),err:false,busy:false,timer:null};
 const hashStr=s=>{let a=5381,b=52711;for(let i=0;i<s.length;i++){const c=s.charCodeAt(i);a=(a*33)^c;b=(b*33)^c;}return (a>>>0).toString(36)+(b>>>0).toString(36)+s.length;};
 function syncSnap(){
