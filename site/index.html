@@ -747,7 +747,11 @@ body{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
 .lg-sub{gap:12px}.lg-sub button{white-space:nowrap;font-size:13px!important}
 /* league sub-tabs: readable size, scroll sideways when they do not fit */
 .lg-sub button{font-size:14px!important}
-@media (max-width:560px){.lg-sub{gap:16px;-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);mask-image:linear-gradient(90deg,#000 88%,transparent);padding-right:24px}}
+/* phone: all league sub-tabs visible at once, as a 2-row grid of buttons (no sideways scrolling) */
+@media (max-width:760px){.lg-sub{display:flex;flex-wrap:wrap;gap:6px;overflow:visible;border-bottom:0;padding:2px 0 4px}
+.lg-sub button{flex:1 1 calc(25% - 6px);display:flex;align-items:center;justify-content:center;text-align:center;min-height:44px;padding:4px 4px!important;margin:0;border:1px solid var(--line)!important;border-radius:10px;background:var(--card);white-space:normal!important;line-height:1.1;font-size:12px!important;letter-spacing:.03em}
+.lg-sub button[aria-selected="true"]{background:var(--accent);border-color:var(--accent)!important;color:var(--on-accent)}
+.lg-sub button[aria-selected="true"] .sc-dot{background:var(--on-accent);color:var(--accent)}}
 .nw{white-space:nowrap}
 /* phone: sign-in sits next to the logo, a slimmer Pro card, a round help button that does not cover buttons */
 @media (max-width:699px){
