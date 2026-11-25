@@ -2,7 +2,7 @@
 <html lang="en" class="boot">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-MZsBSnUBSvxOqo3Jp/Aefut1ZfmcYUxh0eDewcs8i/o=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-vvtHRVBC0uqpCeHedUpaEOC/Pmo/SsF0Rf3yvkbadAI=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070B1A">
 <meta name="color-scheme" content="dark">
@@ -1077,6 +1077,31 @@ html.sheet-lock body{position:fixed;left:0;right:0;width:100%}
   #calc>nav.tabs button[aria-selected="true"]{background:var(--card-2);color:var(--ink);border:0}
   .fab{width:52px;height:52px;padding:0;justify-content:center}
 }
+
+/* empty trade screen */
+.te:empty{display:none}
+.te{display:flex;flex-direction:column;gap:12px;margin-top:14px}
+.te-acts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.te-a{display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-height:104px;padding:14px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:16px;text-align:left;cursor:pointer;font:inherit}
+.te-a svg{color:var(--accent);margin-bottom:auto}
+.te-a b{font-size:15px}.te-a small{font-size:12.5px;color:var(--muted);line-height:1.3}
+.te-a:active{transform:scale(.98)}
+.te-box{border:1px solid var(--line);background:var(--card);border-radius:16px;padding:14px}
+.te-box h3{margin:0 0 10px;font-family:var(--f-display);font-weight:400;font-size:22px;letter-spacing:.02em;text-transform:uppercase}
+.te-cols{display:flex;flex-direction:column;gap:12px}
+.te-cols>div{display:flex;flex-direction:column;gap:4px;min-width:0}
+.te-l{font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px}.te-l.up{color:var(--win)}.te-l.down{color:var(--lose)}
+.te-p{display:flex;align-items:center;gap:6px;min-height:40px;padding:4px 6px;border:0;border-radius:8px;background:transparent;color:var(--ink);font:600 13px var(--f);text-align:left;cursor:pointer;min-width:0}
+.te-p:hover{background:var(--card-2)}
+.te-p .te-nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-style:normal}
+.te-p b{font-size:12px;flex:none}.te-p b.up{color:var(--win)}.te-p b.down{color:var(--lose)}
+.te-n{margin:8px 0 0;font-size:12px;color:var(--muted)}
+@media (min-width:601px){.te{display:none}}
+/* iPhone home-screen app: keep the tab bar on the bottom edge (status-bar inset bug) */
+@media (max-width:860px){
+  html{min-height:calc(100% + env(safe-area-inset-top,0px))}
+  .maintabs::after{content:"";position:absolute;left:0;right:0;top:100%;height:120px;background:var(--card)}
+}
 </style>
 
 <div class="wrap">
@@ -1133,6 +1158,7 @@ html.sheet-lock body{position:fixed;left:0;right:0;width:100%}
     <button role="tab" data-tab="explain" aria-selected="false">Explain Trade</button>
   </nav>
   <div class="panel" id="panel"></div>
+  <div id="trEmpty" class="te"></div>
   </div>
 
   <section id="chart" class="chartsec" hidden>
@@ -3971,11 +3997,33 @@ function render(){
   try{recordMyTrade(false);}catch(e){}
   const r=evaluate(T.A,T.B), g=grade(r);
   document.body.dataset.tr=(T.A.length||T.B.length)?'1':'0';
-  renderHead(r,g); renderCols(r,g); renderPanel(r,g);
+  renderHead(r,g); renderCols(r,g); renderPanel(r,g); renderTrEmpty();
   if(pickSide) renderPickList();
   if(mtab==='chart') renderChart();
   if(mtab==='league') renderLeague();
   save();
+}
+// empty trade screen: quick starts and this week's biggest value moves, so the page is never blank
+function renderTrEmpty(){
+  const el=document.getElementById('trEmpty'); if(!el) return;
+  if(T.A.length||T.B.length||inLeagueCtx()){el.innerHTML='';return;}
+  if(!HIST){loadHist().then(()=>{if(!T.A.length&&!T.B.length)renderTrEmpty();});}
+  const pool=ALL.filter(a=>SLOT_POS.includes(a.p)&&RANK[a.id]&&RANK[a.id]<=150);
+  let up=[],dn=[];
+  if(HIST){const ch=pool.map(a=>({a,c:histChange(a,7)})).filter(x=>x.c&&x.c.days>=3&&x.c.from>=1500&&Math.abs(x.c.pct)>=.03);
+    up=ch.filter(x=>x.c.pct>0).sort((x,y)=>y.c.pct-x.c.pct).slice(0,3); dn=ch.filter(x=>x.c.pct<0).sort((x,y)=>x.c.pct-y.c.pct).slice(0,3);}
+  const row=x=>`<button type="button" class="te-p" data-pp="${x.a.id}">${posChip(x.a)}<em class="te-nm">${esc(x.a.n)}</em><b class="${x.c.pct>0?'up':'down'}">${x.c.pct>0?'▲':'▼'}${Math.round(Math.abs(x.c.pct)*100)}%</b></button>`;
+  el.innerHTML=`<div class="te-acts">
+    <button type="button" class="te-a" data-teex="1"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h13l-3-3M17 17H4l3 3"/></svg><b>Try an example</b><small>See a full verdict in one tap</small></button>
+    <button type="button" class="te-a" data-lsub="trades"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4v6c0 4-3.5 7-8 8-4.5-1-8-4-8-8V7z"/></svg><b>Trades in my league</b><small>Fair offers from every team</small></button></div>
+  ${up.length||dn.length?`<div class="te-box"><h3>Biggest moves this week</h3><div class="te-cols">${up.length?`<div><span class="te-l up">Rising</span>${up.map(row).join('')}</div>`:''}${dn.length?`<div><span class="te-l down">Falling</span>${dn.map(row).join('')}</div>`:''}</div><p class="te-n">Tap a player to see why, or add him to a trade.</p></div>`:''}`;
+}
+function exampleTrade(){
+  const pool=ALL.filter(a=>SLOT_POS.includes(a.p)&&RANK[a.id]&&RANK[a.id]<=60&&!a.out);
+  const a=pool[Math.floor(Math.random()*pool.length)]; if(!a) return;
+  const others=pool.filter(b=>b.p!==a.p&&b.id!==a.id).sort((x,y)=>Math.abs(val(x)-val(a))-Math.abs(val(y)-val(a)));
+  const b=others[Math.floor(Math.random()*Math.min(3,others.length))]; if(!b) return;
+  T={A:[a.id],B:[b.id],example:true}; render(); window.scrollTo({top:0,behavior:'smooth'});
 }
 function fullRender(){
   rebuildPool(); renderSettings();
@@ -4062,6 +4110,7 @@ document.addEventListener('click',e=>{
   const fc=t.closest('[data-ftclear]'); if(fc){FT_ID=null;FT_Q='';const s=document.getElementById('ftSearch');if(s){s.value='';s.focus();}renderFinder();return;}
   const fso=t.closest('[data-ftsort]'); if(fso){FT_SORT=fso.dataset.ftsort;FT_KEY='';FT_LIMIT=4;SH_KEY='';if(fso.closest('#shOut'))renderShop();else renderFinder();return;}
   const fm=t.closest('[data-ftmore]'); if(fm){FT_LIMIT+=4;renderFinder();return;}
+  if(t.closest('[data-teex]')){exampleTrade();return;}
   const ls=t.closest('[data-lsub]'); if(ls){setLeagueSub(ls.dataset.lsub);return;}
   const cp=t.closest('[data-cpos]'); if(cp){chartPos=cp.dataset.cpos;chartLimit=120;renderChart();return;}
   const ad=t.closest('[data-add]'); if(ad){const [s,id]=ad.dataset.add.split(':');addAsset(s,id);toast(`Added to ${s==='A'?myName():theirName()}`);return;}
