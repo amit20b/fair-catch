@@ -2,7 +2,7 @@
 <html lang="en" class="boot">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-vvtHRVBC0uqpCeHedUpaEOC/Pmo/SsF0Rf3yvkbadAI=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-5GbpENupijdnqk6XYdx7N0NNDzPPtdzujV/IoAPbe+4=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070B1A">
 <meta name="color-scheme" content="dark">
@@ -1102,6 +1102,35 @@ html.sheet-lock body{position:fixed;left:0;right:0;width:100%}
   html{min-height:calc(100% + env(safe-area-inset-top,0px))}
   .maintabs::after{content:"";position:absolute;left:0;right:0;top:100%;height:120px;background:var(--card)}
 }
+
+/* title odds, radar, pitch */
+.od-big{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.od-big>div{background:var(--card-2);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:4px}
+.od-big small{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.od-big b{font-size:38px;font-weight:800;line-height:1}.od-big .ch b{color:var(--accent)}
+.od-list li{grid-template-columns:minmax(0,1fr) auto auto auto!important;display:grid;align-items:center;gap:10px}
+.od-c{display:flex;flex-direction:column;align-items:flex-end;min-width:52px}.od-c small{font-size:9.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}.od-c.ch b{color:var(--accent)}
+.hm-odds{display:block;margin-top:2px}.hm-odds b{color:var(--accent)}
+.odds-wrap{grid-column:1/-1;display:flex;flex-direction:column;gap:8px}
+.odds-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1.5px solid var(--accent-line,rgba(198,255,61,.4));background:rgba(198,255,61,.06);border-radius:12px;padding:10px 12px;color:var(--ink);font:inherit;text-align:left}
+.odds-bar>div{display:flex;flex-direction:column;gap:2px}.odds-bar>div:first-child{flex-direction:row;flex-wrap:wrap;align-items:baseline;gap:4px 8px}
+.odds-bar small{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);width:100%}
+.odds-bar b.num{font-size:18px}.odds-bar .up{color:var(--win)}.odds-bar .down{color:var(--lose)}
+.odds-bar.lock{cursor:pointer;width:100%}.odds-bar.lock b{background:var(--accent);color:var(--on-accent);border-radius:999px;padding:3px 9px;font-size:11px}
+.pitch-btn{width:100%}
+.rd-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.rd{margin:0}.rd.hot{border-color:var(--accent-line,rgba(198,255,61,.4))}
+.rd-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.rd-h b{font-size:16px}.rd-h small{color:var(--muted)}.rd-h .tag{margin-left:auto}
+.rd-why{margin:8px 0 0;padding-left:18px;font-size:13.5px;line-height:1.45;display:flex;flex-direction:column;gap:2px}
+.rd-why li.hurt::marker{color:var(--lose)}.rd-why li.give::marker{color:var(--win)}.rd-why li.get::marker{color:var(--accent)}
+.rd-idea{margin-top:10px}
+.rd-acts{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}.rd-acts .btn{flex:1 1 140px}
+.rd-prof{margin-top:10px;border-top:1px solid var(--line);padding-top:8px;font-size:13.5px}
+.rd-prof summary{cursor:pointer;font-weight:700;color:var(--accent);min-height:32px;display:flex;align-items:center}
+.rd-prof ul{margin:6px 0;padding-left:18px;display:flex;flex-direction:column;gap:2px}.rd-prof p{margin:6px 0 0;line-height:1.45}
+.pt-tone{margin-bottom:10px}
+.pt-text{width:100%;box-sizing:border-box;min-height:200px;border:1.5px solid var(--line);background:var(--card-2);color:var(--ink);border-radius:12px;padding:12px;font:15px/1.5 var(--f);resize:vertical}
+.pt-acts{display:flex;gap:8px;margin-top:10px}.pt-acts .btn{flex:1;min-height:46px}
 </style>
 
 <div class="wrap">
@@ -1486,7 +1515,8 @@ function renderCols(r,g){
     ${adj>0?`<div class="bonus">${bonusTxt(star,pad)}</div>`:''}</div>`;
   const bal=T.A.length&&T.B.length&&r.pct>.05?(r.diff<0?'A':'B'):null;
   document.getElementById('cols').innerHTML=col('B','theirs','They receive',r.B,r.adjB,r.starB,r.padB)+col('A','mine','I receive',r.A,r.adjA,r.starA,r.padA)+
-    (bal?`<button class="balbar" type="button" ${isPro()?`data-open="${bal}"`:'data-pro="1"'}>✦ Balance this trade: ${bal==='A'?'see what to ask them to add':'see what you could add'}</button>`:'');
+    (bal?`<button class="balbar" type="button" ${isPro()?`data-open="${bal}"`:'data-pro="1"'}>✦ Balance this trade: ${bal==='A'?'see what to ask them to add':'see what you could add'}</button>`:'')+
+    (inLeagueCtx()&&PARTNER!=null&&T.A.length&&T.B.length?`<div class="odds-wrap">${oddsLine(T.B,T.A,PARTNER)}<button class="btn pitch-btn" type="button" data-pitch="b">Write a pitch to send</button></div>`:'');
 }
 
 /* ---------- results: explain, balance, roster impact, similar ---------- */
@@ -1752,7 +1782,7 @@ function setLeagueSub(s){LSUB=s;LGMENU=false;setMain('league');window.scrollTo(0
 // phone and portrait tablet: bottom tab bar, and My League opens on a home screen of tiles
 function isPhone(){try{return matchMedia('(max-width:860px)').matches;}catch(e){return false;}}
 try{matchMedia('(max-width:860px)').addEventListener('change',e=>{if(!e.matches&&LSUB==='home')LSUB='overview';if(mtab==='league')renderLeague();});}catch(e){}
-const LSUB_NAME={overview:'Team overview',trades:'Find trades',builder:'Trade builder',roster:'Roster',startsit:'Start/Sit',market:'Buy/Sell',scout:'Scouting'};
+const LSUB_NAME={odds:'Title odds',radar:'Opportunity radar',overview:'Team overview',trades:'Find trades',builder:'Trade builder',roster:'Roster',startsit:'Start/Sit',market:'Buy/Sell',scout:'Scouting'};
 function renderHome(el){
   const key=lkey();
   if(!(LCACHE&&LKEY===key)){
@@ -1764,14 +1794,16 @@ function renderHome(el){
   const nAl=ALERTS&&ALERTS.items?ALERTS.items.length:0, nSc=scoutNewCount();
   const T=[['trades','Find trades','Deals your leaguemates will actually accept','M7 7h13l-3-3M17 17H4l3 3'],
     ['builder','Trade builder','Win or get fleeced? Know in seconds','M4 12h16M12 4v16'],
+    ['odds','Title odds','Your real shot at the title, and how to raise it','M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z'],
+    ['radar','Radar','Who needs what you have, right now','M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 12l5-5M12 16a4 4 0 1 0 0-8'],
     ['roster','Roster','What every player is really worth','M5 6h14M5 12h14M5 18h9'],
     ['startsit','Start/Sit',`The lineup that wins Week ${SCHED?SCHED.week:(STATS?STATS.week+1:'')}`,'M8 4v16M16 4v16M4 9h8M12 15h8'],
     ['market','Buy/Sell','Buy low, sell high, before everyone else','M4 17l5-5 4 4 7-8'],
     ['scout','Scouting','Track your targets. Know when to strike','M16 16l4.5 4.5M11 17a6 6 0 1 0 0-12 6 6 0 0 0 0 12']];
   el.innerHTML=`${!CONN.length?`<div class="box cn-banner"><div><b>This is a demo league.</b><span class="muted"> Connect your own Sleeper league to see your team, trade ideas and offers.</span></div><button type="button" class="btn primary" data-lgadd="1">Connect my league</button></div>`:''}
-  <button type="button" class="hm-team" data-lsub="overview"><span><b class="hm-name">${esc(me.name)}</b><small>${esc(me.rec||'—')}${pfRk?` · Points #${pfRk}`:''} · Roster #${powerRk}</small></span>${weak.length?`<em>Needs ${weak.join(', ')}</em>`:'<em class="ok">No holes</em>'}</button>
+  <button type="button" class="hm-team" data-lsub="overview"><span><b class="hm-name">${esc(me.name)}</b><small>${esc(me.rec||'—')}${pfRk?` · Points #${pfRk}`:''} · Roster #${powerRk}</small>${(()=>{if(!isPro())return '';const O=titleOdds();if(!O||O.late)return '';const x=O.by[me.rid];return x?`<small class="hm-odds">Playoffs <b>${opct(x.po)}</b> · Title <b>${opct(x.ch)}</b></small>`:'';})()}</span>${weak.length?`<em>Needs ${weak.join(', ')}</em>`:'<em class="ok">No holes</em>'}</button>
   ${nAl?`<button type="button" class="hm-alert" data-lsub="overview"><i>${nAl}</i> new in your league: offers and updates <span aria-hidden="true">›</span></button>`:''}
-  <div class="hm-grid">${T.map(([k,n,s,d],i)=>`<button type="button" class="hm-tile${i===0?' hot':''}" data-lsub="${k}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg><b>${n}${k==='scout'?(isPro()?(nSc?`<i class="hm-new">${nSc} NEW</i>`:''):'<i class="hm-new">PRO</i>'):''}</b><small>${s}</small></button>`).join('')}</div>
+  <div class="hm-grid">${T.map(([k,n,s,d],i)=>`<button type="button" class="hm-tile${i===0?' hot':''}" data-lsub="${k}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg><b>${n}${['scout','odds','radar'].includes(k)?(isPro()?(k==='scout'&&nSc?`<i class="hm-new">${nSc} NEW</i>`:''):'<i class="hm-new">PRO</i>'):''}</b><small>${s}</small></button>`).join('')}</div>
   <button type="button" class="hm-more" data-lsub="overview">Full team overview, recap and power rankings <span aria-hidden="true">›</span></button>`;
 }
 /* ---------- my league (Sleeper snapshot) ---------- */
@@ -2090,7 +2122,7 @@ function finderCard(o,i){
   return `<li class="idea"><div class="idea-h"><span>with <b>${esc(o.team.name)}</b>${o.team.rec?` <small>(${esc(o.team.rec)})</small>`:''}</span><span class="tag ${lbl[0]}">${lbl[1]}</span></div>
     <div class="idea-b"><div><span class="lbl give">You give</span>${o.give.map(nameChip).join('')}</div><div><span class="lbl get">You get</span>${o.get.map(nameChip).join('')}</div></div>
     ${whyHtml(o)}
-    <div class="idea-f"><span>Your lineup ${sg(o.myGain)} · Their lineup ${sg(o.thGain)}${o.thGain>=0?' <em>they gain too</em>':''}</span><button class="btn" type="button" data-ftload="${i}">Open in Trade builder</button></div></li>`;
+    <div class="idea-f"><span>Your lineup ${sg(o.myGain)} · Their lineup ${sg(o.thGain)}${o.thGain>=0?' <em>they gain too</em>':''}</span><span style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" type="button" data-pitch="f${i}">Pitch</button><button class="btn" type="button" data-ftload="${i}">Open in Trade builder</button></span></div></li>`;
 }
 /* ---------- someone wants your player: what to ask for back, three ways ---------- */
 let AK={id:null,rid:null,res:null,key:'',shown:[]};
@@ -2329,13 +2361,15 @@ function renderLeague(){
     top.innerHTML=`<button type="button" class="lg-sel" data-lgmenu="1" aria-expanded="${LGMENU}"><span><small>${esc(LEAGUE.platform||'')}${LEAGUE.live?'':CONN.length?' · demo':''}</small>${esc(LEAGUE.name)}</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>${LGMENU?sw0:''}`+
       (LSUB!=='home'?`<div class="ph-back"><button type="button" data-lsub="home" aria-label="Back to My League"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button><h2>${CN.open?'Add your league':esc(LSUB_NAME[LSUB]||'')}</h2></div>`:'');
   } else
-  top.innerHTML=LEAGUE?sw0+`<nav class="tabs lg-sub" role="tablist"><button role="tab" type="button" data-lsub="overview" aria-selected="${LSUB==='overview'}">Overview</button><button role="tab" type="button" data-lsub="trades" aria-selected="${LSUB==='trades'}">Find trades</button><button role="tab" type="button" data-lsub="builder" aria-selected="${LSUB==='builder'}">Trade builder</button><button role="tab" type="button" data-lsub="roster" aria-selected="${LSUB==='roster'}">Roster</button><button role="tab" type="button" data-lsub="startsit" aria-selected="${LSUB==='startsit'}">Start/Sit</button><button role="tab" type="button" data-lsub="market" aria-selected="${LSUB==='market'}">Buy/Sell</button><button role="tab" type="button" data-lsub="scout" aria-selected="${LSUB==='scout'}">Scouting${(()=>{const n=scoutNewCount();return n?`<i class="sc-dot" aria-label="${n} with news">${n}</i>`:'';})()}</button></nav>`+(LSUB==='builder'?`<div class="partner-row"><label for="partnerSel">Trading with</label><select id="partnerSel"><option value="">Choose a team…</option>${LEAGUE.teams.filter(x=>x.rid!==LEAGUE.me).map(x=>`<option value="${x.rid}" ${x.rid===PARTNER?'selected':''}>${esc(x.name)}${x.rec?` (${esc(x.rec)})`:''}</option>`).join('')}</select></div><p class="muted" style="margin:0">Pick a team, or just add a player you want and we find his team. You can only add players from your roster and theirs.</p>`:''):'';
+  top.innerHTML=LEAGUE?sw0+`<nav class="tabs lg-sub" role="tablist"><button role="tab" type="button" data-lsub="overview" aria-selected="${LSUB==='overview'}">Overview</button><button role="tab" type="button" data-lsub="trades" aria-selected="${LSUB==='trades'}">Find trades</button><button role="tab" type="button" data-lsub="builder" aria-selected="${LSUB==='builder'}">Trade builder</button><button role="tab" type="button" data-lsub="roster" aria-selected="${LSUB==='roster'}">Roster</button><button role="tab" type="button" data-lsub="startsit" aria-selected="${LSUB==='startsit'}">Start/Sit</button><button role="tab" type="button" data-lsub="market" aria-selected="${LSUB==='market'}">Buy/Sell</button><button role="tab" type="button" data-lsub="scout" aria-selected="${LSUB==='scout'}">Scouting${(()=>{const n=scoutNewCount();return n?`<i class="sc-dot" aria-label="${n} with news">${n}</i>`:'';})()}</button><button role="tab" type="button" data-lsub="odds" aria-selected="${LSUB==='odds'}">Title odds</button><button role="tab" type="button" data-lsub="radar" aria-selected="${LSUB==='radar'}">Radar</button></nav>`+(LSUB==='builder'?`<div class="partner-row"><label for="partnerSel">Trading with</label><select id="partnerSel"><option value="">Choose a team…</option>${LEAGUE.teams.filter(x=>x.rid!==LEAGUE.me).map(x=>`<option value="${x.rid}" ${x.rid===PARTNER?'selected':''}>${esc(x.name)}${x.rec?` (${esc(x.rec)})`:''}</option>`).join('')}</select></div><p class="muted" style="margin:0">Pick a team, or just add a player you want and we find his team. You can only add players from your roster and theirs.</p>`:''):'';
   if(CN.open||!LEAGUE){el.innerHTML=connectBox();return;}
   if(LSUB==='home'){renderHome(el);return;}
   if(LEAGUE&&LSUB==='builder') return;
   if(LSUB==='startsit'){renderStartSit(el);return;}
   if(LSUB==='market'){renderMarket(el);return;}
   if(LSUB==='scout'){renderScout(el);return;}
+  if(LSUB==='odds'){renderOdds(el);return;}
+  if(LSUB==='radar'){renderRadar(el);return;}
   const key=lkey();
   if(!(LCACHE&&LKEY===key)){
     el.innerHTML=`<div class="box">${fcLoader('Crunching your league…','Lining up every roster in '+(LEAGUE.name||'your league'),null,'league')}</div>`;
@@ -2355,7 +2389,7 @@ function renderLeague(){
     return `<li class="idea"><div class="idea-h"><span>with <b>${esc(it.team.name)}</b>${it.team.rec?` <small>(${esc(it.team.rec)})</small>`:''}</span><span class="tag ${lbl[0]}">${lbl[1]}</span></div>
       <div class="idea-b"><div><span class="lbl give">You give</span>${it.give.map(nameChip).join('')}</div><div><span class="lbl get">You get</span>${it.get.map(nameChip).join('')}</div></div>
       ${whyHtml(it)}
-      <div class="idea-f"><span>Your lineup <b class="up">+${fmt(it.myGain)}</b> · Their lineup <b class="${it.thGain>=0?'up':'down'}">${it.thGain>=0?'+':'−'}${fmt(Math.abs(it.thGain))}</b></span><button class="btn" type="button" data-load="${i}">Open in Trade builder</button></div></li>`;};
+      <div class="idea-f"><span>Your lineup <b class="up">+${fmt(it.myGain)}</b> · Their lineup <b class="${it.thGain>=0?'up':'down'}">${it.thGain>=0?'+':'−'}${fmt(Math.abs(it.thGain))}</b></span><span style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" type="button" data-pitch="l${i}">Pitch</button><button class="btn" type="button" data-load="${i}">Open in Trade builder</button></span></div></li>`;};
   const sw=LEAGUES.length>1?`<div class="lg-switch" role="group" aria-label="Choose league">${LEAGUES.map((l,i)=>`<button type="button" data-lg="${i}" aria-pressed="${l===LEAGUE}"><small>${esc(l.platform||'')}</small>${esc(l.name)}</button>`).join('')}</div>`:'';
   const SEC={
     overview:()=>`${!CONN.length?`<div class="box cn-banner"><div><b>This is a demo league.</b><span class="muted"> Connect your own Sleeper league to see your team, trade ideas and offers.</span></div><button type="button" class="btn primary" data-lgadd="1">Connect my league</button></div>`:''}
@@ -3379,6 +3413,187 @@ function renderScout(el){
   el.innerHTML=h;
 }
 
+/* ---------- title odds (Pro): play out the rest of the season and the playoff bracket ---------- */
+// a seeded random generator, so "before" and "after" a trade use the same luck and only the rosters differ
+function seeded(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function seasonSim(over){
+  if(!LEAGUE||!LEAGUE.sched||!LEAGUE.sched.length) return null;
+  const L=leagueData(), cur=+LEAGUE.week||1, pws=+LEAGUE.pws||15, by={};
+  if(cur>pws) return {late:true};
+  L.teams.forEach(t=>{by[t.rid]={t,w:0,l:0,pf:0,g:0};});
+  const left=[];
+  LEAGUE.sched.forEach(([w,ms])=>ms.forEach(([a,b,pa,pb])=>{ if(!by[a]||!by[b]) return;
+    if(w<cur&&(pa||pb)){by[a].pf+=pa;by[b].pf+=pb;by[a].g++;by[b].g++;if(pa>pb){by[a].w++;by[b].l++;}else if(pb>pa){by[b].w++;by[a].l++;}else{by[a].w+=.5;by[b].w+=.5;}}
+    else left.push([a,b]); }));
+  const T=Object.values(by), ppg=T.filter(x=>x.g).map(x=>x.pf/x.g), avg=ppg.length?ppg.reduce((s,v)=>s+v,0)/ppg.length:100;
+  const str=x=>over&&over[x.t.rid]!=null?over[x.t.rid]:x.t.prof.total;
+  const sAvg=L.teams.reduce((s,t)=>s+t.prof.total,0)/Math.max(1,L.teams.length);
+  // weekly scoring: points so far, blended with the roster each team has now (after a trade, the new roster)
+  T.forEach(x=>{const fromRoster=avg*(str(x)/Math.max(1,sAvg)), so=x.g?x.pf/x.g*(str(x)/Math.max(1,x.t.prof.total)):fromRoster, wgt=Math.min(.55,x.g/14);
+    x.mu=so*wgt+fromRoster*(1-wgt); x.mu2=fromRoster;});
+  const sd=avg*.2, N=3000, spots=Math.min(+LEAGUE.pteams||6,T.length), po={}, ch={}, rng=seeded(20261125);
+  const rnd=()=>{let u=0,v=0;while(!u)u=rng();while(!v)v=rng();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);};
+  const R={};T.forEach(x=>{R[x.t.rid]=x;});
+  for(let i=0;i<N;i++){
+    const w={},pf={};T.forEach(x=>{w[x.t.rid]=x.w;pf[x.t.rid]=x.pf;});
+    for(const [a,b] of left){const A=R[a].mu+rnd()*sd,B=R[b].mu+rnd()*sd;pf[a]+=A;pf[b]+=B;if(A>B)w[a]++;else w[b]++;}
+    let field=T.map(x=>x.t.rid).sort((a,b)=>(w[b]-w[a])||(pf[b]-pf[a])).slice(0,spots);
+    field.forEach(r=>{po[r]=(po[r]||0)+1;});
+    // the bracket: top seeds get a bye when the field is not a power of two, then best seed plays worst seed
+    let size=1;while(size<field.length)size*=2;
+    let byes=size-field.length, alive=field.slice(byes), adv=field.slice(0,byes);
+    while(alive.length+adv.length>1){
+      const nxt=[];
+      for(let j=0;j<alive.length/2;j++){const a=alive[j],b=alive[alive.length-1-j];const A=R[a].mu2+rnd()*sd,B=R[b].mu2+rnd()*sd;nxt.push(A>=B?a:b);}
+      const all=[...adv,...nxt].sort((a,b)=>field.indexOf(a)-field.indexOf(b)); adv=[]; alive=all;
+      if(alive.length===1) break;
+    }
+    ch[alive[0]]=(ch[alive[0]]||0)+1;
+  }
+  const out={};T.forEach(x=>{out[x.t.rid]={po:(po[x.t.rid]||0)/N,ch:(ch[x.t.rid]||0)/N,w:x.w,l:x.l,t:x.t};});
+  return {by:out,spots,left:left.length,N};
+}
+let TO=null, TO_K='';
+function titleOdds(){
+  if(!LEAGUE) return null;
+  const k=lkey()+'|'+LEAGUE.id+'|'+LEAGUE.week+'|'+JSON.stringify(LEAGUE.sched||[]).length;
+  if(TO&&TO_K===k) return TO; TO=seasonSim(null); TO_K=k; return TO;
+}
+// how a trade changes the odds for you and for the other team
+let TOX={}, TOX_K='';
+function tradeOddsDelta(give,get,rid){
+  const base=titleOdds(); if(!base||base.late) return null;
+  if(TOX_K!==TO_K){TOX={};TOX_K=TO_K;}
+  const key=give.join(',')+'>'+get.join(',')+'@'+rid; if(TOX[key]) return TOX[key];
+  const L=leagueData(), me=L.myT, th=L.teams.find(t=>t.rid===+rid); if(!th) return null;
+  const meIds=[...me.ids.filter(id=>!give.includes(id)),...get], thIds=[...th.ids.filter(id=>!get.includes(id)),...give];
+  const after=seasonSim({[me.rid]:teamProfile(meIds).total,[th.rid]:teamProfile(thIds).total}); if(!after||after.late) return null;
+  const b=base.by, a=after.by;
+  return TOX[key]={me:{po0:b[me.rid].po,po1:a[me.rid].po,ch0:b[me.rid].ch,ch1:a[me.rid].ch},th:{po0:b[th.rid].po,po1:a[th.rid].po,ch0:b[th.rid].ch,ch1:a[th.rid].ch},team:th};
+}
+const opct=v=>v>=.995?'99%':v<.005?'<1%':Math.round(v*100)+'%';
+const odelta=(a,b)=>{const d=Math.round((b-a)*100);return d===0?'<span class="muted">no change</span>':`<b class="${d>0?'up':'down'}">${d>0?'▲':'▼'}${Math.abs(d)}</b>`;};
+function oddsLine(give,get,rid){
+  if(!LEAGUE||!give.length||!get.length||rid==null) return '';
+  if(!isPro()) return `<button type="button" class="odds-bar lock" data-pro="1"><span>See how this trade changes your title odds</span><b>PRO</b></button>`;
+  const d=tradeOddsDelta(give,get,rid); if(!d) return '';
+  return `<div class="odds-bar"><div><small>Your title odds</small><b class="num">${opct(d.me.ch0)} → ${opct(d.me.ch1)}</b>${odelta(d.me.ch0,d.me.ch1)}</div><div><small>Playoffs</small><b class="num">${opct(d.me.po0)} → ${opct(d.me.po1)}</b></div></div>`;
+}
+let ODDS_IDEAS=[];
+function renderOdds(el){
+  if(!isPro()){el.innerHTML=`<div class="box"><h3>Title odds</h3><p class="muted" style="margin:0 0 10px">We play out the rest of your season and the playoff bracket thousands of times, with every team's real roster. You see your chance to make the playoffs and to win it all, and which trades raise it the most.</p>${proLock('Title odds are Pro','Your real shot at the title, and the trades that raise it.')}</div>`;return;}
+  const O=titleOdds();
+  if(!O){el.innerHTML=`<div class="box"><h3>Title odds</h3><p class="muted" style="margin:0">We need your league's schedule for this. Connect your Sleeper league to see your odds.</p></div>`;return;}
+  if(O.late){el.innerHTML=`<div class="box"><h3>Title odds</h3><p class="muted" style="margin:0">Your playoffs are already under way, so the regular-season odds are done. Good luck!</p></div>`;return;}
+  const L=leagueData(), me=O.by[L.myT.rid], rows=Object.values(O.by).sort((a,b)=>b.ch-a.ch||b.po-a.po), rk=rows.findIndex(x=>x.t.me)+1;
+  const say=me.ch>=.3?'You are the team to beat.':me.ch>=.15?'You are a real contender.':me.ch>=.06?'You have a shot, but you need some luck or a move.':me.po>=.4?'You can get in, but winning it all is a long shot right now.':'This season is slipping away. Think about selling for next year.';
+  el.innerHTML=`<div class="box od-top">
+      <div class="od-big"><div><small>Make the playoffs</small><b class="num">${opct(me.po)}</b></div><div class="ch"><small>Win the title</small><b class="num">${opct(me.ch)}</b></div></div>
+      <p class="lg-sum" style="margin:10px 0 0">${esc(say)} You are the <b>#${rk}</b> favorite in your league.</p></div>
+    <div class="box"><h3>Trades that raise your odds</h3><div id="odIdeas"><p class="muted" style="margin:0">Testing your best trade ideas…</p></div></div>
+    <div class="box"><h3>Every team</h3><ol class="pr od-list">${rows.map(x=>`<li class="${x.t.me?'me':''}"><span class="pr-n">${esc(x.t.name)}</span><span class="pr-rec num">${x.w%1?x.w.toFixed(1):x.w}-${x.l}</span><span class="od-c"><small>Playoffs</small><b class="num">${opct(x.po)}</b></span><span class="od-c ch"><small>Title</small><b class="num">${opct(x.ch)}</b></span></li>`).join('')}</ol>
+      <p class="note" style="text-align:left">We play out the ${O.left} games left and the ${O.spots}-team playoff bracket ${O.N.toLocaleString()} times, using points so far and each team's roster now.</p></div>`;
+  setTimeout(()=>{
+    const box=document.getElementById('odIdeas'); if(!box) return;
+    const cand=(L.ideas||[]).slice(0,14).map(it=>({it,d:tradeOddsDelta(it.give,it.get,it.team.rid)})).filter(x=>x.d&&x.d.me.ch1-x.d.me.ch0>=.005).sort((a,b)=>(b.d.me.ch1-b.d.me.ch0)-(a.d.me.ch1-a.d.me.ch0)).slice(0,3);
+    ODDS_IDEAS=cand.map(x=>x.it);
+    box.innerHTML=cand.length?`<ul class="ideas">${cand.map((x,i)=>`<li class="idea"><div class="idea-h"><span>with <b>${esc(x.it.team.name)}</b></span><span class="tag win">Title ${opct(x.d.me.ch0)} → ${opct(x.d.me.ch1)}</span></div>
+      <div class="idea-b"><div><span class="lbl give">You give</span>${x.it.give.map(nameChip).join('')}</div><div><span class="lbl get">You get</span>${x.it.get.map(nameChip).join('')}</div></div>
+      <div class="idea-f"><span>Playoffs ${opct(x.d.me.po0)} → ${opct(x.d.me.po1)}</span><span style="display:flex;gap:8px"><button class="btn" type="button" data-pitch="o${i}">Write a pitch</button><button class="btn primary" type="button" data-oload="${i}">Open</button></span></div></li>`).join('')}</ul>`
+      :`<p class="muted" style="margin:0">None of your fair trade ideas moves your title odds by much right now. Check Find trades for a specific player.</p>`;
+  },30);
+}
+
+/* ---------- opportunity radar (Pro): who needs what you have, and how each manager trades ---------- */
+function radarData(){
+  const L=leagueData(), M=mgrModel(); if(!M) return [];
+  const me=M.by[L.myT.rid];
+  const out=[];
+  for(const t of L.teams){ if(t.me) continue; const m=M.by[t.rid]; if(!m) continue;
+    const reasons=[]; let score=0;
+    // they are short where you have extra
+    SLOT_POS.forEach(p=>{ if(m.need[p]>=.45&&me.surplus[p]){score+=m.need[p]*2;reasons.push({k:'give',p,t:`They are short at ${p}, and you have extra ${p}s`});}
+      else if(m.need[p]>=.6&&!me.need[p]){score+=m.need[p];reasons.push({k:'give',p,t:`They are weak at ${p}`});}
+      if(me.need[p]>=.45&&m.surplus[p]){score+=me.need[p]*1.5;reasons.push({k:'get',p,t:`They have extra ${p}s, and you need one`});} });
+    const hurt=t.ids.map(id=>byId[id]).filter(a=>a&&gone(a)&&SLOT_POS.includes(a.p)&&t.prof.startIds.includes(a.id)&&val(a)>=300);
+    hurt.slice(0,2).forEach(a=>{score+=1.2;reasons.unshift({k:'hurt',p:a.p,t:`${a.n} is out: they need a ${a.p} now`});});
+    if(m.tr>=2) score+=.5;
+    const ideas=(L.ideas||[]).filter(it=>it.team===t).slice(0,1);
+    const wt=r=>r.k==='hurt'?9:(r.k==='give'?m.need[r.p]*2:me.need[r.p]*1.5);
+    const rs=reasons.slice().sort((x,y)=>wt(y)-wt(x)).filter((r,i,arr)=>arr.findIndex(q=>q.k===r.k)===i||r.k==='hurt').slice(0,2);
+    out.push({t,m,score,reasons:rs,idea:ideas[0]||null});
+  }
+  return out.sort((a,b)=>b.score-a.score);
+}
+function mgrProfile(m){
+  const lines=[], tips=[];
+  lines.push(m.tr>=4?`Trades a lot: ${m.tr} trades this season`:m.tr>=1?`Has made ${m.tr} trade${m.tr>1?'s':''} this season`:'Has not traded this season');
+  if(m.mv) lines.push(`${m.mv} roster move${m.mv>1?'s':''} in all`);
+  lines.push(m.dir==='win'?'Playing to win now':m.dir==='build'?'Building for next year':'Somewhere in the middle');
+  const hunting=SLOT_POS.filter(p=>m.hunt[p]); if(hunting.length) lines.push(`Keeps adding ${hunting.join(' and ')}s`);
+  if(m.tr>=2&&Math.abs(m.edge)>=.15) lines.push(m.edge>0?'Usually wins on value in his trades':'Has given up value in his trades');
+  if(hunting.length) tips.push(`Lead with a ${hunting[0]}: it's what he keeps chasing.`);
+  if(m.dir==='win') tips.push(S.mode==='redraft'?'Sell him points now: proven starters, easy playoff schedule.':'He wants help now: offer proven starters, ask for youth or picks.');
+  if(m.dir==='build') tips.push('He is building: offer young players or picks, ask for his veterans.');
+  if(!m.tr) tips.push('He rarely trades, so keep the offer simple and clearly fair.');
+  else if(m.tr>=4) tips.push('He likes to deal: open a little in your favor and leave room to meet in the middle.');
+  return {lines,tips:tips.slice(0,2)};
+}
+let RADAR_IDEAS=[];
+function renderRadar(el){
+  if(!isPro()){el.innerHTML=`<div class="box"><h3>Opportunity radar</h3><p class="muted" style="margin:0 0 10px">See which managers need exactly what you have: injuries, thin positions and extra players. Plus how each manager trades, and how to pitch him.</p>${proLock('The radar is Pro','Know who needs what you have, before anyone else does.')}</div>`;return;}
+  const key=lkey();
+  if(!(LCACHE&&LKEY===key)){el.innerHTML=`<div class="box">${fcLoader('Scanning your league…','Checking every roster for holes and extras',null,'league')}</div>`;setTimeout(()=>{leagueData();fpFinish('league','Radar ready',()=>renderLeague());},60);return;}
+  const R=radarData(); RADAR_IDEAS=R.map(x=>x.idea);
+  el.innerHTML=`<p class="muted" style="margin:0 0 12px">Managers sorted by how much they need what you have, right now.</p><ul class="rd-list">${R.map((x,i)=>{const pf=mgrProfile(x.m);
+    return `<li class="box rd ${i<3&&x.score>=1?'hot':''}"><div class="rd-h"><b>${esc(x.t.name)}</b>${x.t.rec?`<small>${esc(x.t.rec)}</small>`:''}${i<3&&x.score>=1?'<span class="tag win">Good target</span>':''}</div>
+      ${x.reasons.length?`<ul class="rd-why">${x.reasons.map(r=>`<li class="${r.k}">${esc(r.t)}</li>`).join('')}</ul>`:'<p class="muted" style="margin:6px 0 0">No clear need that you can fill right now.</p>'}
+      ${x.idea?`<div class="idea-b rd-idea"><div><span class="lbl give">You give</span>${x.idea.give.map(nameChip).join('')}</div><div><span class="lbl get">You get</span>${x.idea.get.map(nameChip).join('')}</div></div>
+        <div class="rd-acts"><button class="btn" type="button" data-pitch="r${i}">Write a pitch</button><button class="btn primary" type="button" data-rload="${i}">Open in Trade builder</button></div>`:''}
+      <details class="rd-prof"><summary>How he trades</summary><ul>${pf.lines.map(l=>`<li>${esc(l)}</li>`).join('')}</ul>${pf.tips.length?`<p><b>How to pitch him:</b> ${esc(pf.tips.join(' '))}</p>`:''}</details></li>`;}).join('')}</ul>
+    <p class="note" style="text-align:left">Needs come from each roster compared with the rest of the league, plus starters who are hurt. Trading style comes from every move in your league this season.</p>`;
+}
+
+/* ---------- pitch (Pro): a ready message to the other manager on why the trade helps him ---------- */
+function pitchText(give,get,rid,tone){
+  const L=leagueData(), th=L.teams.find(t=>t.rid===+rid); if(!th) return '';
+  const o={team:th,give,get,r:evaluate(get,give)};
+  const thHP=hprof(th.ids), thAfter=hprof([...th.ids.filter(id=>!get.includes(id)),...give]); o.thGain=lineupGain(thHP,thAfter);
+  const myHP=hprof(L.myT.ids), myAfter=hprof([...L.myT.ids.filter(id=>!give.includes(id)),...get]); o.myGain=lineupGain(myHP,myAfter);
+  let w={theirs:[]}; try{w=tradeWhy(o,L);}catch(e){}
+  const nm=ids=>{const n=ids.map(id=>byId[id].n);return n.length>1?n.slice(0,-1).join(', ')+' and '+n[n.length-1]:n[0];};
+  const lines=[];
+  lines.push(tone==='short'?'Hey, quick trade idea:':"Hey! I've got a trade idea that I think really helps your team.");
+  lines.push(`You get ${nm(give)}, I get ${nm(get)}.`);
+  const why=[];
+  (w.theirs||[]).forEach(t=>why.push(t.replace(/\bthey're thin at (\w+)/gi,'it fills your thin $1 spot').replace(/\bthey're\b/gi,"you're").replace(/\bthey\b/gi,'you').replace(/\btheir\b/gi,'your').replace(/\bthem\b/gi,'you')));
+  if(o.thGain>0&&!why.some(x=>/lineup/.test(x))) why.push('your starting lineup gets stronger');
+  give.forEach(id=>{const a=byId[id],s=poSched(a);if(s&&s.cls==='up')why.push(`${a.n} has an easy playoff schedule`);});
+  try{const d=tradeOddsDelta(give,get,rid);if(d&&d.th.ch1-d.th.ch0>=.01)why.push(`it raises your title odds from ${opct(d.th.ch0)} to ${opct(d.th.ch1)}`);}catch(e){}
+  const cap=s=>s.charAt(0).toUpperCase()+s.slice(1), uniq=[...new Set(why)].slice(0,3), list=uniq.length>1?uniq.slice(0,-1).join(', ')+' and '+uniq[uniq.length-1]:uniq[0];
+  if(uniq.length) lines.push(tone==='short'?cap(list)+'.':'Why it works for you: '+list+'.');
+  if(o.r.pct<=.06) lines.push(tone==='short'?'Fair on value.':'On value it is basically even, so nobody gets fleeced.');
+  lines.push(tone==='short'?'Let me know!':'Let me know what you think, happy to talk it over.');
+  return lines.filter(Boolean).join(tone==='short'?' ':'\n\n');
+}
+let PITCH={give:[],get:[],rid:null,tone:'full'};
+function openPitch(give,get,rid){
+  if(!isPro()){openPro();return;}
+  PITCH={give,get,rid,tone:'full'};
+  let s=document.getElementById('ksheet');
+  if(!s){document.body.insertAdjacentHTML('beforeend','<div class="scrim" id="kscrim" data-kclose="1" hidden></div><div class="sheet" id="ksheet" role="dialog" aria-modal="true" aria-labelledby="kTitle" hidden><div class="grab"></div><div class="sheet-h"><div><h2 id="kTitle">Your pitch</h2><p id="kSub"></p></div><button class="close" type="button" data-kclose="1" aria-label="Close"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div><div class="psbody" id="kBody"></div></div>');s=document.getElementById('ksheet');}
+  renderPitch(); document.getElementById('kscrim').hidden=false; s.hidden=false;
+}
+function renderPitch(){
+  const L=leagueData(), th=L.teams.find(t=>t.rid===+PITCH.rid);
+  document.getElementById('kSub').textContent=th?'A message for '+th.name+'. Edit it if you like, then copy or send.':'';
+  document.getElementById('kBody').innerHTML=`<div class="seg pt-tone" role="group" aria-label="Length"><button type="button" data-ktone="full" aria-pressed="${PITCH.tone==='full'}">Full</button><button type="button" data-ktone="short" aria-pressed="${PITCH.tone==='short'}">Short</button></div>
+    <label class="sr" for="kText">Message</label><textarea id="kText" class="pt-text" rows="9">${esc(pitchText(PITCH.give,PITCH.get,PITCH.rid,PITCH.tone))}</textarea>
+    <div class="pt-acts"><button type="button" class="btn" data-kshare="1">Share</button><button type="button" class="btn primary" data-kcopy="1">Copy message</button></div>
+    <p class="note" style="text-align:left">Paste it in your league chat or a direct message on Sleeper.</p>`;
+}
+function closePitch(){const s=document.getElementById('ksheet');if(s){s.hidden=true;document.getElementById('kscrim').hidden=true;}}
+
 /* ---------- main ---------- */
 const closeIcon='<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
 /* ---------- trade offers you received: the full analysis behind the Offers box and the offer alert ---------- */
@@ -4111,6 +4326,13 @@ document.addEventListener('click',e=>{
   const fso=t.closest('[data-ftsort]'); if(fso){FT_SORT=fso.dataset.ftsort;FT_KEY='';FT_LIMIT=4;SH_KEY='';if(fso.closest('#shOut'))renderShop();else renderFinder();return;}
   const fm=t.closest('[data-ftmore]'); if(fm){FT_LIMIT+=4;renderFinder();return;}
   if(t.closest('[data-teex]')){exampleTrade();return;}
+  const pch=t.closest('[data-pitch]'); if(pch){const v=pch.dataset.pitch,k=v[0],i=+v.slice(1);const it=k==='o'?ODDS_IDEAS[i]:k==='r'?RADAR_IDEAS[i]:k==='l'?LIDEAS[i]:k==='f'?FT_SHOWN[i]:null;
+    if(k==='b'){openPitch(T.B.slice(),T.A.slice(),PARTNER);return;} if(it) openPitch(it.give,it.get,it.team.rid); return;}
+  const oll=t.closest('[data-oload],[data-rload]'); if(oll){const it=oll.dataset.oload!=null?ODDS_IDEAS[+oll.dataset.oload]:RADAR_IDEAS[+oll.dataset.rload];if(it)loadTrade(it);return;}
+  if(t.closest('[data-kclose]')){closePitch();return;}
+  const kt=t.closest('[data-ktone]'); if(kt){PITCH.tone=kt.dataset.ktone;renderPitch();return;}
+  if(t.closest('[data-kcopy]')){const x=document.getElementById('kText');try{navigator.clipboard.writeText(x.value).then(()=>toast('Copied: paste it in Sleeper'),()=>{x.select();document.execCommand('copy');toast('Copied');});}catch(e){x.select();document.execCommand('copy');toast('Copied');}return;}
+  if(t.closest('[data-kshare]')){const x=document.getElementById('kText');if(navigator.share){navigator.share({text:x.value}).catch(()=>{});}else{try{navigator.clipboard.writeText(x.value);toast('Copied');}catch(e){}}return;}
   const ls=t.closest('[data-lsub]'); if(ls){setLeagueSub(ls.dataset.lsub);return;}
   const cp=t.closest('[data-cpos]'); if(cp){chartPos=cp.dataset.cpos;chartLimit=120;renderChart();return;}
   const ad=t.closest('[data-add]'); if(ad){const [s,id]=ad.dataset.add.split(':');addAsset(s,id);toast(`Added to ${s==='A'?myName():theirName()}`);return;}
