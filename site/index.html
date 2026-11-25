@@ -2,7 +2,7 @@
 <html lang="en" class="boot">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-F5g2J9tDAvuoJVp2Hs3HReWL+mFUii9mee9mARjZcaM=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-he0cRbaXNHzltMy1P5vBjDZ7YLZkKTCg5jnhn50iYyE=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070B1A">
 <meta name="color-scheme" content="dark">
@@ -1899,7 +1899,7 @@ function renderHome(el){
   const nAl=ALERTS&&ALERTS.items?ALERTS.items.length:0, nSc=scoutNewCount();
   const T=[['trades','Find trades','Deals your leaguemates will actually accept','M7 7h13l-3-3M17 17H4l3 3'],
     ['builder','Trade builder','Win or get fleeced? Know in seconds','M4 12h16M12 4v16'],
-    ['odds','Title odds','Your real shot at the title, and how to raise it','M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z'],
+    ['odds','Title odds','Your real shot at the title, and how to raise it','M7 4h10v5a5 5 0 0 1-10 0V4zM7 6H4.5v1.5A3 3 0 0 0 7.4 10.5M17 6h2.5v1.5a3 3 0 0 1-2.9 3M12 14v3M9 17h6v4H9zM7.5 21h9'],
     ['radar','Radar','Who needs what you have, right now','M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 12l5-5M12 16a4 4 0 1 0 0-8'],
     ['roster','Roster','What every player is really worth','M5 6h14M5 12h14M5 18h9'],
     ['startsit','Start/Sit',`The lineup that wins Week ${SCHED?SCHED.week:(STATS?STATS.week+1:'')}`,'M8 4v16M16 4v16M4 9h8M12 15h8'],
@@ -3787,7 +3787,7 @@ function renderWaivers(el){
 const TOUR=[
   ['Is your trade fair?','Add players on both sides and get an instant verdict, with values from real trades and expert rankings.','M7 7h13l-3-3M17 17H4l3 3'],
   ['Connect your league','Link your Sleeper league to see your team, fair trade ideas with every manager, and the right lineup each week.','M12 3l8 4v6c0 4-3.5 7-8 8-4.5-1-8-4-8-8V7z'],
-  ['Win your league','Title odds, a radar of who needs what you have, scouting reports on players you want, and grades for every trade.','M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z'],
+  ['Win your league','Title odds, a radar of who needs what you have, scouting reports on players you want, and grades for every trade.','M7 4h10v5a5 5 0 0 1-10 0V4zM7 6H4.5v1.5A3 3 0 0 0 7.4 10.5M17 6h2.5v1.5a3 3 0 0 1-2.9 3M12 14v3M9 17h6v4H9zM7.5 21h9'],
   ['Share and trade','Share a trade as a picture, send a ready-made pitch to a leaguemate, and open Sleeper in one tap.','M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6']];
 let TOUR_I=0;
 function tourShow(){
