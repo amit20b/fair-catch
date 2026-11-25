@@ -2,7 +2,7 @@
 <html lang="en" class="boot">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-giPhlADHSAmtZMB9aL2sR5eoi0kxavnYAWLbcbhy2o8=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-CG6BCidabdmCw/3BaHbn5+zJovyqqHtCuRklrTG7xfc=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070B1A">
 <meta name="color-scheme" content="dark">
@@ -1113,9 +1113,10 @@ html.sheet-lock body{position:fixed;left:0;right:0;width:100%}
 .hm-odds{display:block;margin-top:2px}.hm-odds b{color:var(--accent)}
 .odds-wrap{grid-column:1/-1;display:flex;flex-direction:column;gap:8px}
 .odds-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1.5px solid var(--accent-line,rgba(198,255,61,.4));background:rgba(198,255,61,.06);border-radius:12px;padding:10px 12px;color:var(--ink);font:inherit;text-align:left}
-.odds-bar>div{display:flex;flex-direction:column;gap:2px}.odds-bar>div:first-child{flex-direction:row;flex-wrap:wrap;align-items:baseline;gap:4px 8px}
-.odds-bar small{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);width:100%}
-.odds-bar b.num{font-size:18px}.odds-bar .up{color:var(--win)}.odds-bar .down{color:var(--lose)}
+.odds-bar:not(.lock){justify-content:flex-start;flex-wrap:wrap;gap:4px 8px;align-items:baseline;padding:8px 12px}
+.ob-l{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.ob-s{margin-left:auto;font-size:12px;color:var(--muted)}
+.odds-bar b.num{font-size:15px}.odds-bar .up{color:var(--win)}.odds-bar .down{color:var(--lose)}
 .odds-bar.lock{cursor:pointer;width:100%}.odds-bar.lock b{background:var(--accent);color:var(--on-accent);border-radius:999px;padding:3px 9px;font-size:11px}
 .pitch-btn{width:100%}
 .rd-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
@@ -1135,6 +1136,36 @@ html.sheet-lock body{position:fixed;left:0;right:0;width:100%}
 .tr-with{grid-column:1/-1;font-size:13px;color:var(--muted);padding:0 2px}.tr-with b{color:var(--ink)}
 .send-row{display:flex;gap:8px}.send-row .btn{flex:1;min-height:44px}
 .pt-acts .btn{flex:1 1 0;min-width:0;white-space:nowrap;padding:0 8px}
+
+/* trade builder on phone: the extras around the trade stay small */
+@media (max-width:600px){
+  .fit{margin-top:8px;padding:8px 10px;gap:2px;border-radius:10px}
+  .fit-h{display:none}
+  .fit-adv{font-size:13px}
+  .fit-nums{font-size:12px;gap:2px 12px}
+  .fit-note{font-size:11.5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .trade-head .verdict-line{font-size:13.5px!important;margin-top:6px}
+  .tr-with{font-size:12px}
+  .balbar{padding:7px 10px;font-size:12.5px;border-radius:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bonus{font-size:11px}
+  .odds-wrap{gap:6px}
+  .odds-bar{border-radius:10px}
+  .odds-bar.lock{padding:7px 10px;font-size:12.5px}
+  .send-row .btn{min-height:38px;font-size:13px;padding:0 8px;border-radius:10px}
+  .send-row .btn svg{width:14px;height:14px}
+  .tool-row{gap:6px;padding:0 14px 12px}
+  .tool-row .btn{flex-direction:row;min-height:38px;gap:5px;font-size:12px;border-radius:10px;padding:0 4px}
+  .tool-row .btn svg{width:15px;height:15px}
+  #calc>nav.tabs{margin:12px 0 10px}
+  #calc>nav.tabs button{min-height:34px}
+}
+
+@media (max-width:860px){
+  .ph-back{gap:8px}
+  .ph-back button{width:36px;height:36px;border-radius:10px}
+  .ph-back h2{font-size:22px}
+  .odds-bar .muted{font-size:12px}
+}
 </style>
 
 <div class="wrap">
@@ -3483,7 +3514,7 @@ function oddsLine(give,get,rid){
   if(!LEAGUE||!give.length||!get.length||rid==null) return '';
   if(!isPro()) return `<button type="button" class="odds-bar lock" data-pro="1"><span>See how this trade changes your title odds</span><b>PRO</b></button>`;
   const d=tradeOddsDelta(give,get,rid); if(!d) return '';
-  return `<div class="odds-bar"><div><small>Your title odds</small><b class="num">${opct(d.me.ch0)} → ${opct(d.me.ch1)}</b>${odelta(d.me.ch0,d.me.ch1)}</div><div><small>Playoffs</small><b class="num">${opct(d.me.po0)} → ${opct(d.me.po1)}</b></div></div>`;
+  return `<div class="odds-bar"><span class="ob-l">Title odds</span><b class="num">${opct(d.me.ch0)} → ${opct(d.me.ch1)}</b>${odelta(d.me.ch0,d.me.ch1)}<span class="ob-s">Playoffs ${opct(d.me.po0)} → ${opct(d.me.po1)}</span></div>`;
 }
 let ODDS_IDEAS=[];
 function renderOdds(el){
