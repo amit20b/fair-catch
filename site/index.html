@@ -2,7 +2,7 @@
 <html lang="en" class="boot">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-vFzt5zKGASThUzAnZihZCiELlS+b4laW3WQuyldk1gA=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-DDKHUVBR5pcHDXaqenwHvei0zfKV75jUUk4xR+M0oRY=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070B1A">
 <meta name="color-scheme" content="dark">
@@ -1522,7 +1522,7 @@ function renderCols(r,g){
   const ptn=inLeagueCtx()&&PARTNER!=null&&LEAGUE?(LEAGUE.teams.find(x=>x.rid===+PARTNER)||{}).name:null;
   document.getElementById('cols').innerHTML=(ptn?`<div class="tr-with">Trade with <b>${esc(ptn)}</b></div>`:'')+col('B','theirs',ptn?esc(ptn)+' gets':'They receive',r.B,r.adjB,r.starB,r.padB)+col('A','mine',ptn?'You get':'I receive',r.A,r.adjA,r.starA,r.padA)+
     (bal?`<button class="balbar" type="button" ${isPro()?`data-open="${bal}"`:'data-pro="1"'}>✦ Balance this trade: ${bal==='A'?'see what to ask them to add':'see what you could add'}</button>`:'')+
-    (inLeagueCtx()&&PARTNER!=null&&T.A.length&&T.B.length?`<div class="odds-wrap">${oddsLine(T.B,T.A,PARTNER)}<div class="send-row"><button class="btn" type="button" data-pitch="b">Write a pitch</button>${LEAGUE&&LEAGUE.live&&LEAGUE.platform==='Sleeper'?`<button class="btn primary" type="button" data-slpopen="b">Open in Sleeper</button>`:''}</div></div>`:'');
+    (inLeagueCtx()&&PARTNER!=null&&T.A.length&&T.B.length?`<div class="odds-wrap">${oddsLine(T.B,T.A,PARTNER)}<div class="send-row"><button class="btn" type="button" data-pitch="b">Write a pitch</button>${LEAGUE&&LEAGUE.live&&LEAGUE.platform==='Sleeper'?`<button class="btn primary" type="button" data-slpopen="b"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-3px;margin-right:6px"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>Open Sleeper</button>`:''}</div></div>`:'');
 }
 
 /* ---------- results: explain, balance, roster impact, similar ---------- */
