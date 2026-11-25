@@ -2,7 +2,7 @@
 <html lang="en" class="boot">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-iRUWj+zUx73wvhQFEiNNNNS4kZzhYiZQKlzQIa+X5SQ=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-vFzt5zKGASThUzAnZihZCiELlS+b4laW3WQuyldk1gA=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070B1A">
 <meta name="color-scheme" content="dark">
@@ -1282,7 +1282,8 @@ const names=ids=>ids.filter(id=>byId[id]).map(id=>byId[id].n);
 const ids=arr=>(Array.isArray(arr)?arr:[]).map(n=>byName[n]).filter(Boolean);
 const idsOf=ids;
 const LSTAMP=()=>LEAGUE?LEAGUE.id+'|'+(LEAGUE.synced||LEAGUE.fetched||''):'';
-function packState(){return {v:4,S:{...S},A:names(T.A),B:names(T.B),R:names(typeof ROSTER==='undefined'?[]:ROSTER),L:LSTAMP()};}
+function packState(){let cT=T;try{if(inLeagueCtx())cT=TF||{A:[],B:[]};}catch(e){} // the Trade tab's own trade, never the one open in My League
+  return {v:4,S:{...S},A:names(cT.A),B:names(cT.B),R:names(typeof ROSTER==='undefined'?[]:ROSTER),L:LSTAMP()};}
 function unpackState(o){
   if(!o||typeof o!=='object') return false;
   if(o.S&&typeof o.S==='object') S={...DEF,...o.S};
