@@ -2,7 +2,7 @@
 <html lang="en" class="boot">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-DDKHUVBR5pcHDXaqenwHvei0zfKV75jUUk4xR+M0oRY=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-giPhlADHSAmtZMB9aL2sR5eoi0kxavnYAWLbcbhy2o8=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070B1A">
 <meta name="color-scheme" content="dark">
@@ -4400,7 +4400,10 @@ async function tradeCard(){
   x.fillStyle=v('--muted'); x.font=`500 36px ${body}`; x.fillText(g.line,72,388);
   // fairness bar: they win on the left, you win on the right
   const bx=72,by=440,bw=W-144,bh=26; x.fillStyle=v('--card-2'); rr(bx,by,bw,bh,13);
-  const pos=Math.max(0,Math.min(1,.5+(r.diff>0?1:-1)*Math.min(.5,r.pct*1.6))); x.fillStyle=col; rr(bx+Math.min(bw/2,bw*pos)-2,by,Math.abs(bw*pos-bw/2)+4,bh,13);
+  // same pill as the app's meter: a centered dot when fair, otherwise a bar growing from the center toward the winner
+  {const EDGES=[0,.05,.12,.25,.5],pp=Math.min(r.pct,.5);let frac=1;for(let k=1;k<EDGES.length;k++){if(pp<=EDGES[k]){frac=(k-1+(pp-EDGES[k-1])/(EDGES[k]-EDGES[k-1]))/4;break;}}
+   let L,Wd; if(g.k==='even'){L=46.5;Wd=7;}else{Wd=Math.max(6,frac*44);L=r.diff>0?50:50-Wd;}
+   x.fillStyle=col; rr(bx+bw*L/100,by,bw*Wd/100,bh,13);}
   x.fillStyle=v('--ink'); x.fillRect(bx+bw/2-2,by-8,4,bh+16);
   x.fillStyle=v('--dim'); x.font=`500 26px ${body}`; x.fillText('They win',bx,by+70); const fw=x.measureText('Fair').width; x.fillText('Fair',bx+bw/2-fw/2,by+70); const yw=x.measureText('You win').width; x.fillText('You win',bx+bw-yw,by+70);
   // the two sides
