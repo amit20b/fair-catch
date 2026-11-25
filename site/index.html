@@ -2,7 +2,7 @@
 <html lang="en" class="boot">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-88+SJtxtM+pp2eO6NZ20DaTG/0FJ+EBMdR7VKwFbRKE=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-DNVZEjI1bRLaY00ye93ao0VOPQ1+jKbNwspvVMGggPk=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070B1A">
 <meta name="color-scheme" content="dark">
@@ -1011,6 +1011,38 @@ html.sheet-lock body{position:fixed;left:0;right:0;width:100%}
   .hm-more span{color:var(--accent)}
 }
 @media (min-width:600px) and (max-width:860px){.hm-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+/* phone: calmer, tidier look */
+@media (max-width:860px){
+  footer{display:none}
+  body[data-v="chart"] footer{display:block}
+  body[data-v^="lg-"]:not([data-v="lg-builder"]) #helpFab{display:none}
+  #accSlot .acc-pair .acc-in:not(.ghost){display:none}
+  #proSlot,#proSlot:has(.pro-cta){order:2;flex:none;margin:0!important}
+  #proSlot .pro-cta{padding:0;border:0;background:none;width:auto;border-radius:999px;overflow:visible}
+  #proSlot .pro-cta .pc-ic,#proSlot .pro-cta .pc-tx{display:none}
+  #proSlot .pro-cta .pc-go{min-height:36px;font-size:13px;padding:0 12px}
+  #proSlot .pro-cta .pc-go svg{display:none}
+  .chip.combo{width:40px;padding:0;justify-content:center;font-size:0;gap:0}
+  .chip.combo svg{width:18px;height:18px}
+  .chip.combo[aria-expanded="true"]{width:auto;padding:0 12px;font-size:13px}
+  header.top{padding-bottom:4px}
+  .cn-banner{padding:12px 14px;gap:10px;flex-wrap:nowrap;font-size:13px}
+  .cn-banner .muted{display:none}
+  .cn-banner .btn{flex:none;min-height:36px;padding:0 12px;font-size:13px}
+  .hm-team{margin-top:0;padding:14px}
+  .hm-team em{font-size:11.5px;font-weight:700;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:4px 10px;white-space:nowrap}
+  .hm-team em.ok{color:var(--win)}
+  .hm-grid{gap:10px;margin-top:12px}
+  .hm-tile{min-height:112px;padding:14px;gap:4px;border-color:var(--line)}
+  .hm-tile.hot{background:var(--card);border-color:var(--line);color:var(--ink)}
+  .hm-tile.hot svg{color:var(--accent)}.hm-tile.hot small{color:var(--muted)}
+  .hm-tile b{font-size:21px;flex-wrap:wrap;white-space:normal;overflow-wrap:anywhere}
+  .hm-tile small{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-weight:500}
+  .hm-new{font-size:9.5px;padding:2px 6px}
+  .hm-more{margin-top:12px;border-color:var(--line);color:var(--muted);font-weight:600}
+  #lgTop{margin-bottom:12px}
+}
 </style>
 
 <div class="wrap">
@@ -1652,6 +1684,7 @@ function setMain(m){
   try{alertBadge();}catch(e){}
   const calc=document.getElementById('calc');
   if(nowLg) document.getElementById('lgBuilder').appendChild(calc); else document.getElementById('calcHome').after(calc);
+  document.body.dataset.v=m==='league'?'lg-'+LSUB:m;
   calc.hidden=!(m==='calc'||nowLg); document.getElementById('chart').hidden=m!=='chart'; document.getElementById('league').hidden=m!=='league';
   document.getElementById('lgBuilder').hidden=!nowLg; document.getElementById('lgBody').hidden=nowLg;
   render();}
@@ -1676,7 +1709,7 @@ function renderHome(el){
     ['market','Buy/Sell','Buy low, sell high, before everyone else','M4 17l5-5 4 4 7-8'],
     ['scout','Scouting','Track your targets. Know when to strike','M16 16l4.5 4.5M11 17a6 6 0 1 0 0-12 6 6 0 0 0 0 12']];
   el.innerHTML=`${!CONN.length?`<div class="box cn-banner"><div><b>This is a demo league.</b><span class="muted"> Connect your own Sleeper league to see your team, trade ideas and offers.</span></div><button type="button" class="btn primary" data-lgadd="1">Connect my league</button></div>`:''}
-  <button type="button" class="hm-team" data-lsub="overview"><span><b class="hm-name">${esc(me.name)}</b><small>${esc(me.rec||'—')}${pfRk?` · Points #${pfRk}`:''} · Roster #${powerRk}</small></span>${weak.length?`<em>Weak at<br>${weak.join(', ')}</em>`:'<em class="ok">No big<br>holes</em>'}</button>
+  <button type="button" class="hm-team" data-lsub="overview"><span><b class="hm-name">${esc(me.name)}</b><small>${esc(me.rec||'—')}${pfRk?` · Points #${pfRk}`:''} · Roster #${powerRk}</small></span>${weak.length?`<em>Needs ${weak.join(', ')}</em>`:'<em class="ok">No holes</em>'}</button>
   ${nAl?`<button type="button" class="hm-alert" data-lsub="overview"><i>${nAl}</i> new in your league: offers and updates <span aria-hidden="true">›</span></button>`:''}
   <div class="hm-grid">${T.map(([k,n,s,d],i)=>`<button type="button" class="hm-tile${i===0?' hot':''}" data-lsub="${k}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg><b>${n}${k==='scout'?(isPro()?(nSc?`<i class="hm-new">${nSc} NEW</i>`:''):'<i class="hm-new">PRO</i>'):''}</b><small>${s}</small></button>`).join('')}</div>
   <button type="button" class="hm-more" data-lsub="overview">Full team overview, recap and power rankings <span aria-hidden="true">›</span></button>`;
@@ -2231,6 +2264,7 @@ function renderLeague(){
   const el=document.getElementById('lgBody'), top=document.getElementById('lgTop');
   const sw0=LEAGUE?`<div class="lg-switch" role="group" aria-label="Choose league">${LEAGUES.map((l,i)=>`<button type="button" data-lg="${i}" aria-pressed="${l===LEAGUE&&!CN.open}"><small>${esc(l.platform||'')}${l.live?'':CONN.length?' · demo':''}</small>${esc(l.name)}</button>`).join('')}<button type="button" class="lg-add" data-lgadd="1" aria-pressed="${CN.open}"><small>Sleeper · ESPN · Yahoo</small>+ Add your league</button></div>`:'';
   if(LSUB==='home'&&!isPhone()) LSUB='overview';
+  document.body.dataset.v='lg-'+LSUB;
   if(isPhone()&&LEAGUE){
     top.innerHTML=`<button type="button" class="lg-sel" data-lgmenu="1" aria-expanded="${LGMENU}"><span><small>${esc(LEAGUE.platform||'')}${LEAGUE.live?'':CONN.length?' · demo':''}</small>${esc(LEAGUE.name)}</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>${LGMENU?sw0:''}`+
       (LSUB!=='home'?`<div class="ph-back"><button type="button" data-lsub="home" aria-label="Back to My League"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button><h2>${CN.open?'Add your league':esc(LSUB_NAME[LSUB]||'')}</h2></div>`:'');
