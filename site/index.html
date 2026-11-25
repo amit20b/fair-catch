@@ -2,7 +2,7 @@
 <html lang="en" class="boot">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-5GbpENupijdnqk6XYdx7N0NNDzPPtdzujV/IoAPbe+4=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-iRUWj+zUx73wvhQFEiNNNNS4kZzhYiZQKlzQIa+X5SQ=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070B1A">
 <meta name="color-scheme" content="dark">
@@ -1131,6 +1131,10 @@ html.sheet-lock body{position:fixed;left:0;right:0;width:100%}
 .pt-tone{margin-bottom:10px}
 .pt-text{width:100%;box-sizing:border-box;min-height:200px;border:1.5px solid var(--line);background:var(--card-2);color:var(--ink);border-radius:12px;padding:12px;font:15px/1.5 var(--f);resize:vertical}
 .pt-acts{display:flex;gap:8px;margin-top:10px}.pt-acts .btn{flex:1;min-height:46px}
+
+.tr-with{grid-column:1/-1;font-size:13px;color:var(--muted);padding:0 2px}.tr-with b{color:var(--ink)}
+.send-row{display:flex;gap:8px}.send-row .btn{flex:1;min-height:44px}
+.pt-acts .btn{flex:1 1 0;min-width:0;white-space:nowrap;padding:0 8px}
 </style>
 
 <div class="wrap">
@@ -1514,9 +1518,10 @@ function renderCols(r,g){
     <button class="addcard" type="button" data-open="${side}">＋ Add player</button>
     ${adj>0?`<div class="bonus">${bonusTxt(star,pad)}</div>`:''}</div>`;
   const bal=T.A.length&&T.B.length&&r.pct>.05?(r.diff<0?'A':'B'):null;
-  document.getElementById('cols').innerHTML=col('B','theirs','They receive',r.B,r.adjB,r.starB,r.padB)+col('A','mine','I receive',r.A,r.adjA,r.starA,r.padA)+
+  const ptn=inLeagueCtx()&&PARTNER!=null&&LEAGUE?(LEAGUE.teams.find(x=>x.rid===+PARTNER)||{}).name:null;
+  document.getElementById('cols').innerHTML=(ptn?`<div class="tr-with">Trade with <b>${esc(ptn)}</b></div>`:'')+col('B','theirs',ptn?esc(ptn)+' gets':'They receive',r.B,r.adjB,r.starB,r.padB)+col('A','mine',ptn?'You get':'I receive',r.A,r.adjA,r.starA,r.padA)+
     (bal?`<button class="balbar" type="button" ${isPro()?`data-open="${bal}"`:'data-pro="1"'}>✦ Balance this trade: ${bal==='A'?'see what to ask them to add':'see what you could add'}</button>`:'')+
-    (inLeagueCtx()&&PARTNER!=null&&T.A.length&&T.B.length?`<div class="odds-wrap">${oddsLine(T.B,T.A,PARTNER)}<button class="btn pitch-btn" type="button" data-pitch="b">Write a pitch to send</button></div>`:'');
+    (inLeagueCtx()&&PARTNER!=null&&T.A.length&&T.B.length?`<div class="odds-wrap">${oddsLine(T.B,T.A,PARTNER)}<div class="send-row"><button class="btn" type="button" data-pitch="b">Write a pitch</button>${LEAGUE&&LEAGUE.live&&LEAGUE.platform==='Sleeper'?`<button class="btn primary" type="button" data-slpopen="b">Open in Sleeper</button>`:''}</div></div>`:'');
 }
 
 /* ---------- results: explain, balance, roster impact, similar ---------- */
@@ -3589,7 +3594,7 @@ function renderPitch(){
   document.getElementById('kSub').textContent=th?'A message for '+th.name+'. Edit it if you like, then copy or send.':'';
   document.getElementById('kBody').innerHTML=`<div class="seg pt-tone" role="group" aria-label="Length"><button type="button" data-ktone="full" aria-pressed="${PITCH.tone==='full'}">Full</button><button type="button" data-ktone="short" aria-pressed="${PITCH.tone==='short'}">Short</button></div>
     <label class="sr" for="kText">Message</label><textarea id="kText" class="pt-text" rows="9">${esc(pitchText(PITCH.give,PITCH.get,PITCH.rid,PITCH.tone))}</textarea>
-    <div class="pt-acts"><button type="button" class="btn" data-kshare="1">Share</button><button type="button" class="btn primary" data-kcopy="1">Copy message</button></div>
+    <div class="pt-acts"><button type="button" class="btn" data-kshare="1">Share</button><button type="button" class="btn${LEAGUE&&LEAGUE.live&&LEAGUE.platform==='Sleeper'?'':' primary'}" data-kcopy="1">Copy</button>${LEAGUE&&LEAGUE.live&&LEAGUE.platform==='Sleeper'?'<button type="button" class="btn primary" data-slpopen="k">Copy + open Sleeper</button>':''}</div>
     <p class="note" style="text-align:left">Paste it in your league chat or a direct message on Sleeper.</p>`;
 }
 function closePitch(){const s=document.getElementById('ksheet');if(s){s.hidden=true;document.getElementById('kscrim').hidden=true;}}
@@ -4329,10 +4334,15 @@ document.addEventListener('click',e=>{
   const pch=t.closest('[data-pitch]'); if(pch){const v=pch.dataset.pitch,k=v[0],i=+v.slice(1);const it=k==='o'?ODDS_IDEAS[i]:k==='r'?RADAR_IDEAS[i]:k==='l'?LIDEAS[i]:k==='f'?FT_SHOWN[i]:null;
     if(k==='b'){openPitch(T.B.slice(),T.A.slice(),PARTNER);return;} if(it) openPitch(it.give,it.get,it.team.rid); return;}
   const oll=t.closest('[data-oload],[data-rload]'); if(oll){const it=oll.dataset.oload!=null?ODDS_IDEAS[+oll.dataset.oload]:RADAR_IDEAS[+oll.dataset.rload];if(it)loadTrade(it);return;}
+  const so=t.closest('[data-slpopen]'); if(so){
+    const txt=so.dataset.slpopen==='k'?(document.getElementById('kText')||{}).value:`Trade: I give ${names(T.B).join(', ')}, I get ${names(T.A).join(', ')}`;
+    try{navigator.clipboard.writeText(txt||'').catch(()=>{});}catch(e){}
+    toast(so.dataset.slpopen==='k'?'Message copied. Paste it in Sleeper':'Trade copied. In Sleeper: Trade, pick the team, add the players');
+    setTimeout(()=>{window.open('https://sleeper.com/leagues/'+encodeURIComponent(LEAGUE.id),'_blank','noopener');},350);return;}
   if(t.closest('[data-kclose]')){closePitch();return;}
   const kt=t.closest('[data-ktone]'); if(kt){PITCH.tone=kt.dataset.ktone;renderPitch();return;}
   if(t.closest('[data-kcopy]')){const x=document.getElementById('kText');try{navigator.clipboard.writeText(x.value).then(()=>toast('Copied: paste it in Sleeper'),()=>{x.select();document.execCommand('copy');toast('Copied');});}catch(e){x.select();document.execCommand('copy');toast('Copied');}return;}
-  if(t.closest('[data-kshare]')){const x=document.getElementById('kText');if(navigator.share){navigator.share({text:x.value}).catch(()=>{});}else{try{navigator.clipboard.writeText(x.value);toast('Copied');}catch(e){}}return;}
+  if(t.closest('[data-kshare]')){const x=document.getElementById('kText');if(navigator.share){navigator.share({text:x.value}).catch(()=>{});}else{try{navigator.clipboard.writeText(x.value).catch(()=>{});toast('Copied');}catch(e){}}return;}
   const ls=t.closest('[data-lsub]'); if(ls){setLeagueSub(ls.dataset.lsub);return;}
   const cp=t.closest('[data-cpos]'); if(cp){chartPos=cp.dataset.cpos;chartLimit=120;renderChart();return;}
   const ad=t.closest('[data-add]'); if(ad){const [s,id]=ad.dataset.add.split(':');addAsset(s,id);toast(`Added to ${s==='A'?myName():theirName()}`);return;}
