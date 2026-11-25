@@ -178,6 +178,7 @@ body:has(#prosheet:not([hidden])) .fab{display:none}
 @media (prefers-reduced-motion:reduce){.pro-conf{display:none}}
 /* ===== iPhone fit: notch/home-bar space, no zoom on inputs, thumb-sized taps ===== */
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+html{overscroll-behavior:none;background:var(--bg,#0A0F24)}
 body{-webkit-tap-highlight-color:transparent;overscroll-behavior-y:none;padding-top:env(safe-area-inset-top,0px)}
 input,select,textarea{font-size:16px!important}
 .chip{min-height:36px;padding:6px 12px}
