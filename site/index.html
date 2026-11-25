@@ -2,7 +2,7 @@
 <html lang="en" class="boot">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-CG6BCidabdmCw/3BaHbn5+zJovyqqHtCuRklrTG7xfc=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-rjWsI3pMOtHmCVP7Y9vmKRQpeFCj2lNt2tHz6kuVFYw=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070B1A">
 <meta name="color-scheme" content="dark">
@@ -1166,6 +1166,50 @@ html.sheet-lock body{position:fixed;left:0;right:0;width:100%}
   .ph-back h2{font-size:22px}
   .odds-bar .muted{font-size:12px}
 }
+
+/* phone: the whole trade fits on one screen */
+.add-mini{display:none}
+@media (max-width:600px){
+  .trade-head{padding:10px 12px}
+  .trade-head .swap{display:none}
+  .trade-head .fbar{height:22px;margin-top:8px}
+  .trade-head .bar-cap{margin-top:3px;font-size:11px}
+  .cols{gap:10px;padding:10px 12px}
+  .col{gap:6px}
+  .col-h{min-height:28px}
+  .add-mini{display:inline-flex;align-items:center;margin-left:auto;margin-right:10px;min-height:28px;padding:0 10px;border:1px dashed var(--line);border-radius:999px;background:transparent;color:var(--muted);font:600 12px var(--f);cursor:pointer}
+  .col:has(.pcard) .addcard{display:none}
+  .addcard{min-height:40px!important;padding:6px 8px;font-size:13px}
+  .pcard{gap:10px!important;padding:6px 40px 6px 8px!important;min-height:0;border-radius:10px}
+  .pcard .av{transform:none;margin:0;width:34px;height:34px;font-size:11px;border-width:2px}
+  .pcard .av svg{max-width:28px;max-height:28px}
+  .pcard .pmeta{display:grid;grid-template-columns:auto 1fr;align-items:center;column-gap:8px;row-gap:1px}
+  .pcard .pname{grid-column:1/-1;font-size:14px}
+  .pcard .prow{margin:0}
+  .pcard .pval{margin:0;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pcard .prange{display:none}
+  .pcard .rm{width:28px;height:28px;top:50%;transform:translateY(-50%);right:6px}
+  .pcard .rm svg{width:10px;height:10px}
+  .bonus{display:none}
+  .fit{margin-top:6px}
+  .fit-note{-webkit-line-clamp:1}
+}
+
+@media (max-width:600px){
+  .tr-with{display:none}
+  .fit-adv{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .fit-note{display:none}
+  .odds-bar:not(.lock){flex-wrap:nowrap;padding:7px 10px;gap:6px;white-space:nowrap;overflow:hidden}
+  .odds-bar .ob-s{font-size:11px}
+  .trade-head .verdict-line{margin-top:4px}
+}
+
+#helpTool{display:none}
+@media (max-width:600px){
+  body[data-tr="1"] #helpTool{display:flex}
+  body[data-tr="1"] #shotBtn{display:none}
+  body[data-tr="1"] #helpFab{display:none!important}
+}
 </style>
 
 <div class="wrap">
@@ -1211,7 +1255,7 @@ html.sheet-lock body{position:fixed;left:0;right:0;width:100%}
       <button class="btn" type="button" id="clear"><svg class="t-ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>Clear</button>
       <button class="btn" type="button" id="shotBtn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="vertical-align:-2px;margin-right:5px"><rect x="3" y="6" width="18" height="14" rx="3" stroke="currentColor" stroke-width="2"/><path d="M8.5 6l1.5-2.5h4L15.5 6" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.5" stroke="currentColor" stroke-width="2"/></svg><span class="t-lg">Screenshot or text</span><span class="t-sm">Import</span></button>
       <button class="btn" type="button" id="shareTrade"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="vertical-align:-2px;margin-right:5px"><path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Share</button>
-      <button class="btn primary" type="button" id="copy"><svg class="t-ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg><span class="t-lg">Copy trade</span><span class="t-sm">Copy</span></button>
+      <button class="btn" type="button" id="helpTool" aria-label="Help me decide"><svg class="t-ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4V5z"/><path d="M8 9h8M8 12.5h5" stroke-linecap="round"/></svg>Help</button><button class="btn primary" type="button" id="copy"><svg class="t-ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg><span class="t-lg">Copy trade</span><span class="t-sm">Copy</span></button>
     </div>
     <div class="shared-note" id="sharedNote" hidden><span>A shared trade, shown from the sender's side.</span><button type="button" class="linkbtn" id="sharedSwap">I'm the other team: swap</button><button type="button" class="linkbtn" id="sharedX" aria-label="Close">✕</button></div>
   </section>
@@ -1545,7 +1589,7 @@ function pcard(side,a){
 }
 function renderCols(r,g){
   const bonusTxt=(star,pad)=>star>0&&pad>0?`Includes +${fmt(star)} star bonus and +${fmt(pad)} for open roster spots`:star>0?`Includes +${fmt(star)} star bonus`:`Includes +${fmt(pad)} for open roster spots`;
-  const col=(side,cls,title,tot,adj,star,pad)=>`<div class="col ${cls}"><div class="col-h"><span>${title}</span><span class="tot num">${fmt(tot)}</span></div>
+  const col=(side,cls,title,tot,adj,star,pad)=>`<div class="col ${cls}"><div class="col-h"><span>${title}</span>${T[side].length?`<button class="add-mini" type="button" data-open="${side}" aria-label="Add a player">＋ Add</button>`:''}<span class="tot num">${fmt(tot)}</span></div>
     ${T[side].map(id=>pcard(side,byId[id])).join('')}
     <button class="addcard" type="button" data-open="${side}">＋ Add player</button>
     ${adj>0?`<div class="bonus">${bonusTxt(star,pad)}</div>`:''}</div>`;
@@ -2395,7 +2439,7 @@ function renderLeague(){
   if(LSUB==='home'&&!isPhone()) LSUB='overview';
   document.body.dataset.v='lg-'+LSUB;
   if(isPhone()&&LEAGUE){
-    top.innerHTML=`<button type="button" class="lg-sel" data-lgmenu="1" aria-expanded="${LGMENU}"><span><small>${esc(LEAGUE.platform||'')}${LEAGUE.live?'':CONN.length?' · demo':''}</small>${esc(LEAGUE.name)}</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>${LGMENU?sw0:''}`+
+    top.innerHTML=(LSUB!=='home'&&!CN.open?'':`<button type="button" class="lg-sel" data-lgmenu="1" aria-expanded="${LGMENU}"><span><small>${esc(LEAGUE.platform||'')}${LEAGUE.live?'':CONN.length?' · demo':''}</small>${esc(LEAGUE.name)}</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>${LGMENU?sw0:''}`)+
       (LSUB!=='home'?`<div class="ph-back"><button type="button" data-lsub="home" aria-label="Back to My League"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button><h2>${CN.open?'Add your league':esc(LSUB_NAME[LSUB]||'')}</h2></div>`:'');
   } else
   top.innerHTML=LEAGUE?sw0+`<nav class="tabs lg-sub" role="tablist"><button role="tab" type="button" data-lsub="overview" aria-selected="${LSUB==='overview'}">Overview</button><button role="tab" type="button" data-lsub="trades" aria-selected="${LSUB==='trades'}">Find trades</button><button role="tab" type="button" data-lsub="builder" aria-selected="${LSUB==='builder'}">Trade builder</button><button role="tab" type="button" data-lsub="roster" aria-selected="${LSUB==='roster'}">Roster</button><button role="tab" type="button" data-lsub="startsit" aria-selected="${LSUB==='startsit'}">Start/Sit</button><button role="tab" type="button" data-lsub="market" aria-selected="${LSUB==='market'}">Buy/Sell</button><button role="tab" type="button" data-lsub="scout" aria-selected="${LSUB==='scout'}">Scouting${(()=>{const n=scoutNewCount();return n?`<i class="sc-dot" aria-label="${n} with news">${n}</i>`:'';})()}</button><button role="tab" type="button" data-lsub="odds" aria-selected="${LSUB==='odds'}">Title odds</button><button role="tab" type="button" data-lsub="radar" aria-selected="${LSUB==='radar'}">Radar</button></nav>`+(LSUB==='builder'?`<div class="partner-row"><label for="partnerSel">Trading with</label><select id="partnerSel"><option value="">Choose a team…</option>${LEAGUE.teams.filter(x=>x.rid!==LEAGUE.me).map(x=>`<option value="${x.rid}" ${x.rid===PARTNER?'selected':''}>${esc(x.name)}${x.rec?` (${esc(x.rec)})`:''}</option>`).join('')}</select></div><p class="muted" style="margin:0">Pick a team, or just add a player you want and we find his team. You can only add players from your roster and theirs.</p>`:''):'';
@@ -3509,7 +3553,7 @@ function tradeOddsDelta(give,get,rid){
   return TOX[key]={me:{po0:b[me.rid].po,po1:a[me.rid].po,ch0:b[me.rid].ch,ch1:a[me.rid].ch},th:{po0:b[th.rid].po,po1:a[th.rid].po,ch0:b[th.rid].ch,ch1:a[th.rid].ch},team:th};
 }
 const opct=v=>v>=.995?'99%':v<.005?'<1%':Math.round(v*100)+'%';
-const odelta=(a,b)=>{const d=Math.round((b-a)*100);return d===0?'<span class="muted">no change</span>':`<b class="${d>0?'up':'down'}">${d>0?'▲':'▼'}${Math.abs(d)}</b>`;};
+const odelta=(a,b)=>{const d=Math.round((b-a)*100);return d===0?'<span class="muted">±0</span>':`<b class="${d>0?'up':'down'}">${d>0?'▲':'▼'}${Math.abs(d)}</b>`;};
 function oddsLine(give,get,rid){
   if(!LEAGUE||!give.length||!get.length||rid==null) return '';
   if(!isPro()) return `<button type="button" class="odds-bar lock" data-pro="1"><span>See how this trade changes your title odds</span><b>PRO</b></button>`;
@@ -4446,6 +4490,7 @@ async function tradeCard(){
   x.fillStyle=v('--dim'); x.font=`500 28px ${body}`; x.fillText('Check yours: '+location.host+location.pathname.replace(/\/$/,'').replace(/\/index\.html$/,''),72,H-70);
   return await new Promise(res=>c.toBlob(b=>res(b),'image/png'));
 }
+document.getElementById('helpTool').onclick=()=>document.getElementById('helpFab').click();
 document.getElementById('shareTrade').onclick=async()=>{
   if(!T.A.length||!T.B.length){toast('Add players on both sides first');return;}
   const url=tradeLink(), r=evaluate(T.A,T.B), g=grade(r);
