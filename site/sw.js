@@ -42,3 +42,18 @@ self.addEventListener('message', (e) => {
     if (hit && stamp(hit) && stamp(res) !== stamp(hit)) for (const c of await self.clients.matchAll({ type: 'window' })) c.postMessage({ type: 'fc-updated' });
   })());
 });
+
+// phone alerts from the fair-catch-push server: show them, and open the right screen when tapped
+self.addEventListener('push', (e) => {
+  let m = {}; try { m = e.data ? e.data.json() : {}; } catch (err) { m = { title: 'Fair Catch', body: e.data ? e.data.text() : '' }; }
+  e.waitUntil(self.registration.showNotification(m.title || 'Fair Catch', { body: m.body || '', icon: 'icon-192.png', badge: 'icon-192.png', data: { url: m.url || './' }, tag: m.tag || undefined }));
+});
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close();
+  const url = (e.notification.data && e.notification.data.url) || './', go = (url.split('#')[1] || '');
+  e.waitUntil((async () => {
+    const wins = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    for (const c of wins) { if (c.url.startsWith(self.registration.scope)) { await c.focus(); if (go) c.postMessage({ type: 'fc-open', go }); return; } }
+    await self.clients.openWindow(url);
+  })());
+});

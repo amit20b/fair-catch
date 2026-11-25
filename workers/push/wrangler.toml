@@ -1,0 +1,14 @@
+name = "fair-catch-push"
+main = "worker.js"
+compatibility_date = "2026-11-01"
+workers_dev = true
+
+# the same database as the main account server (fair-catch-yahoo): read-only use of sessions and user_data,
+# plus its own push_ tables
+[[d1_databases]]
+binding = "DB"
+database_name = "fair-catch-accounts"
+database_id = "8e67be9e-f8b2-4c18-8f0e-24b071cd56a9"
+
+[triggers]
+crons = ["23 * * * *"]

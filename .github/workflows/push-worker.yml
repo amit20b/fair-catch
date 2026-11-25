@@ -1,0 +1,27 @@
+name: Deploy notifications server
+# Publishes workers/push (fair-catch-push) to Cloudflare. Needs the repository secret CLOUDFLARE_API_TOKEN.
+on:
+  push:
+    branches: [main]
+    paths: ['workers/push/**', '.github/workflows/push-worker.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check the token is set
+        env:
+          T: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if [ -z "$T" ]; then echo "::warning::CLOUDFLARE_API_TOKEN is not set yet, so nothing was deployed."; exit 0; fi
+          echo "HAS_TOKEN=1" >> "$GITHUB_ENV"
+      - name: Deploy
+        if: env.HAS_TOKEN == '1'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: 7d9cc22c480bdad5228629d28aabe3ed
+          workingDirectory: workers/push
