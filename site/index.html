@@ -2,7 +2,7 @@
 <html lang="en" class="boot">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-l6vKcr3ObdkV9wlgqc/lfyALVjoQ6WfcDLmQwYpUnNA=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://fair-catch-push.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-jEuZUUfbkJ4aGqnjCRHTe6YNDQnPuraROvJZy+tqIYA=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://fair-catch-yahoo.amitibaum.workers.dev https://fair-catch-push.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070B1A">
 <meta name="color-scheme" content="dark">
@@ -1914,9 +1914,10 @@ function renderHome(el){
     ['grades','Trade grades','Who won every trade in your league','M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z']];
   el.innerHTML=`${!CONN.length?`<div class="box cn-banner"><div><b>This is a demo league.</b><span class="muted"> Connect your own Sleeper league to see your team, trade ideas and offers.</span></div><button type="button" class="btn primary" data-lgadd="1">Connect my league</button></div>`:''}
   <button type="button" class="hm-team" data-lsub="overview"><span><b class="hm-name">${esc(me.name)}</b><small>${esc(me.rec||'—')}${pfRk?` · Points #${pfRk}`:''} · Roster #${powerRk}</small>${(()=>{if(!isPro())return '';const O=titleOdds();if(!O||O.late)return '';const x=O.by[me.rid];return x?`<small class="hm-odds">Playoffs <b>${opct(x.po)}</b> · Title <b>${opct(x.ch)}</b></small>`:'';})()}</span>${weak.length?`<em>Needs ${weak.join(', ')}</em>`:'<em class="ok">No holes</em>'}</button>
+  ${pushOn()?'':pushCard()}
   ${nAl?`<button type="button" class="hm-alert" data-lsub="overview"><i>${nAl}</i> new in your league: offers and updates <span aria-hidden="true">›</span></button>`:''}
   <div class="hm-grid">${T.map(([k,n,s,d],i)=>`<button type="button" class="hm-tile${i===0?' hot':''}" data-lsub="${k}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg><b>${n}${['scout','odds','radar'].includes(k)?(isPro()?(k==='scout'&&nSc?`<i class="hm-new">${nSc} NEW</i>`:''):'<i class="hm-new">PRO</i>'):''}</b><small>${s}</small></button>`).join('')}</div>
-  <button type="button" class="hm-more" data-lsub="overview">Full team overview, recap and power rankings <span aria-hidden="true">›</span></button>${pushCard()}`;
+  <button type="button" class="hm-more" data-lsub="overview">Full team overview, recap and power rankings <span aria-hidden="true">›</span></button>${pushOn()?pushCard():''}`;
 }
 /* ---------- my league (Sleeper snapshot) ---------- */
 let LCACHE=null, LKEY='', LIDEAS=[], IDEA_POS='ANY', IDEA_TEAM='ANY', IDEA_LIMIT=4;
@@ -3828,7 +3829,7 @@ function pushCard(){
 }
 async function pushSubscribe(){
   try{
-    const perm=await Notification.requestPermission(); if(perm!=='granted'){toast('Alerts were not allowed');renderLeague();return;}
+    const perm=await Notification.requestPermission(); if(perm!=='granted'){toast('Alerts were not allowed');renderLeague();renderAcc();return;}
     const kr=await fetch(PW+'/push/key').then(r=>r.ok?r.json():null).catch(()=>null);
     if(!kr||!kr.key){toast('Alerts are not ready yet. Try again later.');return;}
     const k=kr.key.replace(/-/g,'+').replace(/_/g,'/'), key=Uint8Array.from(atob(k+'==='.slice((k.length+3)%4)),c=>c.charCodeAt(0));
@@ -3837,14 +3838,14 @@ async function pushSubscribe(){
     const r=await fetch(PW+'/push/subscribe',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+ACC.tok},body:JSON.stringify({sub:sub.toJSON()})});
     if(!r.ok){toast('Could not turn on alerts. Try again.');return;}
     try{localStorage.setItem('faircatch-push','on');}catch(e){}
-    toast('Alerts are on'); renderLeague();
+    toast('Alerts are on'); renderLeague(); renderAcc();
     fetch(PW+'/push/test',{method:'POST',headers:{Authorization:'Bearer '+ACC.tok}}).catch(()=>{});
   }catch(e){toast('Could not turn on alerts on this device.');}
 }
 async function pushOff(){
   try{const reg=await navigator.serviceWorker.ready,sub=await reg.pushManager.getSubscription();
     if(sub){fetch(PW+'/push/unsubscribe',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+ACC.tok},body:JSON.stringify({endpoint:sub.endpoint})}).catch(()=>{});await sub.unsubscribe();}}catch(e){}
-  try{localStorage.removeItem('faircatch-push');}catch(e){} toast('Alerts are off'); renderLeague();
+  try{localStorage.removeItem('faircatch-push');}catch(e){} toast('Alerts are off'); renderLeague(); renderAcc();
 }
 
 /* ---------- main ---------- */
@@ -4917,6 +4918,7 @@ function accHtml(){
      <li><span>Trade finder today</span><b>${isPro()?'Unlimited':f.left+' of '+f.lim+' left'}</b></li>
      <li><span>Saved to your account</span><b>${SY.err?'Not saved, will retry':SY.at?'Yes · '+esc(agoShort(SY.at)):'Saving…'}</b></li>
    </ul>
+   ${pushCard()}
    <details class="acc-pw"><summary>${u.password?'Change password':'Add a password'}</summary>
      <form class="acc-form" id="accPwForm" novalidate>
        ${u.password?`<label><span>Current password</span><span class="pw-wrap"><input id="accOld" type="password" autocomplete="current-password" required><button type="button" class="pw-eye" data-pweye="1" aria-label="Show password" aria-pressed="false">${EYE_SVG}</button></span></label>`:''}
