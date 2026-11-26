@@ -125,7 +125,7 @@ async function hourly(env) {
       const key = l.id + '|' + week;
       if (!(key in txCache)) txCache[key] = await sj(`/league/${encodeURIComponent(l.id)}/transactions/${week}`);
       for (const t of (txCache[key] || []).filter((x) => x.type === 'trade' && x.status === 'complete' && Date.now() - (+x.status_updated || 0) < 3 * 3600e3)) {
-        if (await once(D, uid, 'trade|' + t.transaction_id)) msgs.push({ title: `A trade just went through in ${l.name || 'your league'}`, body: 'See who won it in Trade grades.', url: SITE + '#grades' });
+        if (await once(D, uid, 'trade|' + t.transaction_id)) msgs.push({ title: `A trade just went through in ${l.name || 'your league'}`, body: 'See who won it in Trade grades.', url: SITE + '#grades:' + l.id });
       }
     }
     for (const m of msgs.slice(0, 3)) await sendUser(D, keys, uid, m);

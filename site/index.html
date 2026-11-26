@@ -2,7 +2,7 @@
 <html lang="en" class="boot">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-VKzlMX3S+5isj175QECf6uGEYbzoAhah6R8WoupuWyo=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://lm-api-reads.fantasy.espn.com https://fair-catch-yahoo.amitibaum.workers.dev https://fair-catch-push.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-Ei06Da/iEM7DocU7q9TcY5e3EluMhMdHozpS4kWV7N8=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://lm-api-reads.fantasy.espn.com https://fair-catch-yahoo.amitibaum.workers.dev https://fair-catch-push.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070B1A">
 <meta name="color-scheme" content="dark">
@@ -5660,8 +5660,12 @@ try{const r=JSON.parse(sessionStorage.getItem('faircatch-resume')||'null');sessi
   }}catch(e){}
 if(Y_BACK){setMain('league');yFind();}else if(CN.yerr){setMain('league');}
 setTimeout(()=>{try{tourShow();}catch(e){}},1400);
-{const hs=location.hash.slice(1);if((hs==='scout'||hs==='grades')&&LEAGUE){try{history.replaceState(null,'',location.pathname);}catch(e){}setLeagueSub(hs);}}
-try{navigator.serviceWorker&&navigator.serviceWorker.addEventListener('message',e=>{if(e.data&&e.data.type==='fc-open'&&e.data.go&&LEAGUE)setLeagueSub(e.data.go);});}catch(e){}
+// an alert link: #scout, #grades, or #grades:<league id> (switch to that league first)
+function fcGo(go){const [sub,lg]=String(go||'').split(':');if(!(sub==='scout'||sub==='grades'))return false;
+  if(lg){const i=LEAGUES.findIndex(l=>String(l.id)===lg);if(i>=0&&(!LEAGUE||String(LEAGUE.id)!==lg))switchLeague(i);}
+  if(!LEAGUE)return false;setLeagueSub(sub);return true;}
+{const hs=location.hash.slice(1);if(/^(scout|grades)(:\d+)?$/.test(hs)){try{history.replaceState(null,'',location.pathname);}catch(e){}fcGo(hs);}}
+try{navigator.serviceWorker&&navigator.serviceWorker.addEventListener('message',e=>{if(e.data&&e.data.type==='fc-open'&&e.data.go)fcGo(e.data.go);});}catch(e){}
 // alerts and the home-screen hint
 try{const n=+(localStorage.getItem('faircatch-visits')||0)+1;localStorage.setItem('faircatch-visits',String(n));}catch(e){}
 try{computeAlerts(); if(ALERTS&&ALERTS.first) markSeen(); alertBadge();}catch(e){}
