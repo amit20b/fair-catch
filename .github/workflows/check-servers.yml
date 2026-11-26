@@ -1,0 +1,20 @@
+name: Check servers
+# Read-only health check of the Fair Catch servers. Run by hand.
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Account server
+        run: |
+          O="Origin: https://amit20b.github.io"; S=https://fair-catch-yahoo.amitibaum.workers.dev
+          echo "config: $(curl -sS -H "$O" $S/auth/config)"
+          echo "me without sign-in: $(curl -sS -H "$O" $S/auth/me)"
+          echo "espn bad id: $(curl -sS -H "$O" "$S/espn/league?id=1")"
+          echo "espn from another site: $(curl -sS -H 'Origin: https://evil.example' "$S/espn/league?id=1")"
+          for id in 336358 1086064 57145 24481082 1394489; do echo "espn $id: $(curl -sS -H "$O" "$S/espn/league?id=$id" | head -c 160)"; done
+      - name: Notifications server
+        run: echo "key: $(curl -sS https://fair-catch-push.amitibaum.workers.dev/push/key | head -c 40)"
