@@ -19,3 +19,9 @@ jobs:
       - name: Notifications server
         run: |
           echo "key: $(curl -sS https://fair-catch-push.amitibaum.workers.dev/push/key | head -c 40)"
+      - name: ESPN directly
+        run: |
+          for host in lm-api-reads.fantasy.espn.com fantasy.espn.com; do for s in 2026 2025; do for id in 1 336358 1086064; do
+            u="https://$host/apps/fantasy/ffl/seasons/$s/segments/0/leagues/$id?view=mSettings"
+            echo "direct $host $s $id -> $(curl -sS -o /tmp/b -w '%{http_code}' -H 'Accept: application/json' -A 'FairCatch/1.0' "$u") $(head -c 120 /tmp/b)"
+          done; done; done
