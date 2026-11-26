@@ -78,7 +78,8 @@ async function send(D, keys, sub, msg) {
   return r.status;
 }
 async function sendUser(D, keys, uid, msg) {
-  // iPhone already adds "from Fair Catch" under the title, so the title is the headline itself
+  // the title is just the app name; the message is one line of text under it (no separate headline)
+  if (msg.title && msg.title !== 'Fair Catch') msg = { ...msg, title: 'Fair Catch', body: msg.title.replace(/[.!]?$/, '.') + (msg.body ? ' ' + msg.body : '') };
   const subs = (await D.prepare('SELECT endpoint, p256dh, auth FROM push_subs WHERE user_id = ?1').bind(uid).all()).results || [];
   let ok = 0; for (const s of subs) { try { const st = await send(D, keys, s, msg); if (st >= 200 && st < 300) ok++; } catch (e) {} }
   return ok;
