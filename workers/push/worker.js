@@ -78,6 +78,8 @@ async function send(D, keys, sub, msg) {
   return r.status;
 }
 async function sendUser(D, keys, uid, msg) {
+  // the alert's title is always the app name; the headline and the detail go underneath
+  if (msg.title && msg.title !== 'Fair Catch') msg = { ...msg, title: 'Fair Catch', body: msg.title + (msg.body ? '\n' + msg.body : '') };
   const subs = (await D.prepare('SELECT endpoint, p256dh, auth FROM push_subs WHERE user_id = ?1').bind(uid).all()).results || [];
   let ok = 0; for (const s of subs) { try { const st = await send(D, keys, s, msg); if (st >= 200 && st < 300) ok++; } catch (e) {} }
   return ok;
@@ -153,7 +155,7 @@ export default {
         return json(req, { ok: true });
       }
       if (p === '/push/test' && req.method === 'POST') {
-        const n = await sendUser(D, await vapid(D), uid, { title: 'Alerts are on', body: "You'll hear from Fair Catch when a player you scout moves, or a trade happens in your league.", url: SITE });
+        const n = await sendUser(D, await vapid(D), uid, { title: 'Alerts are on', body: "You'll get an alert when a player you scout moves, or a trade happens in your league.", url: SITE });
         return json(req, { ok: n > 0, sent: n });
       }
       return json(req, { error: 'Not found' }, 404);
