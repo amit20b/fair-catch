@@ -90,7 +90,14 @@ body{font-synthesis-weight:none}
 .ps-h{position:sticky;top:0;z-index:3;background:var(--card);margin:0 -18px;padding:calc(8px + env(safe-area-inset-top,0px)) 10px 8px 18px;display:flex;justify-content:space-between;align-items:center}
 .ps-x{width:44px;height:44px;border:0;background:transparent;color:var(--ink);border-radius:50%;display:grid;place-items:center;cursor:pointer;flex:none}
 .ps-x:active{background:var(--card-2)}
-.pro-sheet .grab{width:40px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 10px}
+.pro-sheet /* sheets slide up smoothly, the backdrop fades in */
+.scrim:not([hidden]){animation:scIn .28s ease-out}
+.sheet:not([hidden]){animation:shUp .42s cubic-bezier(.16,1,.3,1)}
+@keyframes scIn{from{opacity:0}}
+@keyframes shUp{from{transform:translateY(100%)}to{transform:none}}
+@media (min-width:700px){.sheet:not([hidden]){animation:shPop .26s cubic-bezier(.16,1,.3,1)}@keyframes shPop{from{opacity:0;transform:translate(-50%,14px) scale(.98)}to{opacity:1;transform:translateX(-50%)}}}
+@media (prefers-reduced-motion:reduce){.scrim:not([hidden]),.sheet:not([hidden]){animation:none}}
+.grab{width:40px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 10px}
 .ps-h{display:flex;justify-content:space-between;align-items:center}.ps-badge{background:var(--accent);color:var(--on-accent);font:800 12px/1 var(--f);letter-spacing:.08em;padding:6px 10px;border-radius:999px}
 .acc-in{border:1.5px solid var(--line);background:var(--card-2);color:var(--ink);font:700 13px/1 var(--f);border-radius:999px;padding:9px 16px;min-height:38px;cursor:pointer}
 .acc-in:hover{border-color:var(--muted)}
