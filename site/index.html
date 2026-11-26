@@ -2,7 +2,7 @@
 <html lang="en" class="boot">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-Ei06Da/iEM7DocU7q9TcY5e3EluMhMdHozpS4kWV7N8=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://lm-api-reads.fantasy.espn.com https://fair-catch-yahoo.amitibaum.workers.dev https://fair-catch-push.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-8/IGDLnri3S1VQnvX86/q9ukMkG8EE+inXUoa5TUuE8=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://lm-api-reads.fantasy.espn.com https://fair-catch-yahoo.amitibaum.workers.dev https://fair-catch-push.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070B1A">
 <meta name="color-scheme" content="dark">
@@ -1192,7 +1192,10 @@ html.sheet-lock body{position:fixed;left:0;right:0;width:100%}
   .cols{gap:10px;padding:10px 12px}
   .col{gap:6px}
   .col-h{min-height:28px}
-  .add-mini{display:inline-flex;align-items:center;margin-left:auto;margin-right:10px;min-height:28px;padding:0 10px;border:1px dashed var(--line);border-radius:999px;background:transparent;color:var(--muted);font:600 12px var(--f);cursor:pointer}
+  .add-mini{display:inline-flex;align-items:center;gap:5px;margin-left:auto;margin-right:10px;min-height:34px;padding:0 13px 0 6px;border:1.5px solid var(--accent);border-radius:999px;background:rgba(198,255,61,.08);color:var(--accent);font:800 13px var(--f);cursor:pointer;white-space:nowrap;flex:none}
+  .add-mini i{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--accent);color:var(--on-accent);font-style:normal;font-size:16px;line-height:1;font-weight:800}
+  .add-mini:active{background:rgba(198,255,61,.18)}
+  .col-h>span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .col:has(.pcard) .addcard{display:none}
   .addcard{min-height:40px!important;padding:6px 8px;font-size:13px}
   .pcard{gap:10px!important;padding:6px 40px 6px 8px!important;min-height:0;border-radius:10px}
@@ -1643,7 +1646,7 @@ function pcard(side,a){
 }
 function renderCols(r,g){
   const bonusTxt=(star,pad)=>star>0&&pad>0?`Includes +${fmt(star)} star bonus and +${fmt(pad)} for open roster spots`:star>0?`Includes +${fmt(star)} star bonus`:`Includes +${fmt(pad)} for open roster spots`;
-  const col=(side,cls,title,tot,adj,star,pad)=>`<div class="col ${cls}"><div class="col-h"><span>${title}</span>${T[side].length?`<button class="add-mini" type="button" data-open="${side}" aria-label="Add a player">＋ Add</button>`:''}<span class="tot num">${fmt(tot)}</span></div>
+  const col=(side,cls,title,tot,adj,star,pad)=>`<div class="col ${cls}"><div class="col-h"><span>${title}</span>${T[side].length?`<button class="add-mini" type="button" data-open="${side}" aria-label="Add a player"><i aria-hidden="true">+</i>Add</button>`:''}<span class="tot num">${fmt(tot)}</span></div>
     ${T[side].map(id=>pcard(side,byId[id])).join('')}
     <button class="addcard" type="button" data-open="${side}">＋ Add player</button>
     ${adj>0?`<div class="bonus">${bonusTxt(star,pad)}</div>`:''}</div>`;
