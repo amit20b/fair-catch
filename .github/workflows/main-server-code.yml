@@ -14,13 +14,15 @@ jobs:
       API: https://api.cloudflare.com/client/v4/accounts/7d9cc22c480bdad5228629d28aabe3ed/workers/scripts/fair-catch-yahoo
     steps:
       - uses: actions/checkout@v4
-      - name: Settings before (names and types only, never values)
-        run: curl -fsS -H "Authorization: Bearer $T" "$API/settings" | jq -c '.result.bindings | map({name,type})'
+      - name: Settings before, names and types only
+        run: |
+          curl -fsS -H "Authorization: Bearer $T" "$API/settings" | jq -c '.result.bindings | map({name,type})'
       - name: Upload the code only
         run: |
           echo '{"main_module":"worker.js"}' > meta.json
           curl -fsS -X PUT -H "Authorization: Bearer $T" "$API/content" \
             -F "metadata=@meta.json;type=application/json" \
             -F "worker.js=@workers/yahoo/worker.js;type=application/javascript+module" | jq -c '{success, errors}'
-      - name: Settings after (should match the line above)
-        run: curl -fsS -H "Authorization: Bearer $T" "$API/settings" | jq -c '.result.bindings | map({name,type})'
+      - name: Settings after, should match the line above
+        run: |
+          curl -fsS -H "Authorization: Bearer $T" "$API/settings" | jq -c '.result.bindings | map({name,type})'
