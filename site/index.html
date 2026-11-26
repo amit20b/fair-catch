@@ -1034,6 +1034,10 @@ html.sheet-lock body{position:fixed;left:0;right:0;width:100%}
   /* phone: the Help button lives in My League (its home screen and the trade builder); the Trade page has Help in its tool row */
   #helpFab{display:none}
   body[data-v="lg-home"] #helpFab:not([hidden]),body[data-v="lg-builder"] #helpFab:not([hidden]){display:flex}
+  /* wait for the page: hidden while the league is loading, then it rises in with the rest */
+  body:has(#league .fpm) #helpFab{display:none!important}
+  body[data-v="lg-home"] #helpFab:not([hidden]),body[data-v="lg-builder"] #helpFab:not([hidden]){animation:fabIn .35s cubic-bezier(.16,1,.3,1) .12s both}
+  @keyframes fabIn{from{opacity:0;transform:translateY(16px) scale(.8)}}
   #accSlot .acc-pair .acc-in:not(.ghost){display:none}
   #proSlot,#proSlot:has(.pro-cta){order:2;flex:none;margin:0!important}
   #proSlot .pro-cta{padding:0;border:0;background:none;width:auto;border-radius:999px;overflow:visible}
