@@ -2,7 +2,7 @@
 <html lang="en" class="boot">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-BeeR4xg0ZjMjgR5bsjXiuvSL5Tu1GMdFb8w31sCXEvA=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://lm-api-reads.fantasy.espn.com https://fair-catch-yahoo.amitibaum.workers.dev https://fair-catch-push.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-vQGciu/6dXIUYskYBiyOa/GjXqMPMJGZ4sWL/13aFEg=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://lm-api-reads.fantasy.espn.com https://fair-catch-yahoo.amitibaum.workers.dev https://fair-catch-push.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070B1A">
 <meta name="color-scheme" content="dark">
@@ -5564,6 +5564,7 @@ function espnBox(){
 // Yahoo answers 403 to every Fantasy call until it approves the app; until then Yahoo is shown as coming soon.
 // Set to true once Yahoo approves (the owner can still test it: localStorage 'faircatch-ytest' = 1).
 const YAHOO_READY=false;
+try{if(location.hash==='#yahootest'){localStorage.setItem('faircatch-ytest','1');history.replaceState(null,'',location.pathname+location.search);}}catch(e){}
 function yahooBox(){
   if(!YAHOO_READY&&!(()=>{try{return localStorage.getItem('faircatch-ytest')==='1';}catch(e){return false;}})())
     return `<div class="cn-y"><div class="sh-lbl">Yahoo</div><p class="muted" style="margin:0">Yahoo leagues are coming soon. For now, connect a Sleeper league, or add players by hand in the trade calculator.</p></div>`;
