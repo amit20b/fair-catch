@@ -2,7 +2,7 @@
 <html lang="en" class="boot">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-v/D7cOkx5t4j7V27WwnEXtNTabUIs1695BG+SL8zdSU=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://lm-api-reads.fantasy.espn.com https://fair-catch-yahoo.amitibaum.workers.dev https://fair-catch-push.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-CF80QlNFf3qkp9IbzrrvbYyJaQ1GyoX7ZuyHGoI3GF4=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://lm-api-reads.fantasy.espn.com https://fair-catch-yahoo.amitibaum.workers.dev https://fair-catch-push.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070B1A">
 <meta name="color-scheme" content="dark">
@@ -872,7 +872,8 @@ html.sheet-lock body{position:fixed;left:0;right:0;width:100%}
 .sheet{position:fixed;left:0;right:0;bottom:0;top:calc(env(safe-area-inset-top,0px) + 10px);z-index:51;background:var(--card);border-radius:20px 20px 0 0;border-top:1px solid var(--line);display:flex;flex-direction:column;
   padding:10px max(12px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))}
 @media (min-width:700px){.sheet{left:50%;right:auto;bottom:auto;top:max(6%,calc(env(safe-area-inset-top,0px) + 10px));transform:translateX(-50%);width:520px;height:min(640px,84%);border-radius:18px;border:1px solid var(--line)}}
-.grab{width:40px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 10px}
+.grab{width:40px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 10px;position:relative;touch-action:none}
+.grab::before{content:"";position:absolute;left:-60px;right:-60px;top:-14px;bottom:-14px}
 .sheet-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
 .sheet-h h2{margin:0;font-size:17px;font-weight:700}
 .sheet-h p{margin:2px 0 0;font-size:12.5px;color:var(--muted)}
@@ -5638,6 +5639,32 @@ proValidate();
     cloudRef=ref;
     save();
   }catch(e){}
+})();
+
+/* swipe a sheet down to close it (phone): from the handle or header anywhere, or from the content when it is scrolled to the top */
+(()=>{let sh=null,y0=0,dy=0,t0=0,sc=null,go=false;
+  const scroller=(el,stop)=>{for(let e=el;e&&e!==stop;e=e.parentElement){const cs=getComputedStyle(e);if(/(auto|scroll)/.test(cs.overflowY)&&e.scrollHeight>e.clientHeight+1)return e;}return null;};
+  document.addEventListener('touchstart',e=>{
+    if(innerWidth>=700||e.touches.length!==1)return; const s=e.target.closest('.sheet'); if(!s||s.hidden)return;
+    if(e.target.closest('input,textarea,select,canvas,[data-nodrag]'))return;
+    sh=s;y0=e.touches[0].clientY;dy=0;t0=Date.now();go=false;
+    const top=e.target.closest('.grab,.sheet-h,.ps-h'); sc=top?null:scroller(e.target,s);
+    if(!top&&sc&&sc.scrollTop>0)sh=null;
+  },{passive:true});
+  document.addEventListener('touchmove',e=>{
+    if(!sh)return; const d=e.touches[0].clientY-y0;
+    if(!go){ if(d<6){if(d<-6)sh=null;return;} if(sc&&sc.scrollTop>0){sh=null;return;} go=true;sh.style.transition='none'; }
+    dy=Math.max(0,d); sh.style.transform='translateY('+dy+'px)'; if(e.cancelable)e.preventDefault();
+  },{passive:false});
+  const end=()=>{
+    if(!sh)return; const s=sh; sh=null; if(!go)return;
+    const fast=dy>40&&dy/(Date.now()-t0)>.6, far=dy>Math.min(160,s.offsetHeight*.25);
+    s.style.transition='transform .22s ease';
+    if(fast||far){ s.style.transform='translateY(100%)';
+      setTimeout(()=>{const x=s.querySelector('[aria-label="Close"]');if(x)x.click();s.style.transition='';s.style.transform='';},200);
+    } else { s.style.transform=''; setTimeout(()=>{s.style.transition='';},230); }
+  };
+  document.addEventListener('touchend',end,{passive:true});document.addEventListener('touchcancel',end,{passive:true});
 })();
 
 /* while any sheet is open, freeze the page behind it so only the sheet scrolls (iOS ignores overflow:hidden alone) */
