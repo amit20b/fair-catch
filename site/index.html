@@ -2,7 +2,7 @@
 <html lang="en" class="boot">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-CF80QlNFf3qkp9IbzrrvbYyJaQ1GyoX7ZuyHGoI3GF4=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://lm-api-reads.fantasy.espn.com https://fair-catch-yahoo.amitibaum.workers.dev https://fair-catch-push.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-JnvTuLCoJyyrOGM2V1uV4zP968e7gjdbvXtZO54cFWM=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://lm-api-reads.fantasy.espn.com https://fair-catch-yahoo.amitibaum.workers.dev https://fair-catch-push.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070B1A">
 <meta name="color-scheme" content="dark">
@@ -1215,6 +1215,7 @@ html.sheet-lock body{position:fixed;left:0;right:0;width:100%}
 
 /* trade grades, waivers, tour */
 .gr-list,.wv-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.gr-filt{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 12px}.gr-filt .posf{margin:0}.gr-filt small{opacity:.7;margin-left:3px;font-weight:600}.gr-filt .sh-sel.on{border-color:var(--accent)}.gr-filt .sh-sel{flex:1 1 150px;min-width:0;margin:0;width:auto;font-size:16px;min-height:40px;padding:6px 10px}
 .gr{margin:0}.gr-top{display:flex;justify-content:space-between;gap:8px;font-size:13px;margin-bottom:10px}.gr-top b.up{color:var(--win)}
 .gr-sides{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .gr-s{background:var(--card-2);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:6px;min-width:0}.gr-s.me{outline:1.5px solid var(--accent-line,rgba(198,255,61,.4))}
@@ -3010,6 +3011,7 @@ function renderStartSit(el){
 let HQ='home', HSEL=[], HPOS='ANY';
 function openHelper(q){HQ=q||'home';if(HQ==='start'&&!HSEL.length)HSEL=[];document.getElementById('hscrim').hidden=false;document.getElementById('hsheet').hidden=false;document.getElementById('helpFab').hidden=true;renderHelper();}
 document.addEventListener('change',e=>{if(e.target&&(e.target.id==='akP'||e.target.id==='akT')){const v=e.target.value;if(e.target.id==='akP')AK.id=v===''?null:+v;else AK.rid=v===''?null:+v;askRefresh();}});
+document.addEventListener('change',e=>{if(e.target&&e.target.id==='grTeam'){GR_F=e.target.value||'all';renderLeague();}});
 document.addEventListener('change',e=>{if(e.target&&e.target.id==='ofTeam'){OFS.rid=e.target.value===''?null:+e.target.value;ofRefresh();}});
 let OF_T=0;
 document.addEventListener('input',e=>{if(e.target&&e.target.id==='ofText'){if(e.target.value!==OFS.text){OFS.excl=new Set();OFS.rid=null;}OFS.text=e.target.value;clearTimeout(OF_T);OF_T=setTimeout(ofRefresh,350);}});
@@ -3737,13 +3739,24 @@ function leagueTrades(){
 const GRADES=[[.3,'A+'],[.18,'A'],[.08,'B+'],[-.08,'B'],[-.18,'C'],[-.3,'D'],[-9,'F']];
 const gradeOf=m=>GRADES.find(g=>m>=g[0])[1];
 const gradeCls=g=>/^A/.test(g)?'up':/^[DF]/.test(g)?'down':'';
-let GR_LIST=[];
+let GR_LIST=[],GR_F='all';
 function renderGrades(el){
   if(!HIST){el.innerHTML=`<div class="box">${fcLoader('Grading every trade…','Checking values then and now',null,'league')}</div>`;loadHist().then(()=>{if(LSUB==='grades')renderLeague();});return;}
-  const L=leagueTrades(); GR_LIST=L;
+  const ALL=leagueTrades();
+  const inv=new Map();ALL.forEach(t=>[t.a,t.b].forEach(x=>inv.set(x.rid,(inv.get(x.rid)||0)+1)));
+  if(GR_F!=='all'&&GR_F!=='mine'&&!inv.has(+GR_F))GR_F='all';
+  const L=GR_F==='all'?ALL:GR_F==='mine'?ALL.filter(t=>t.a.me||t.b.me):ALL.filter(t=>t.a.rid===+GR_F||t.b.rid===+GR_F);
+  // the chosen team (or you) always on the left
+  const pick=GR_F==='mine'?(x=>x.me):GR_F==='all'?null:(x=>x.rid===+GR_F);
+  if(pick)L.forEach((t,i)=>{if(!pick(t.a)&&pick(t.b))L[i]={...t,a:t.b,b:t.a,now:-t.now,then:t.then==null?null:-t.then};});
+  GR_LIST=L;
+  const mineN=ALL.filter(t=>t.a.me||t.b.me).length;
+  const filt=ALL.length?`<div class="gr-filt"><div class="posf" role="group" aria-label="Show"><button type="button" data-grf="all" aria-pressed="${GR_F==='all'}">All trades <small>${ALL.length}</small></button><button type="button" data-grf="mine" aria-pressed="${GR_F==='mine'}">My trades <small>${mineN}</small></button></div>
+    <select id="grTeam" class="sh-sel${GR_F!=='all'&&GR_F!=='mine'?' on':''}" aria-label="Trades of one team"><option value="">One team…</option>${LEAGUE.teams.filter(t=>inv.has(t.rid)&&t.rid!==LEAGUE.me).map(t=>`<option value="${t.rid}"${String(t.rid)===String(GR_F)?' selected':''}>${esc(cleanName(t.name)||t.name)} (${inv.get(t.rid)})</option>`).join('')}</select></div>`:'';
+  if(ALL.length&&!L.length){el.innerHTML=`<p class="muted" style="margin:0 0 12px">Every trade in your league this season, graded by what each side got.</p>${filt}<div class="box"><p class="muted" style="margin:0">${GR_F==='mine'?'You have not made a trade this season yet. When you do, it gets graded here.':'No trades for this team yet.'}</p></div>`;return;}
   if(!L.length){el.innerHTML=`<div class="box"><h3>Trade grades</h3><p class="muted" style="margin:0">${LEAGUE.live?'No trades in your league yet this season. When someone makes one, it gets graded here.':'Connect your Sleeper league to grade every trade in it.'}</p></div>`;return;}
   const side=(s,m)=>{const g=gradeOf(m);return `<div class="gr-s${s.me?' me':''}"><div class="gr-h"><b class="gr-g ${gradeCls(g)}">${g}</b><span>${esc(s.name)}${s.me?' (you)':''}<small>got</small></span></div>${s.ids.map(id=>{const a=byId[id];return `<div class="gr-p">${posChip(a)}<button type="button" class="pp gr-n" data-pp="${a.id}">${esc(a.n)}</button><i class="num">${fmt(val(a))}</i></div>`;}).join('')}</div>`;};
-  el.innerHTML=`<p class="muted" style="margin:0 0 12px">Every trade in your league this season, graded by what each side got. "Now" uses today's values; "Then" uses values from the week it happened.</p>
+  el.innerHTML=`<p class="muted" style="margin:0 0 12px">Every trade in your league this season, graded by what each side got. "Now" uses today's values; "Then" uses values from the week it happened.</p>${filt}
     <ul class="gr-list">${L.map((t,i)=>{const lead=Math.abs(t.now)<.08?'Even so far':(t.now>0?t.a.name:t.b.name)+' is winning';
       return `<li class="box gr"><div class="gr-top"><span class="muted">${t.w?'Week '+t.w:''}${t.day?' · '+new Date(t.day+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}):''}</span><b class="${Math.abs(t.now)<.08?'':'up'}">${esc(lead)}</b></div>
         <div class="gr-sides">${side(t.a,t.now)}${side(t.b,-t.now)}</div>
@@ -4583,6 +4596,7 @@ document.addEventListener('click',e=>{
   const fm=t.closest('[data-ftmore]'); if(fm){FT_LIMIT+=4;renderFinder();return;}
   if(t.closest('[data-teex]')){exampleTrade();return;}
   const pu=t.closest('[data-push]'); if(pu){const k=pu.dataset.push;if(k==='on')pushSubscribe();else if(k==='off')pushOff();else{fetch(PW+'/push/test',{method:'POST',headers:{Authorization:'Bearer '+ACC.tok}}).then(r=>r.json()).then(j=>toast(j.ok?'Test sent':'No phone found: turn alerts on again')).catch(()=>toast('Could not send'));}return;}
+  const grf=t.closest('[data-grf]'); if(grf){GR_F=grf.dataset.grf;renderLeague();return;}
   const grs=t.closest('[data-grshare]'); if(grs){const g=GR_LIST[+grs.dataset.grshare];if(g)shareGrade(g);return;}
   const tr=t.closest('[data-tour]'); if(tr){const k=tr.dataset.tour;if(k==='next'){TOUR_I++;tourRender();}else tourClose();return;}
   const pch=t.closest('[data-pitch]'); if(pch){const v=pch.dataset.pitch,k=v[0],i=+v.slice(1);const it=k==='o'?ODDS_IDEAS[i]:k==='r'?RADAR_IDEAS[i]:k==='l'?LIDEAS[i]:k==='f'?FT_SHOWN[i]:null;
