@@ -2,7 +2,7 @@
 <html lang="en" class="boot">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-+K1g1vpDDirpy9V3G/IggQNOofRKgdknYuFByJcoba0=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://lm-api-reads.fantasy.espn.com https://fair-catch-yahoo.amitibaum.workers.dev https://fair-catch-push.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-vYjbQnJMMuVVK9IxfkbtjavnCSqiflMhjpOejWwj36U=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://lm-api-reads.fantasy.espn.com https://fair-catch-yahoo.amitibaum.workers.dev https://fair-catch-push.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070B1A">
 <meta name="color-scheme" content="dark">
@@ -1216,12 +1216,14 @@ html.sheet-lock body{position:fixed;left:0;right:0;width:100%}
 /* trade grades, waivers, tour */
 .gr-list,.wv-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
 .gr-intro{margin:0 0 10px;font-size:12.5px;line-height:1.4}.gr-intro b{color:var(--ink);font-weight:600}
-.gr-filt{display:flex;align-items:center;gap:6px;margin:0 0 12px}
-.gr-filt>button,.gr-team{display:inline-flex;align-items:center;gap:5px;height:34px;min-height:34px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--muted);font:inherit;font-weight:600;font-size:13px;cursor:pointer;white-space:nowrap;flex:none}
-.gr-filt>button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
-.gr-filt small{opacity:.7;font-weight:600}
-.gr-team{position:relative;flex:0 1 auto;min-width:0;overflow:hidden}.gr-team span{overflow:hidden;text-overflow:ellipsis}.gr-team svg{flex:none}
-.gr-team.on{border-color:var(--accent);color:var(--ink)}
+.gr-filt{display:flex;align-items:center;gap:8px;margin:0 0 12px}
+.gr-seg{display:flex;flex:none;padding:3px;border-radius:12px;background:var(--card);border:1px solid var(--line)}
+.gr-seg button{height:30px;padding:0 11px;border:0;border-radius:9px;background:none;color:var(--muted);font:inherit;font-weight:600;font-size:13px;cursor:pointer;white-space:nowrap}
+.gr-seg button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
+.gr-filt small{opacity:.7;font-weight:600;margin-left:2px}
+.gr-team{position:relative;display:inline-flex;align-items:center;gap:5px;height:38px;padding:0 11px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-weight:600;font-size:13px;cursor:pointer;white-space:nowrap;flex:1 1 auto;min-width:0;overflow:hidden}
+.gr-team span{overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}.gr-team i{font-style:normal;color:var(--muted);font-weight:500}.gr-team svg{flex:none;color:var(--muted)}
+.gr-team.on{border-color:var(--accent)}
 .gr-team select{position:absolute;inset:0;width:100%;height:100%;opacity:0;font-size:16px;cursor:pointer;border:0}
 .gr{margin:0}.gr-top{display:flex;justify-content:space-between;gap:8px;font-size:13px;margin-bottom:10px}.gr-top b.up{color:var(--win)}
 .gr-sides{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
@@ -3761,8 +3763,8 @@ function renderGrades(el){
   if(pick)L.forEach((t,i)=>{if(!pick(t.a)&&pick(t.b))L[i]={...t,a:t.b,b:t.a,now:-t.now,then:t.then==null?null:-t.then};});
   GR_LIST=L;
   const tName=rid=>{const t=LEAGUE.teams.find(x=>x.rid===rid);return t?(cleanName(t.name)||t.name):'Team';};
-  const filt=ALL.length?`<div class="gr-filt" role="group" aria-label="Show"><button type="button" data-grf="all" aria-pressed="${GR_F==='all'}">All <small>${ALL.length}</small></button><button type="button" data-grf="mine" aria-pressed="${GR_F==='mine'}">Mine <small>${ALL.filter(isMine).length}</small></button>
-    <label class="gr-team${GR_T!=null?' on':''}"><span>${GR_T!=null?esc(tName(GR_T)):(GR_F==='mine'?'With team':'Team')}</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  const filt=ALL.length?`<div class="gr-filt"><div class="gr-seg" role="group" aria-label="Whose trades"><button type="button" data-grf="all" aria-pressed="${GR_F==='all'}">All trades <small>${ALL.length}</small></button><button type="button" data-grf="mine" aria-pressed="${GR_F==='mine'}">My trades <small>${ALL.filter(isMine).length}</small></button></div>
+    <label class="gr-team${GR_T!=null?' on':''}"><span>${GR_T==null?`<i>${GR_F==='mine'?'With any team':'All teams'}</i>`:(GR_F==='mine'?'<i>With</i> ':'')+esc(tName(GR_T))}</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     <select id="grTeam" aria-label="${GR_F==='mine'?'Your trades with one team':'Trades of one team'}"><option value="">${GR_F==='mine'?'Any team':'All teams'}</option>${LEAGUE.teams.filter(t=>inv.has(t.rid)).map(t=>`<option value="${t.rid}"${t.rid===GR_T?' selected':''}>${esc(cleanName(t.name)||t.name)} (${inv.get(t.rid)})</option>`).join('')}</select></label></div>`:'';
   const INTRO=`<p class="muted gr-intro">Graded by what each side got. <b>Now</b> = today's values, <b>Then</b> = the week it happened.</p>`;
   if(ALL.length&&!L.length){el.innerHTML=`${INTRO}${filt}<div class="box"><p class="muted" style="margin:0">${GR_F==='mine'&&GR_T==null?'You have not made a trade this season yet. When you do, it gets graded here.':'No trades here yet.'}</p></div>`;return;}
