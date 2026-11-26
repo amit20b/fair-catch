@@ -1031,7 +1031,9 @@ html.sheet-lock body{position:fixed;left:0;right:0;width:100%}
 @media (max-width:860px){
   footer{display:none}
   body[data-v="chart"] footer{display:block}
-  body[data-v^="lg-"]:not([data-v="lg-builder"]) #helpFab{display:none}
+  /* phone: the Help button lives in My League (its home screen and the trade builder); the Trade page has Help in its tool row */
+  #helpFab{display:none}
+  body[data-v="lg-home"] #helpFab:not([hidden]),body[data-v="lg-builder"] #helpFab:not([hidden]){display:flex}
   #accSlot .acc-pair .acc-in:not(.ghost){display:none}
   #proSlot,#proSlot:has(.pro-cta){order:2;flex:none;margin:0!important}
   #proSlot .pro-cta{padding:0;border:0;background:none;width:auto;border-radius:999px;overflow:visible}
