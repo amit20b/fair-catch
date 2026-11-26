@@ -17,4 +17,5 @@ jobs:
           echo "espn from another site: $(curl -sS -H 'Origin: https://evil.example' "$S/espn/league?id=1")"
           for id in 336358 1086064 57145 24481082 1394489; do echo "espn $id: $(curl -sS -H "$O" "$S/espn/league?id=$id" | head -c 160)"; done
       - name: Notifications server
-        run: echo "key: $(curl -sS https://fair-catch-push.amitibaum.workers.dev/push/key | head -c 40)"
+        run: |
+          echo "key: $(curl -sS https://fair-catch-push.amitibaum.workers.dev/push/key | head -c 40)"
