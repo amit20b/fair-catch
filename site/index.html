@@ -2,7 +2,7 @@
 <html lang="en" class="boot">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-8/IGDLnri3S1VQnvX86/q9ukMkG8EE+inXUoa5TUuE8=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://lm-api-reads.fantasy.espn.com https://fair-catch-yahoo.amitibaum.workers.dev https://fair-catch-push.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-ZSGSydmWbMdF+WpuU3cPiqplQXXqpeU9JkoEbO6o5ww=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://lm-api-reads.fantasy.espn.com https://fair-catch-yahoo.amitibaum.workers.dev https://fair-catch-push.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070B1A">
 <meta name="color-scheme" content="dark">
@@ -975,10 +975,10 @@ html.sheet-lock body{position:fixed;left:0;right:0;width:100%}
 
 /* ---------- phone and portrait tablet (B3): bottom tab bar, compact header, My League home ---------- */
 #setSlot,.mt-ic{display:none}
-@media (max-width:860px){
+@media (max-width:860px), (hover:none) and (pointer:coarse) and (max-width:1400px){
   body{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
   header.top{display:flex!important;flex-wrap:wrap;align-items:center;gap:8px;padding-top:10px;position:relative}
-  header.top .brand{flex:1 1 auto;min-width:0;padding-right:0}
+  header.top .brand{flex:1 1 0;min-width:0;padding-right:0}
   header.top .brand h1 svg{height:30px}
   header.top .brand p{display:none}
   header.top .fresh{display:contents}
@@ -1025,10 +1025,12 @@ html.sheet-lock body{position:fixed;left:0;right:0;width:100%}
   .hm-more{width:100%;margin-top:10px;min-height:48px;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:12px;font:600 14px var(--f);cursor:pointer}
   .hm-more span{color:var(--accent)}
 }
-@media (min-width:600px) and (max-width:860px){.hm-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (min-width:600px) and (max-width:860px), (min-width:600px) and (hover:none) and (pointer:coarse) and (max-width:1400px){.hm-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (min-width:1000px) and (hover:none) and (pointer:coarse){.hm-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (min-width:481px) and (hover:none) and (pointer:coarse) and (max-width:1400px){#proSlot,#proSlot:has(.pro-cta),#proSlot:has(.pro-btn){width:auto;max-width:none}.fab{padding:0;width:56px;height:56px;justify-content:center}.fab span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}.fab svg{width:24px;height:24px}}
 
 /* phone: calmer, tidier look */
-@media (max-width:860px){
+@media (max-width:860px), (hover:none) and (pointer:coarse) and (max-width:1400px){
   footer{display:none}
   body[data-v="chart"] footer{display:block}
   /* phone: the Help button lives in My League (its home screen and the trade builder); the Trade page has Help in its tool row */
@@ -1119,7 +1121,7 @@ html.sheet-lock body{position:fixed;left:0;right:0;width:100%}
 .te-n{margin:8px 0 0;font-size:12px;color:var(--muted)}
 @media (min-width:601px){.te{display:none}}
 /* iPhone home-screen app: keep the tab bar on the bottom edge (status-bar inset bug) */
-@media (max-width:860px){
+@media (max-width:860px), (hover:none) and (pointer:coarse) and (max-width:1400px){
   html{min-height:calc(100% + env(safe-area-inset-top,0px))}
   .maintabs::after{content:"";position:absolute;left:0;right:0;top:100%;height:120px;background:var(--card)}
 }
@@ -1181,7 +1183,7 @@ html.sheet-lock body{position:fixed;left:0;right:0;width:100%}
   #calc>nav.tabs button{min-height:34px}
 }
 
-@media (max-width:860px){
+@media (max-width:860px), (hover:none) and (pointer:coarse) and (max-width:1400px){
   .ph-back{gap:8px}
   .ph-back button{width:36px;height:36px;border-radius:10px}
   .ph-back h2{font-size:22px}
@@ -1924,8 +1926,8 @@ function setMain(m){
   render();}
 function setLeagueSub(s){LSUB=s;LGMENU=false;setMain('league');window.scrollTo(0,0);}
 // phone and portrait tablet: bottom tab bar, and My League opens on a home screen of tiles
-function isPhone(){try{return matchMedia('(max-width:860px)').matches;}catch(e){return false;}}
-try{matchMedia('(max-width:860px)').addEventListener('change',e=>{if(!e.matches&&LSUB==='home')LSUB='overview';if(mtab==='league')renderLeague();});}catch(e){}
+function isPhone(){try{return matchMedia('(max-width:860px), (hover:none) and (pointer:coarse) and (max-width:1400px)').matches;}catch(e){return false;}}
+try{matchMedia('(max-width:860px), (hover:none) and (pointer:coarse) and (max-width:1400px)').addEventListener('change',e=>{if(!e.matches&&LSUB==='home')LSUB='overview';if(mtab==='league')renderLeague();});}catch(e){}
 const LSUB_NAME={odds:'Title odds',radar:'Opportunity radar',grades:'Trade grades',waivers:'Waivers',overview:'Team overview',trades:'Find trades',builder:'Trade builder',roster:'Roster',startsit:'Start/Sit',market:'Buy/Sell',scout:'Scouting'};
 function renderHome(el){
   const key=lkey();
