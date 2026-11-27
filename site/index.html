@@ -2,7 +2,7 @@
 <html lang="en" class="boot">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-ZSGSydmWbMdF+WpuU3cPiqplQXXqpeU9JkoEbO6o5ww=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://lm-api-reads.fantasy.espn.com https://fair-catch-yahoo.amitibaum.workers.dev https://fair-catch-push.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-ix6AJA4RRt5InPRge9/YWQR143LB+NX9akEYTMEOBYc=' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.sleeper.app https://lm-api-reads.fantasy.espn.com https://fair-catch-yahoo.amitibaum.workers.dev https://fair-catch-push.amitibaum.workers.dev https://api.lemonsqueezy.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070B1A">
 <meta name="color-scheme" content="dark">
@@ -2080,7 +2080,9 @@ function leagueData(){
   ideas.sort((a,b)=>(b.myGain+.5*Math.max(0,b.thGain))-(a.myGain+.5*Math.max(0,a.thGain)));
   // waiver plan: best add/drop move, apply it, then find the next best move on the new roster
   const rostered=new Set(teams.flatMap(t=>t.ids));
-  const fas=POOL.filter(x=>!rostered.has(x.a.id)&&!x.a.out).slice(0,70);
+  const faAll=POOL.filter(x=>!rostered.has(x.a.id)&&!x.a.out).slice(0,70);
+  // injured reserve / out this week cannot help your lineup now, so they are never suggested as pickups
+  const fas=faAll.filter(x=>!hurtNow(x.a));
   const adds=[]; let cur=myT.ids.slice(), curP=myT.prof; const usedFA=new Set();
   for(let step=0;step<5;step++){
     const bench=cur.filter(id=>!curP.startIds.includes(id)); let best=null;
@@ -2090,7 +2092,7 @@ function leagueData(){
     if(!best||best.gain<60) break;
     adds.push(best); usedFA.add(best.add); cur=[...cur.filter(id=>id!==best.drop),best.add]; curP=best.after;
   }
-  LCACHE={teams,myT,power,pfRank,posRank,ideas:ideas.slice(0,90),adds:adds.slice(0,8),fasTop:fas.slice(0,12)};
+  LCACHE={teams,myT,power,pfRank,posRank,ideas:ideas.slice(0,90),adds:adds.slice(0,8),fasTop:faAll.slice(0,12)};
   LKEY=key;
   try{LCACHE.ideas.forEach(it=>{it.acc=acceptScore(it);});const sc=it=>it.myGain+.5*Math.max(0,it.thGain)+120*(it.fit?it.fit.my:0)+6*(it.fit?it.fit.acc:0);LCACHE.ideas.sort((a,b)=>sc(b)-sc(a));}catch(e){}
   return LCACHE;
@@ -2588,7 +2590,7 @@ function renderLeague(){
   <div class="box"><h3>Waiver adds</h3>
     <p class="muted" style="margin:0 0 10px">Your best moves in order: do #1 first, then #2 on the new roster, and so on. ${esc(LEAGUE.waiver||'')}.</p>
     ${L.adds.length?`<ul class="wl">${L.adds.map((w,i)=>`<li><span class="wl-n">${i+1}</span><div class="wl-a"><span class="lbl get">Add</span>${nameChip(w.add)}</div><div class="wl-d"><span class="lbl give">Drop</span>${nameChip(w.drop)}</div><span class="wl-g">+${fmt(w.gain)}</span></li>`).join('')}</ul>`:'<p class="muted" style="margin:0">Nobody on waivers beats your bench right now.</p>'}
-    <details class="how" style="border:0;margin-top:6px"><summary style="padding:8px 0">Top available players</summary><ul class="wl fa" style="margin-top:4px">${L.fasTop.map(x=>`<li><div class="wl-a">${nameChip(x.a.id)}</div></li>`).join('')}</ul></details>
+    <details class="how" style="border:0;margin-top:6px"><summary style="padding:8px 0">Top available players</summary><ul class="wl fa" style="margin-top:4px">${L.fasTop.map(x=>{const h=hurtNow(x.a);return `<li><div class="wl-a">${nameChip(x.a.id)}${h?` <span class="inj" title="${esc(h.t)}">${h.k==='ir'?'IR':h.k==='season'?'Out for season':'Out'}</span>`:''}</div></li>`;}).join('')}</ul></details>
   </div>
 `};
   el.innerHTML=(SEC[LSUB]||SEC.overview)()+`  <p class="note">League data from ${esc(LEAGUE.platform||'Sleeper')}, ${LEAGUE.synced?'synced '+esc(LEAGUE.synced)+' (Israel time)':esc(LEAGUE.fetched)} (Week ${LEAGUE.week}). ${LEAGUE.live?'Rosters and records load live from Sleeper every time you open the app; stats and values refresh every 6 hours.':(LEAGUE.platform||'Sleeper')==='Sleeper'?'Rosters, records, stats and values refresh automatically every 6 hours (every 3 hours on game days).':'Rosters and standings refresh every 6 hours while your computer is on with the Claude desktop app open.'}</p>`;
@@ -3162,7 +3164,7 @@ function solveOffer(){
   const trims=give.length>=2?give.map(id=>{const gv=give.filter(x=>x!==id);return {a:byId[id],o:mk(get,gv)};}).filter(x=>x.o.myGain>o0.myGain+40).sort((x,y)=>y.o.myGain-x.o.myGain).slice(0,2):[];
   // cover a hole from free agents
   const rostered=new Set(L.teams.flatMap(t=>t.ids));
-  const fa=holes.map(p=>POOL.find(x=>x.a.p===p&&!rostered.has(x.a.id)&&!x.a.out)).filter(Boolean).map(x=>x.a);
+  const fa=holes.map(p=>POOL.find(x=>x.a.p===p&&!rostered.has(x.a.id)&&!x.a.out&&!hurtNow(x.a))).filter(Boolean).map(x=>x.a);
   let better=[]; try{const im=improveOffer({rid:team.rid,get:names(get),give:names(give),t:Date.now()});better=im?im.better:[];}catch(e){}
   return {...base,I,o0,d0,d1,holes,focus,adds:pickAdds,easy,trims,fa,better};
 }
@@ -3291,7 +3293,7 @@ function renderStartVerdict(){
 function renderPickups(){
   const el=document.getElementById('hPick'); if(!el||!LEAGUE) return;
   const L=leagueData(), rostered=new Set(L.teams.flatMap(t=>t.ids));
-  const fa=POOL.filter(x=>!rostered.has(x.a.id)&&!x.a.out&&BOOM[x.a.p]&&(HPOS==='ANY'||x.a.p===HPOS)).slice(0,60)
+  const fa=POOL.filter(x=>!rostered.has(x.a.id)&&!x.a.out&&!hurtNow(x.a)&&BOOM[x.a.p]&&(HPOS==='ANY'||x.a.p===HPOS)).slice(0,60)
     .map(x=>({a:x.a,v:x.v,w:weekProj(x.a)})).filter(x=>x.w.status!=='out');
   // rank by rest-of-season value, with a nudge for this week's projection
   fa.sort((x,y)=>(y.v+40*y.w.pts)-(x.v+40*x.w.pts));
@@ -3839,7 +3841,7 @@ function renderWaivers(el){
       ${budget?`<p class="note" style="text-align:left">Bids are a share of a $${budget} budget, higher when he helps your lineup more and when other teams need his position. Bid less if you have spent most of your budget.</p>`:''}`
       :'<p class="muted" style="margin:0">Nobody on waivers beats your bench right now. Check back after this week\'s games.</p>'}
   </div>
-  <div class="box"><h3>Top available players</h3><ul class="wl fa">${L.fasTop.map(x=>`<li><div class="wl-a">${nameChip(x.a.id)}</div></li>`).join('')}</ul></div>`;
+  <div class="box"><h3>Top available players</h3><ul class="wl fa">${L.fasTop.map(x=>{const h=hurtNow(x.a);return `<li><div class="wl-a">${nameChip(x.a.id)}${h?` <span class="inj" title="${esc(h.t)}">${h.k==='ir'?'IR':h.k==='season'?'Out for season':'Out'}</span>`:''}</div></li>`;}).join('')}</ul></div>`;
 }
 
 /* ---------- first visit: a short tour of what the app does ---------- */
